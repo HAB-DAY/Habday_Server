@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class FundingMember{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "fundingMemberId", insertable = false, updatable = false)
+    @Column(name = "fundingMemberId")
     private Long id;
 
     @Column(nullable = false)
@@ -36,6 +36,6 @@ public class FundingMember{
     private FundingItem fundingItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fundingMemberId")
+    @JoinColumn(name = "memberId")
     private Member member;
 }
