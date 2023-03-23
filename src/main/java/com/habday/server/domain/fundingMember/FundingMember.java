@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class FundingMember{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "fundingMemberId")
+    @Column(name = "fundingMemberId", insertable = false, updatable = false)
     private Long id;
 
     @Column(nullable = false)
