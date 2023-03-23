@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
 public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping("/user")
     public List<User> getUsers(){
+        System.out.println("controller start");
         return userRepository.findAll();
     }
 
