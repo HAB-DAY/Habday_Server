@@ -1,9 +1,8 @@
 package com.habday.server.controller;
 
-import com.habday.server.entity.User;
+import com.habday.server.domain.User;
 import com.habday.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,4 +1,4 @@
-package com.habday.server.entity;
+package com.habday.server.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

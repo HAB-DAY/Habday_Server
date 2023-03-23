@@ -1,6 +1,6 @@
 package com.habday.server.service;
 
-import com.habday.server.entity.User;
+import com.habday.server.domain.User;
 import com.habday.server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
