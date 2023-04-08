@@ -36,6 +36,6 @@ public class FundingMember{
     private FundingItem fundingItem;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fundingMemberId")
+    @JoinColumn(name = "memberId")
     private Member member;
 }
