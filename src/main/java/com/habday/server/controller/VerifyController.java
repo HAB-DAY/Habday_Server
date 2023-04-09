@@ -20,13 +20,13 @@ public class VerifyController {
 
     // 생성자를 통해 REST API 와 REST API secret 입력
     public VerifyController(){
-        this.iamportClient = new IamportClient("...", "...");
+        this.iamportClient = new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
     }
 
     /** 프론트에서 받은 PG사 결괏값을 통해 아임포트 토큰 발행 **/
     @PostMapping("/{imp_uid}")
-    public IamportResponse<Payment> paymentByImpUid(@PathVariable String imp_uid) throws IamportResponseException, IOException {
-        log.info("paymentByImpUid 진입");
+    public @ResponseBody IamportResponse<Payment> paymentByImpUid(@PathVariable String imp_uid) throws IamportResponseException, IOException {
+        log.info("paymentByImpUid 진입: " +imp_uid);
         return iamportClient.paymentByImpUid(imp_uid);
     }
 
