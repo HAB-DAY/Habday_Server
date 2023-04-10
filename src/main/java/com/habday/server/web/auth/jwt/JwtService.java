@@ -32,7 +32,7 @@ public class JwtService {
     @Transactional
     public JwtToken joinJwtToken(String userId) {
 
-        Member member = memberRepository.findByUserid(userId);
+        Member member = memberRepository.findByName(userId);
         RefreshToken userRefreshToken = member.getJwtRefreshToken();
 
         //처음 서비스를 이용하는 사용자(refresh 토큰이 없는 사용자)
@@ -97,7 +97,7 @@ public class JwtService {
     @Transactional
     public JwtToken validRefreshToken(String userid, String refreshToken) {
 
-        Member findUser = memberRepository.findByUserid(userid);
+        Member findUser = memberRepository.findByName(userid);
 
         //전달받은 refresh 토큰과 DB의 refresh 토큰이 일치하는지 확인
         RefreshToken findRefreshToken = sameCheckRefreshToken(findUser, refreshToken);
