@@ -2,10 +2,7 @@ package com.habday.server.controller;
 
 import com.google.gson.Gson;
 import com.habday.server.constants.ScheduledPayState;
-import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
-import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
-import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
-import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
+import com.habday.server.dto.req.iamport.*;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.*;
@@ -15,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -81,6 +80,26 @@ public class VerifyController {
     public @ResponseBody IamportResponse<ScheduleList> showSchedules(@PathVariable String customer_uid, @RequestParam String schedule_status, @RequestParam int page) throws IamportResponseException, IOException {
         GetScheduleData getScheduleData = new GetScheduleData(1682265600, 1682344800, schedule_status, page, 8);
         return iamportClient.getPaymentSchedule(getScheduleData);
+    }
+
+
+
+    /** 결제 취소 **/
+    @PostMapping("/cancel")
+    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayReqeustDto cancelPayReqeustDto) throws IamportResponseException, IOException {
+        //상품번호로 db 검색해서 (imp_uid, amount, cancel_amount) 가져오기
+        BigDecimal amount = new BigDecimal(101); //
+        BigDecimal cancel_amount = BigDecimal.ZERO;
+        BigDecimal cancelableAmount = amount.subtract(cancel_amount);//db에서 가져온 결제정보 - 이전에 취소 처리 된 적 있는 경우
+
+        if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
+            return new IamportResponse<>();
+        }
+        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayReqeustDto.getCancel_request_amount());
+        cancelData.setChecksum(cancelableAmount);
+        cancelData.setReason(cancelPayReqeustDto.getReason());
+        log.debug("cancel 완료 직전임");
+        return iamportClient.cancelPaymentByImpUid(cancelData);
     }
 
     /** 웹훅 예약결제 컬백 **/
