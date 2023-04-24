@@ -9,6 +9,6 @@ public class CallbackScheduleRequestDto {
     private String status;
 
     public String printRequest(){
-        return "imp_uid: " + imp_uid + " merchant_uid: " + merchant_uid + " status" + status;
+        return "imp_uid: " + imp_uid + " merchant_uid: " + merchant_uid + " status: " + status;
     }
 }

@@ -1,17 +1,15 @@
 package com.habday.server.controller;
 
+import com.google.gson.Gson;
+import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.BillingCustomerData;
-import com.siot.IamportRestClient.request.ScheduleData;
-import com.siot.IamportRestClient.request.ScheduleEntry;
-import com.siot.IamportRestClient.response.BillingCustomer;
-import com.siot.IamportRestClient.response.IamportResponse;
-import com.siot.IamportRestClient.response.Payment;
-import com.siot.IamportRestClient.response.Schedule;
+import com.siot.IamportRestClient.request.*;
+import com.siot.IamportRestClient.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -31,57 +29,9 @@ public class VerifyController {
     public VerifyController(){
         this.iamportClient = new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
     }
-
-    /** 인증결제 방식으로 imp_uid로 카드사 결제 **/
-    @PostMapping("/authpay/{imp_uid}")
-    public @ResponseBody IamportResponse<Payment> authPay(@PathVariable String imp_uid) throws IamportResponseException, IOException {
-        log.info("payByImpUidAuth 진입: " +imp_uid);
-        return iamportClient.paymentByImpUid(imp_uid);
-    }
-
-    /** 결제 테스트 페이지 **/
-    @GetMapping("/payTestView")
-    public String payTestView(){
-        return "payview.html";
-    }
-
-    /** 비인증 결제(빌링키) 방식 예약 결제 **/
-    @PostMapping("/noneauthpay/schedule")
-    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
-        log.info("noneAuthPay 진입: request: " + scheduleRequestDto.printRequest());
-        ScheduleEntry scheduleEntry= new ScheduleEntry(
-                scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
-        scheduleEntry.setName(scheduleRequestDto.getName());
-        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
-        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
-        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
-
-        ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
-        scheduleData.addSchedule(scheduleEntry);
-        return iamportClient.subscribeSchedule(scheduleData);
-    }
-
-    /** 웹훅 예약결제 컬백 **/
-    @PostMapping("/callback/schedule")
-    public @ResponseBody IamportResponse<Payment> callbackSchedule(@RequestBody CallbackScheduleRequestDto callbackRequestDto) throws IamportResponseException, IOException {
-        //todo 웹훅 ip 검증하기
-        log.info("callback 호출: " + callbackRequestDto.printRequest());
-        //todo db에 저장하기
-        return null;
-    }
-
-    /** 빌링키에 매핑된 결제 데이터 확인하기 **/
-    @GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
-    public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
-        //iamportClient.getPaymentSchedule();
-        log.info("showUserOrders" + iamportClient.getBillingCustomer(customer_uid).toString());
-        return iamportClient.getBillingCustomer(customer_uid);
-    }
-
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
     public @ResponseBody IamportResponse<BillingCustomer> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest) throws IamportResponseException, IOException {
-        log.info("getBillingKey start");
         BillingCustomerData billingCustomerData = new BillingCustomerData(
                 billingKeyRequest.getCustomer_uid(), billingKeyRequest.getCard_number(),
                 billingKeyRequest.getExpiry(), billingKeyRequest.getBirth());
@@ -91,5 +41,64 @@ public class VerifyController {
         return iamportClient.postBillingCustomer(billingKeyRequest.getCustomer_uid(), billingCustomerData);
     }
 
-    /**예약결제 취소**/
+    /** 빌링키에 매핑된 결제 데이터 확인하기 **/
+    @GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
+    public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
+        return iamportClient.getBillingCustomer(customer_uid);
+    }
+
+    /** 비인증 결제(빌링키) 방식 예약 결제**/
+    @PostMapping("/noneauthpay/schedule")
+    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
+        log.debug("noneAuthPay 진입: 예약 시간: " + scheduleRequestDto.getSchedule_at());
+        ScheduleEntry scheduleEntry= new ScheduleEntry(
+                scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
+        scheduleEntry.setName(scheduleRequestDto.getName());
+        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
+        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
+        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
+
+        Gson gson = new Gson();
+        log.debug("scheduleEntry: " + gson.toJson(scheduleEntry));
+
+        ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
+        scheduleData.addSchedule(scheduleEntry);
+        return iamportClient.subscribeSchedule(scheduleData);
+    }
+
+    //todo null체크
+    /**예약 취소**/
+    @PostMapping("/noneauthpay/unschedule")
+    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto) throws IamportResponseException, IOException {
+        UnscheduleData unscheduleData = new UnscheduleData(unscheduleRequestDto.getCustomer_uid());
+        unscheduleData.addMerchantUid(unscheduleRequestDto.getMerchant_uid());//누락되면 빌링키에 관련된 모든 예약정보 일괄취소
+        return iamportClient.unsubscribeSchedule(unscheduleData);
+    }
+
+
+    /**예약결제 확인**/
+    @GetMapping("/noneauthpay/showschedules/{customer_uid}")
+    public @ResponseBody IamportResponse<ScheduleList> showSchedules(@PathVariable String customer_uid, @RequestParam String schedule_status, @RequestParam int page) throws IamportResponseException, IOException {
+        GetScheduleData getScheduleData = new GetScheduleData(1682265600, 1682344800, schedule_status, page, 8);
+        return iamportClient.getPaymentSchedule(getScheduleData);
+    }
+
+    /** 웹훅 예약결제 컬백 **/
+    @PostMapping("/callback/schedule")
+    public @ResponseBody void callbackSchedule(@RequestBody CallbackScheduleRequestDto callbackRequestDto) throws IamportResponseException, IOException {
+        //todo 웹훅 ip 검증하기
+        IamportResponse<Payment> response = iamportClient.paymentByImpUid(callbackRequestDto.getImp_uid());
+
+        if (callbackRequestDto.getStatus() == ScheduledPayState.fail.getMsg()){
+            log.debug("callback 리스폰스 호출/: " + response.getResponse().getFailReason());
+        }
+
+        //todo db에 저장하기
+    }
+
+    /** 결제 테스트 페이지 **/
+    @GetMapping("/payTestView")
+    public String payTestView(){
+        return "payview.html";
+    }
 }
