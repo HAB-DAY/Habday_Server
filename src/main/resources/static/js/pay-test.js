@@ -53,7 +53,7 @@ function nonConfirmPay(){
     const merchant_uid_made = 'fund_' + new Date().getTime()
     const name_made = "테스트 결제"
     const customer_uid_made = "testbuyername_0001_0001"
-    const schedule_at_made = new Date(2023, 4, 23, 13, 46, 0)
+    const schedule_at_made = new Date(2023, 4, 24, 1, 35, 0)
     IMP.request_pay({ // param
         customer_uid: customer_uid_made,//고유한 값이어야 함(사용자 이메일_카드인지다른거인지_번호)
         pg: "kakaopay.TC0ONETIME", //상점ID
@@ -70,7 +70,7 @@ function nonConfirmPay(){
         if (rsp.success) {//빌링키 발급됨
             console.log(rsp);
             alert(`빌링키 발급 성공!`);
-            axios({
+            /*axios({
                 url: `/verifyIamport/noneauthpay/schedule`,
                 method: "post",
                 headers: { "Content-Type": "application/json" },
@@ -87,7 +87,7 @@ function nonConfirmPay(){
                 }
             }).then((res) => {
                 console.log(`아임포트 비인증결제 완료: ${JSON.stringify(res)}`);
-            });
+            });*/
         }else{
             alert(`비인증결제 실패: respone => ${JSON.stringify(rsp)}`);
         }
