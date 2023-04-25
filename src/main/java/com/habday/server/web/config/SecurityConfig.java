@@ -28,6 +28,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
+                // 유저관련 (소셜로그인)
                 .antMatchers("/login/oauth2/code/naver", "/api/oauth/token/naver");
 
     }
@@ -41,11 +42,10 @@ public class SecurityConfig {
                 .formLogin().disable() //formLogin(form)방식 사용 안함 , json방식으로 전달
                 .httpBasic().disable() //Bearer 방식 사용 -> header 에 authentication 에 토큰을 넣어 전달하는 방식
 
-                .apply(new MyCustomDsl())
+                .apply(new MyCustomDsl()) //커스텀 필터 등록
                 .and()
 
-
-                .authorizeRequests()
+                .authorizeRequests() //인증, 권한 api 설정
                 .antMatchers("/api/v1/user/**").hasAuthority("USER")
                 .antMatchers("/api/v1/manager/**").hasAuthority("MANAGER")
                 .antMatchers("/api/v1/admin/**").hasAuthority("ADMIN")

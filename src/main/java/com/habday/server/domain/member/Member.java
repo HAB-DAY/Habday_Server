@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Getter @Data
+@Getter //@Data
 @NoArgsConstructor
 @Entity
 @Table(name = "MEMBER")
@@ -34,7 +34,7 @@ public class Member {
 
     //@Column(nullable = false)
     @Column()
-    private LocalDate birthday;
+    private String birthday;
 
     @Column()
     private String profileImg;
@@ -73,7 +73,7 @@ public class Member {
 
     //빌더
     @Builder
-    public Member(String name, String password, String nickName, LocalDate birthday, String profileImg, String profileContent, String email, LocalDateTime createTime, String roles, String provider) {
+    public Member(String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, LocalDateTime createTime, String roles, String provider) {
         this.name = name;
         this.password = password;
         this.nickName = nickName;

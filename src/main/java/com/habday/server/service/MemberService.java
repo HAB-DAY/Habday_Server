@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class MemberService {
 
-    public void createKakaoUser(String token) {
+    // member 프로필 정보 DB에 저장
 
-    }
+    //
 }

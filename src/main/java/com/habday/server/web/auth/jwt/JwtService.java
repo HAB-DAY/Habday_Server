@@ -102,7 +102,7 @@ public class JwtService {
         //전달받은 refresh 토큰과 DB의 refresh 토큰이 일치하는지 확인
         RefreshToken findRefreshToken = sameCheckRefreshToken(findUser, refreshToken);
 
-        //refresh 토큰이 만료되지 않았으면 access 토큰이 null 이 아이다.
+        //refresh 토큰이 만료되지 않았으면 access 토큰이 null 아니다.
         String accessToken = jwtProviderService.validRefreshToken(findRefreshToken);
 
         //refresh 토큰의 유효기간이 남아 access 토큰만 생성

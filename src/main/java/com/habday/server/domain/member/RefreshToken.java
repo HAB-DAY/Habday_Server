@@ -8,11 +8,12 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @Data
+@Table(name="REFRESH_TOKEN")
 public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "refreshToken_id")
+    @Column(name = "refreshTokenId")
     private Long id;
 
     @Column(name = "refreshToken", length = 500)

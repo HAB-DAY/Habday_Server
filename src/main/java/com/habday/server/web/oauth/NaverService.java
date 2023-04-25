@@ -13,7 +13,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
@@ -32,7 +31,7 @@ public class NaverService {
     private final String UserInfoUri = "https://openapi.naver.com/v1/nid/me";
 
     /**
-     * 카카오로 부터 엑세스 토큰을 받는 함수
+     * 네이버로 부터 엑세스 토큰을 받는 함수
      */
     public NaverToken getAccessToken(String code) {
 
@@ -93,7 +92,7 @@ public class NaverService {
             e.printStackTrace();
         }
 
-        System.out.println("===========NaverProfile=================");
+        System.out.println("===========NaverService-findProfile()의 NaverProfile=================");
         System.out.println(naverProfile);
         return naverProfile;
     }
@@ -109,9 +108,10 @@ public class NaverService {
         //처음이용자 강제 회원가입
         if(member ==null) {
             member = Member.builder()
-                    .name(profile.response.getId())
+                    .name(profile.response.name)
                     .password(null) //필요없으니 일단 아무거도 안넣음. 원하는데로 넣으면 됌
-                    .nickName(profile.response.getNickname())
+                    .nickName(profile.response.nickname)
+                    .birthday(profile.response.birthday)
                     .profileImg(profile.response.profile_image)
                     .email(profile.response.email)
                     .roles("USER")
