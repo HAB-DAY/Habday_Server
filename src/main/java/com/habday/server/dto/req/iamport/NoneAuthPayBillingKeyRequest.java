@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class NoneAuthPayBillingKeyRequest {
+    private String payment_name;
     private String customer_uid;
     private String card_number;
     private String expiry;
