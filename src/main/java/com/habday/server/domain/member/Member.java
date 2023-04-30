@@ -10,8 +10,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Getter
+@Getter //@Data
 @NoArgsConstructor
 @Entity
 @Table(name = "MEMBER")
@@ -20,47 +21,66 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "memberId")
     private Long id;
-
-    @Column(nullable = false)
+    //@Column(nullable = false)
+    @Column()
     private String name;
-
-    @Column(nullable = false)
+    private String password;
+    //@Column(nullable = false)
+    @Column()
     private String nickName;
 
-    @Column(nullable = false)
-    private LocalDate birthday;
+    //@Column(nullable = false)
+    @Column()
+    private String birthday;
 
     @Column()
     private String profileImg;
-
     @Column()
     private String profileContent;
-
-    @Column(nullable = false)
+    //@Column(nullable = false)
+    @Column()
     private String email;
-
-    @Column(nullable = false)
-    private String refreshToken;
-
     @Column()
     private String account;
-
     @Column()
     private String accountName;
-
-    @Column(nullable = false)
+    private LocalDateTime createTime;
+    //@Column(nullable = false)
+    @Column()
     @Enumerated(value = EnumType.STRING)
     private MemberState status;
+    /*@Column()
+    @Enumerated(value = EnumType.STRING)
+    //@Column(nullable = false)
+    private Role role;*/
+    private String roles;
+    private String provider;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "refreshToken")
+    private RefreshToken jwtRefreshToken;
 
     //빌더
     @Builder
-    public Member(String name, String nickName, LocalDate birthday, String profileImg, String profileContent, String email) {
+    public Member(String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, LocalDateTime createTime, String roles, String provider) {
         this.name = name;
+        this.password = password;
         this.nickName = nickName;
         this.birthday = birthday;
         this.profileImg = profileImg;
         this.profileContent = profileContent;
         this.email = email;
+        this.createTime = createTime;
+        this.roles = roles;
+        this.provider = provider;
     }
 
+    public Member update(String name, String email, String profileImg) {
+        this.name = name;
+        this.email = email;
+        this.profileImg = profileImg;
+        return this;
+    }
+    /*public String getRoleKey() {
+        return this.role.getKey();
+    }*/
 }
