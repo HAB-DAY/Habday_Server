@@ -6,6 +6,8 @@ import com.habday.server.constants.SuccessCode;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponse;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
+import com.habday.server.dto.res.iamport.GetPaymentListsResponse;
+import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
 import com.habday.server.service.VerifyIamportService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -23,6 +25,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static com.habday.server.constants.SuccessCode.CREATE_BILLING_KEY_SUCCESS;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -36,9 +40,17 @@ public class VerifyIamportController {
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
     public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest) throws IamportResponseException, IOException {
-        GetBillingKeyResponseDto responseDto = verifyIamportService.getBillingKey(billingKeyRequest);
-        return GetBillingKeyResponse.toResponse(SuccessCode.CREATE_BILLING_KEY_SUCCESS, responseDto);
+        GetBillingKeyResponseDto responseDto = verifyIamportService.getBillingKey(billingKeyRequest, 1L);
+        return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
+
+    /** 저장된 결제정보 가져오기**/
+    @GetMapping("/noneauthpay/getPaymentLists") //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
+    public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(){
+        GetPaymentListsResponseDto responseDto = verifyIamportService.getPaymentLists(1L);
+        return GetPaymentListsResponse.newResponse(SuccessCode.GET_PAYMENT_LISTS_SUCCESS, responseDto);
+    }
+
 
     /** 빌링키에 매핑된 결제 데이터 확인하기 **/
     @GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")

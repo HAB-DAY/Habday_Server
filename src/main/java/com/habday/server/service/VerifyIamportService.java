@@ -8,6 +8,8 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
+import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto.PaymentList;
+import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
 import com.habday.server.exception.CustomException;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -34,7 +37,7 @@ public class VerifyIamportService {
     //todo 사용자 billingkey 카드 정보 리스트로 가져오기
 
     @Transactional
-    public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequest billingKeyRequest) throws IamportResponseException, IOException {
+    public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequest billingKeyRequest, Long memberId) throws IamportResponseException, IOException {
         //todo 이미 있는 결제정보인지 확인하기(빌링키 조회한 카드번호 비교
         BillingCustomerData billingCustomerData = new BillingCustomerData(
                 billingKeyRequest.getCustomer_uid(), billingKeyRequest.getCard_number(),
@@ -55,7 +58,16 @@ public class VerifyIamportService {
                 .billingKey(billingKeyRequest.getCustomer_uid())
                 .member(member)
                 .build());
-
-        return GetBillingKeyResponseDto.toGetBillingKeyResponseDto(billingKeyRequest.getPayment_name(), billingCustomer.getCustomerUid());
+        //todo 저장 예외
+        return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), billingCustomer.getCustomerUid());
     }//todo 오류 처리 하기
+
+    public GetPaymentListsResponseDto getPaymentLists(Long memberId){
+        List<PaymentList> paymentLists =  paymentRepository.findByMemberId(memberId);
+        if (paymentLists == null){
+            return GetPaymentListsResponseDto.of(null);//return 등록된 결제정보 없음
+        }
+
+        return GetPaymentListsResponseDto.of(paymentLists);
+    }
 }

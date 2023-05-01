@@ -15,7 +15,7 @@ public class GetBillingKeyResponseDto {
         this.customer_uid = customer_uid;
     }
 
-    public static GetBillingKeyResponseDto toGetBillingKeyResponseDto(String payment_name, String customer_uid ){
+    public static GetBillingKeyResponseDto of(String payment_name, String customer_uid ){
         return new GetBillingKeyResponseDto(payment_name, customer_uid);
     }
 }
