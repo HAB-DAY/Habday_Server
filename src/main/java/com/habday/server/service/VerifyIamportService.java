@@ -18,12 +18,17 @@ import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.PropertyValueException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.PersistenceException;
 import java.io.IOException;
 import java.util.List;
+
+import static com.habday.server.constants.ExceptionCode.BILLING_KEY_SAVE_FAIL;
+import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 
 @Slf4j
 @Service
@@ -51,16 +56,21 @@ public class VerifyIamportService {
 
         //todo memberid는 jwt에서 가져옴
         Member member = memberRepository.findById(1L)
-                .orElseThrow(() -> new CustomException(ExceptionCode.NO_MEMBER_ID));
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        paymentRepository.save(Payment.builder()
-                .paymentName(billingKeyRequest.getPayment_name())
-                .billingKey(billingKeyRequest.getCustomer_uid())
-                .member(member)
-                .build());
+        try{
+            paymentRepository.save(Payment.builder()
+                    .paymentName(billingKeyRequest.getPayment_name())
+                    .billingKey(billingKeyRequest.getCustomer_uid())
+                    .member(member)
+                    .build());
+        }catch(Exception e){
+            throw new CustomException(BILLING_KEY_SAVE_FAIL);
+        }
+
         //todo 저장 예외
-        return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), billingCustomer.getCustomerUid());
-    }//todo 오류 처리 하기
+        return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), billingCustomer == null ? "" : billingCustomer.getCustomerUid());
+    }//todo 오류 처리 하기 billingCustomer이 null이면 안됨!!
 
     public GetPaymentListsResponseDto getPaymentLists(Long memberId){
         List<PaymentList> paymentLists =  paymentRepository.findByMemberId(memberId);
