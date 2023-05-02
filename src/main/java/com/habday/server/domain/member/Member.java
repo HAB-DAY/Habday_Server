@@ -21,14 +21,14 @@ public class Member {
     @Column(name = "memberId")
     private Long id;
 
-    @Column(nullable = false)
+    @Column()
     private String name;
 
-    @Column(nullable = false)
+    @Column()
     private String nickName;
 
-    @Column(nullable = false)
-    private LocalDate birthday;
+    @Column()
+    private String birthday;
 
     @Column()
     private String profileImg;
@@ -36,10 +36,10 @@ public class Member {
     @Column()
     private String profileContent;
 
-    @Column(nullable = false)
+    @Column()
     private String email;
 
-    @Column(nullable = false)
+    @Column()
     private String refreshToken;
 
     @Column()
@@ -48,17 +48,20 @@ public class Member {
     @Column()
     private String accountName;
 
-    @Column(nullable = false)
+    @Column()
     @Enumerated(value = EnumType.STRING)
     private MemberState status;
 
     //빌더
     @Builder
-    public Member(String name, String nickName, LocalDate birthday, String profileImg, String profileContent, String email) {
+    public Member(Long id, String name, String nickName, String birthday, String profileImg, String account, String accountName, String profileContent, String email) {
+        this.id = id;
         this.name = name;
         this.nickName = nickName;
         this.birthday = birthday;
         this.profileImg = profileImg;
+        this.account = account;
+        this.accountName = accountName;
         this.profileContent = profileContent;
         this.email = email;
     }
