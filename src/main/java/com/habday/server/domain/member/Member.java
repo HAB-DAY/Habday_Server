@@ -73,7 +73,8 @@ public class Member {
 
     //빌더
     @Builder
-    public Member(String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, LocalDateTime createTime, String roles, String provider) {
+    public Member(Long id, String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, String account, String accountName, LocalDateTime createTime, String roles, String provider) {
+        this.id = id;
         this.name = name;
         this.password = password;
         this.nickName = nickName;
@@ -81,6 +82,8 @@ public class Member {
         this.profileImg = profileImg;
         this.profileContent = profileContent;
         this.email = email;
+        this.account = account;
+        this.accountName = accountName;
         this.createTime = createTime;
         this.roles = roles;
         this.provider = provider;

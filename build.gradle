@@ -52,6 +52,8 @@ dependencies {
 	//WebClient 사용 - http 요청
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.projectreactor:reactor-spring:1.0.1.RELEASE'
+	// validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 }
 
