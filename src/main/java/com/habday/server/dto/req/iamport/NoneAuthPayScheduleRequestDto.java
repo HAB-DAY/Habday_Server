@@ -8,7 +8,7 @@ import java.util.Date;
 @Getter
 public class  NoneAuthPayScheduleRequestDto {
     private String customer_uid; //빌링키
-    private String merchant_uid; //상품번호
+    private String merchant_uid; //주문번호
     private /*long*/Date schedule_at; //스케쥴 정보
     private BigDecimal amount; //상품 가격
     private String name; //상품 이름(펀딩 이름)

@@ -3,14 +3,14 @@ package com.habday.server.dto.req.fund;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 public class ParticipateFundingRequest {
     Long fundingItemId;
     String name;
     String message;
-    Date fundingDate;
+    LocalDate fundingDate;
     BigDecimal amount;
     Long paymentId;
 
