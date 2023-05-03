@@ -37,6 +37,7 @@ public class VerifyIamportController {
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
     private final VerifyIamportService verifyIamportService;
 
+    //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
     public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest) throws IamportResponseException, IOException {
@@ -60,21 +61,9 @@ public class VerifyIamportController {
 
     /** 비인증 결제(빌링키) 방식 예약 결제**/
     @PostMapping("/noneauthpay/schedule")
-    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
-        log.debug("noneAuthPay 진입: 예약 시간: " + scheduleRequestDto.getSchedule_at());
-        ScheduleEntry scheduleEntry= new ScheduleEntry(
-                scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
-        scheduleEntry.setName(scheduleRequestDto.getName());
-        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
-        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
-        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
-
-        Gson gson = new Gson();
-        log.debug("scheduleEntry: " + gson.toJson(scheduleEntry));
-
-        ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
-        scheduleData.addSchedule(scheduleEntry);
-        return iamportClient.subscribeSchedule(scheduleData);
+    public @ResponseBody void noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
+        verifyIamportService.noneAuthPaySchedule(scheduleRequestDto);
+        //return iamportClient.subscribeSchedule(scheduleData);
     }
 
     //todo null체크

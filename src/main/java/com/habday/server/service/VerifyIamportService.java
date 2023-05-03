@@ -7,6 +7,7 @@ import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
+import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto.PaymentList;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
@@ -14,6 +15,8 @@ import com.habday.server.exception.CustomException;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.BillingCustomerData;
+import com.siot.IamportRestClient.request.ScheduleData;
+import com.siot.IamportRestClient.request.ScheduleEntry;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
 import lombok.RequiredArgsConstructor;
@@ -79,5 +82,22 @@ public class VerifyIamportService {
         }
 
         return GetPaymentListsResponseDto.of(paymentLists);
+    }
+
+    public void noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
+        ScheduleEntry scheduleEntry= new ScheduleEntry(
+                scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
+        scheduleEntry.setName(scheduleRequestDto.getName());
+        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
+        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
+        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
+
+        Gson gson = new Gson();
+        log.debug("scheduleEntry: " + gson.toJson(scheduleEntry));
+
+        ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
+        scheduleData.addSchedule(scheduleEntry);
+        iamportClient.subscribeSchedule(scheduleData);
+        //이 결과를 프론트에 반환
     }
 }
