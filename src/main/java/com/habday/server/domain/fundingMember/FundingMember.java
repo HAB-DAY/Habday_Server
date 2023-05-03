@@ -66,12 +66,14 @@ public class FundingMember{
     private Member member;
 
     @Builder
-    public FundingMember(String name, BigDecimal amount, String message, LocalDate fundingDate, Long paymentId){
+    public FundingMember(String name, BigDecimal amount, String message, LocalDate fundingDate, Long paymentId, FundingItem fundingItem, Member member){
         this.name = name;
         this.amount = amount;
         this.message = message;
         this.fundingDate = fundingDate;
         this.paymentId = paymentId;
+        this.fundingItem = fundingItem;
+        this.member = member;
     }
 
 }

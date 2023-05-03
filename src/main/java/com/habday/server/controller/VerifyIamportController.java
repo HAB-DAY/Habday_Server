@@ -59,12 +59,12 @@ public class VerifyIamportController {
         return iamportClient.getBillingCustomer(customer_uid);
     }
 
-    /** 비인증 결제(빌링키) 방식 예약 결제**/
-    @PostMapping("/noneauthpay/schedule")
+    /** 비인증 결제(빌링키) 방식 예약 결제(FundingController에서 연결 예정)**/
+    /*@PostMapping("/noneauthpay/schedule")
     public @ResponseBody void noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
         verifyIamportService.noneAuthPaySchedule(scheduleRequestDto);
         //return iamportClient.subscribeSchedule(scheduleData);
-    }
+    }*/
 
     //todo null체크
     /**예약 취소**/

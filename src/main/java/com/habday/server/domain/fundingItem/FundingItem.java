@@ -20,34 +20,34 @@ public class FundingItem {
     @Column(name = "fundingItemId")
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String fundingItemImg;
 
-    @Column(nullable = false)
+    @Column
     private String fundingName;
 
-    @Column(nullable = false)
+    @Column
     private String fundDetail;
 
-    @Column(nullable = false)
+    @Column
     private int itemPrice;//링크 첨부?
 
-    @Column(nullable = false)
+    @Column
     private int totalPrice;
 
-    @Column(nullable = false)
+    @Column
     private int goalPrice;
 
-    @Column(nullable = false)
+    @Column
     private LocalDate startDate;
 
-    @Column(nullable = false)
+    @Column
     private LocalDate finishDate;
 
-    @Column(nullable = false)
+    @Column
     private int percentage;//totalPrice/goalPrice하면 돼서 필요 없을수도
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(value = EnumType.STRING)
     private FundingState status;
 

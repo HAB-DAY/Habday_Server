@@ -19,6 +19,7 @@ import com.siot.IamportRestClient.request.ScheduleData;
 import com.siot.IamportRestClient.request.ScheduleEntry;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
+import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.PropertyValueException;
@@ -58,9 +59,10 @@ public class VerifyIamportService {
         BillingCustomer billingCustomer= iamportClient.postBillingCustomer(billingKeyRequest.getCustomer_uid(), billingCustomerData).getResponse();
 
         //todo memberid는 jwt에서 가져옴
-        Member member = memberRepository.findById(1L)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
+        //todo 같은 아이템에 중복 펀딩 가능하게!!!(jpa가 자동으로 save를 update 처리 함)
         try{
             paymentRepository.save(Payment.builder()
                     .paymentName(billingKeyRequest.getPayment_name())
@@ -84,7 +86,7 @@ public class VerifyIamportService {
         return GetPaymentListsResponseDto.of(paymentLists);
     }
 
-    public void noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
+    public IamportResponse<List<Schedule>> noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
         ScheduleEntry scheduleEntry= new ScheduleEntry(
                 scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
         scheduleEntry.setName(scheduleRequestDto.getName());
@@ -97,7 +99,9 @@ public class VerifyIamportService {
 
         ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
         scheduleData.addSchedule(scheduleEntry);
-        iamportClient.subscribeSchedule(scheduleData);
-        //이 결과를 프론트에 반환
+        return iamportClient.subscribeSchedule(scheduleData);
+
+        //todo 매우 중요!!! 아이앰포트 서버의 결과를 반영해야 함. 저장 결과가 이상하면 에러 던지고 롤백 해야 함
+        //이 결과를 fundingService에 반환해 거기서 db에 저장
     }
 }
