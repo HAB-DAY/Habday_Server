@@ -16,6 +16,8 @@ public class  NoneAuthPayScheduleRequestDto {
     private String buyer_tel;
     private String buyer_email;
 
+    //public of
+
     public String printRequest(){
         return "customer_uid: " + customer_uid + " merchant_uid: " + merchant_uid +
                 " schedule_at: " + schedule_at +  " amount: " + amount + " name: " + name +
