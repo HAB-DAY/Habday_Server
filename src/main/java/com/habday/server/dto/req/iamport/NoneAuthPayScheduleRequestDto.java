@@ -1,0 +1,31 @@
+package com.habday.server.dto.req.iamport;
+
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+@Getter
+public class  NoneAuthPayScheduleRequestDto {
+    private String customer_uid; //빌링키
+    private String merchant_uid; //주문번호
+    private /*long*/Date schedule_at; //스케쥴 정보
+    private BigDecimal amount; //상품 가격
+    private String name; //상품 이름(펀딩 이름)
+    private String buyer_name;//구매자 정보(펀딩 참여자 정보)
+    private String buyer_tel;
+    private String buyer_email;
+
+    //public of
+
+    public String printRequest(){
+        return "customer_uid: " + customer_uid + " merchant_uid: " + merchant_uid +
+                " schedule_at: " + schedule_at +  " amount: " + amount + " name: " + name +
+                " buyer_name: " + buyer_name + " buyer_tel: " + buyer_tel + " buyer_email" + buyer_email;
+    }
+
+    /**유닉스 타임스탬프를 변환하기**/
+    /*public Date scheduleAtToDate(){
+        return new java.util.Date(schedule_at*1000L);
+    }*/
+}
