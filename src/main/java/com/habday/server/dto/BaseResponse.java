@@ -18,7 +18,7 @@ public class BaseResponse {
         this.msg = msg;
     }
     public static BaseResponse of(Boolean success, String msg){
-         return new BaseResponse(success, msg);
+        return new BaseResponse(success, msg);
     }
 
     public static ResponseEntity<BaseResponse> toCustomErrorResponse(

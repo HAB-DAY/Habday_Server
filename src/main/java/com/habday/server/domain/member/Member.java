@@ -21,10 +21,13 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "memberId")
     private Long id;
+    
     //@Column(nullable = false)
     @Column()
     private String name;
+
     private String password;
+    
     //@Column(nullable = false)
     @Column()
     private String nickName;
@@ -35,16 +38,23 @@ public class Member {
 
     @Column()
     private String profileImg;
+    
     @Column()
     private String profileContent;
+
     //@Column(nullable = false)
     @Column()
     private String email;
+
+
     @Column()
     private String account;
     @Column()
     private String accountName;
+
     private LocalDateTime createTime;
+
+
     //@Column(nullable = false)
     @Column()
     @Enumerated(value = EnumType.STRING)
@@ -59,9 +69,22 @@ public class Member {
     @JoinColumn(name = "refreshToken")
     private RefreshToken jwtRefreshToken;
 
+    /*@Column()
+    @Enumerated(value = EnumType.STRING)
+    //@Column(nullable = false)
+    private Role role;*/
+
+    private String roles;
+    private String provider;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "refreshToken")
+    private RefreshToken jwtRefreshToken;
+
     //빌더
     @Builder
-    public Member(String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, LocalDateTime createTime, String roles, String provider) {
+    public Member(Long id, String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, String account, String accountName, LocalDateTime createTime, String roles, String provider) {
+        this.id = id;
         this.name = name;
         this.password = password;
         this.nickName = nickName;
@@ -69,18 +92,11 @@ public class Member {
         this.profileImg = profileImg;
         this.profileContent = profileContent;
         this.email = email;
+        this.account = account;
+        this.accountName = accountName;
         this.createTime = createTime;
         this.roles = roles;
         this.provider = provider;
     }
 
-    public Member update(String name, String email, String profileImg) {
-        this.name = name;
-        this.email = email;
-        this.profileImg = profileImg;
-        return this;
-    }
-    /*public String getRoleKey() {
-        return this.role.getKey();
-    }*/
 }
