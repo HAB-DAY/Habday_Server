@@ -1,8 +1,10 @@
 package com.habday.server.domain.fundingItem;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.habday.server.constants.FundingState;
 import com.habday.server.domain.member.Member;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,9 +41,11 @@ public class FundingItem {
     private int goalPrice;
 
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate finishDate;
 
     @Column(nullable = false)
@@ -54,4 +58,19 @@ public class FundingItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberId")
     private Member member;
+
+    @Builder
+    public FundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate, FundingState status, Member member) {
+        this.fundingItemImg = fundingItemImg;
+        this.fundingName = fundingName;
+        this.fundDetail = fundDetail;
+        this.itemPrice = itemPrice;
+        this.totalPrice = totalPrice;
+        this.goalPrice = goalPrice;
+        this.startDate = startDate;
+        this.finishDate = finishDate;
+        this.status = status;
+        this.member = member;
+    }
+
 }
