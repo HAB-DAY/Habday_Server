@@ -32,17 +32,22 @@ public class RestExceptionHandler {
     @ExceptionHandler(value={CustomExceptionWithMessage.class})
     protected ResponseEntity<BaseResponse> handleCustomExceptionWithMessage(CustomExceptionWithMessage e, HttpServletRequest request) {
         log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
-        return BaseResponse.toCustomErrorResponse(e.getExceptionCode());
+        return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getDescribe());
+    }
+    @ExceptionHandler(value = { MethodArgumentNotValidException.class })
+    protected ResponseEntity<BaseResponse> handleMethodArgNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
+        log.warn(String.format("[400 Error] : %s %s", request.getMethod(), request.getRequestURI()));
+        return BaseResponse.toBasicErrorResponse(HttpStatus.BAD_REQUEST, e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
-    @ExceptionHandler(value={IamportResponseException.class, IOException.class})
+    /*@ExceptionHandler(value={IamportResponseException.class, IOException.class})
     protected ResponseEntity<BaseResponse> handleIamportResponseException(CustomExceptionWithMessage e, HttpServletRequest request) {
         log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
-        return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getMessage());
+        return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getDescribe());
     }
 
     // request param
-    /*@ExceptionHandler(value = { MissingServletRequestParameterException.class })
+    @ExceptionHandler(value = { MissingServletRequestParameterException.class })
     protected ResponseEntity<BaseResponse> handleMissingRequestParameterException(MissingServletRequestParameterException e, HttpServletRequest request) {
         log.warn(String.format("[%s Error] : %s %s", NO_REQUIRED_PARAMETER.getStatus(), request.getMethod(), request.getRequestURI()));
         return BaseResponse.toBasicErrorResponse(NO_REQUIRED_PARAMETER.getStatus(), NO_REQUIRED_PARAMETER.getMsg());

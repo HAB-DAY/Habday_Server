@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -43,16 +44,10 @@ public class VerifyIamportService {
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
 
-    //todo 사용자 billingkey 카드 정보 리스트로 가져오기
-
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequest billingKeyRequest, Long memberId){
-        String cardNumber = billingKeyRequest.getCardNumber();
-        if (cardNumber.length() != 19) //validation으로 빼기
-            throw new CustomException(CARD_NUMBER_LENGTH_INCORRECT);
-
-        String cardNumberEnd = cardNumber.substring(15, 19);
-        Payment existingPayment = paymentRepository.findByCardNumberEnd(cardNumberEnd);
+        String cardNumber = billingKeyRequest.getCard_number();
+        Payment existingPayment = paymentRepository.findByCardNumberEnd(cardNumber.substring(15, 19));
 
         if (existingPayment != null)
             throw new CustomException(CARD_ALREADY_EXIST);
@@ -60,26 +55,29 @@ public class VerifyIamportService {
         Long paymentNum = paymentRepository.countByMemberId(memberId)+1;
         String customer_uid = "uid_" + memberId + "_" + paymentNum;
 
-        IamportResponse<BillingCustomer> iamportResponse = postBillingCustomer(billingKeyRequest, customer_uid);
+        IamportResponse<BillingCustomer> iamportResponse = getBillingKeyFromIamport(billingKeyRequest, customer_uid);
+        log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
+
+        if(iamportResponse.getCode() != 0){
+            throw new CustomExceptionWithMessage(GET_BILLING_KEY_FAIL, iamportResponse.getMessage());
+        }
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        //todo 같은 아이템에 중복 펀딩 가능하게!!!(jpa가 자동으로 save를 update 처리 함)
         paymentRepository.save(Payment.builder()
                 .paymentName(billingKeyRequest.getPayment_name())
                 .billingKey(customer_uid)
                 .member(member)
-                .cardNumberEnd(cardNumberEnd)
+                .cardNumberEnd(cardNumber.substring(15, 19))
                 .build());
 
-        //todo 저장 예외
-        return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), iamportResponse == null ? "" : customer_uid, iamportResponse.getCode(), iamportResponse.getMessage());
+        return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), customer_uid, iamportResponse.getCode(), iamportResponse.getMessage());
     }//todo 오류 처리 하기 billingCustomer이 null이면 안됨!!
 
-    private IamportResponse<BillingCustomer> postBillingCustomer(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
+    private IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(
-                customer_uid, billingKeyRequest.getCardNumber(),
+                customer_uid, billingKeyRequest.getCard_number(),
                 billingKeyRequest.getExpiry(), billingKeyRequest.getBirth());
 
         billingCustomerData.setPwd2Digit(billingKeyRequest.getPwd_2digit());

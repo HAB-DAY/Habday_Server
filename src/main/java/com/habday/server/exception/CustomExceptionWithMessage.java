@@ -8,5 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class CustomExceptionWithMessage extends RuntimeException{
     private final ExceptionCode exceptionCode;
-    private final String message;
+    private final String describe;
 }

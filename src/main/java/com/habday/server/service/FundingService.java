@@ -45,7 +45,7 @@ public class FundingService {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-
+        //todo 같은 아이템에 중복 펀딩 가능하게!!!(jpa가 자동으로 save를 update 처리 함)
         try{
             fundingMemberRepository.save(FundingMember.builder()
                     .name(fundingRequestDto.getName())
