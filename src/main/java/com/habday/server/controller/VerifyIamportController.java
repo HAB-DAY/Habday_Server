@@ -40,7 +40,7 @@ public class VerifyIamportController {
     //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
-    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest) throws IamportResponseException, IOException {
+    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
         GetBillingKeyResponseDto responseDto = verifyIamportService.getBillingKey(billingKeyRequest, 1L);
         return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
