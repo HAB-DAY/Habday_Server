@@ -1,6 +1,7 @@
 package com.habday.server.exception;
 
 import com.habday.server.dto.BaseResponse;
+import com.siot.IamportRestClient.exception.IamportResponseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
+
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -24,6 +27,18 @@ public class RestExceptionHandler {
     protected ResponseEntity<BaseResponse> handleCustomException(CustomException e, HttpServletRequest request) {
         log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
         return BaseResponse.toCustomErrorResponse(e.getExceptionCode());
+    }
+
+    @ExceptionHandler(value={CustomExceptionWithMessage.class})
+    protected ResponseEntity<BaseResponse> handleCustomExceptionWithMessage(CustomExceptionWithMessage e, HttpServletRequest request) {
+        log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
+        return BaseResponse.toCustomErrorResponse(e.getExceptionCode());
+    }
+
+    @ExceptionHandler(value={IamportResponseException.class, IOException.class})
+    protected ResponseEntity<BaseResponse> handleIamportResponseException(CustomExceptionWithMessage e, HttpServletRequest request) {
+        log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
+        return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getMessage());
     }
 
     // request param

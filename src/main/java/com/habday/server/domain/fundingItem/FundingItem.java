@@ -39,9 +39,6 @@ public class FundingItem {
 
     @Column
     private int goalPrice;
-
-    @Column
-    private LocalDate startDate;
     
     @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

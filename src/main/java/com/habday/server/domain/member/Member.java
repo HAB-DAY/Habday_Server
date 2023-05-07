@@ -74,13 +74,6 @@ public class Member {
     //@Column(nullable = false)
     private Role role;*/
 
-    private String roles;
-    private String provider;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "refreshToken")
-    private RefreshToken jwtRefreshToken;
-
     //빌더
     @Builder
     public Member(Long id, String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, String account, String accountName, LocalDateTime createTime, String roles, String provider) {

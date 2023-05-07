@@ -24,14 +24,18 @@ public class Payment {
     @Column(nullable = false)
     private String billingKey;
 
+    @Column()
+    private String cardNumberEnd;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberId")
     private Member member;
 
     @Builder
-    public Payment(String paymentName, String billingKey, Member member){
+    public Payment(String paymentName, String billingKey, Member member, String cardNumberEnd){
         this.paymentName = paymentName;
         this.billingKey = billingKey;
         this.member = member;
+        this.cardNumberEnd = cardNumberEnd;
     }
 }
