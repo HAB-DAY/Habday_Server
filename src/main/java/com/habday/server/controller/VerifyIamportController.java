@@ -56,10 +56,10 @@ public class VerifyIamportController {
 
 
     /** 빌링키에 매핑된 결제 데이터 확인하기 **/
-    @GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
+    /*@GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
     public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
         return iamportClient.getBillingCustomer(customer_uid);
-    }
+    }*/
 
     /** 비인증 결제(빌링키) 방식 예약 결제(FundingController에서 연결 예정)**/
     /*@PostMapping("/noneauthpay/schedule")

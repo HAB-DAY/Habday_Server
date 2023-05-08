@@ -73,7 +73,7 @@ public class VerifyIamportService {
                 .build());
 
         return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), customer_uid, iamportResponse.getCode(), iamportResponse.getMessage());
-    }//todo 오류 처리 하기 billingCustomer이 null이면 안됨!!
+    }
 
     private IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(

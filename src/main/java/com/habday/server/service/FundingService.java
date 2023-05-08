@@ -61,7 +61,7 @@ public class FundingService {
             log.debug("FundingService save error: " + e);
             throw new CustomException(PARTICIPATE_FUNDING_SAVE_FAIL);
         }
-        IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(fundingRequestDto.getScheduleData());
+        /*IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(fundingRequestDto.getScheduleData());
         log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
         if (scheduleResult.getCode() == 1) {
             log.debug("FundingService.participateFunding 코드 1");
@@ -69,8 +69,7 @@ public class FundingService {
         }//todo 에러용 BaseResponse 따로 만들기
         //todo iamport의 code와 messsage 담기(메시지 안나옴)
 
-        //todo merchantUid와 customerUid 생성 로
-
-        return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
+        return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());*/
+        return null;//임시
     }
 }
