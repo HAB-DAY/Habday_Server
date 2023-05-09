@@ -2,6 +2,7 @@ package com.habday.server.service;
 
 import com.google.gson.Gson;
 import com.habday.server.constants.ExceptionCode;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
@@ -41,9 +42,20 @@ import static com.habday.server.constants.ExceptionCode.*;
 public class VerifyIamportService {
     private final PaymentRepository paymentRepository;
     private final MemberRepository memberRepository;
+    private final FundingItemRepository fundingItemRepository;
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
 
+
+    private String createCustomerUid(Long memberId){
+        Long paymentNum = paymentRepository.countByMemberId(memberId)+1;
+        return "cus_m" + memberId + "_p" + paymentNum;//ex) cus_m2_p2
+    }
+
+    private String createMerchantUid(Long fundingItemId, Long memberId){
+        Long itemNum = fundingItemRepository.countByIdAndMemberId(fundingItemId, memberId) + 1;
+        return "mer_f" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer_f1_m2_i2
+    }
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequest billingKeyRequest, Long memberId){
         String cardNumber = billingKeyRequest.getCard_number();
@@ -52,9 +64,7 @@ public class VerifyIamportService {
         if (existingPayment != null)
             throw new CustomException(CARD_ALREADY_EXIST);
 
-        Long paymentNum = paymentRepository.countByMemberId(memberId)+1;
-        String customer_uid = "uid_" + memberId + "_" + paymentNum;
-
+        String customer_uid = createCustomerUid(memberId);
         IamportResponse<BillingCustomer> iamportResponse = getBillingKeyFromIamport(billingKeyRequest, customer_uid);
         log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
 
@@ -101,7 +111,7 @@ public class VerifyIamportService {
         return GetPaymentListsResponseDto.of(paymentLists);
     }
 
-    public IamportResponse<List<Schedule>> noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
+    public IamportResponse<List<Schedule>> noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto){
         ScheduleEntry scheduleEntry= new ScheduleEntry(
                 scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
         scheduleEntry.setName(scheduleRequestDto.getName());
@@ -109,12 +119,15 @@ public class VerifyIamportService {
         scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
         scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
 
-        Gson gson = new Gson();
-        log.debug("scheduleEntry: " + gson.toJson(scheduleEntry));
-
         ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
         scheduleData.addSchedule(scheduleEntry);
-        return iamportClient.subscribeSchedule(scheduleData);
+        try {
+            return iamportClient.subscribeSchedule(scheduleData);
+        } catch (IamportResponseException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         //todo 매우 중요!!! 아이앰포트 서버의 결과를 반영해야 함. 저장 결과가 이상하면 에러 던지고 롤백 해야 함
         //이 결과를 fundingService에 반환해 거기서 db에 저장
