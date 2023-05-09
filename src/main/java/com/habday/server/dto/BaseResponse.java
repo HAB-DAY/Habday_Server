@@ -27,6 +27,13 @@ public class BaseResponse {
                 .status(exceptionCode.getStatus())
                 .body(BaseResponse.of(false, exceptionCode.getMsg()));
     }
+
+    public static ResponseEntity<BaseResponse> toCustomErrorWithMessageResponse(
+            ExceptionCode exceptionCode, String message) {
+        return ResponseEntity
+                .status(exceptionCode.getStatus())
+                .body(BaseResponse.of(false, message));
+    }
     public static ResponseEntity<BaseResponse> toBasicErrorResponse(HttpStatus status, String msg) {
         return ResponseEntity
                 .status(status)

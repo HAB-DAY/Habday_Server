@@ -1,15 +1,10 @@
 package com.habday.server.domain.member;
 
-import com.habday.server.constants.FundingState;
 import com.habday.server.constants.MemberState;
-import com.habday.server.domain.payment.Payment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter //@Data
@@ -21,13 +16,13 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "memberId")
     private Long id;
-
+    
     //@Column(nullable = false)
     @Column()
     private String name;
 
     private String password;
-
+    
     //@Column(nullable = false)
     @Column()
     private String nickName;
@@ -38,7 +33,7 @@ public class Member {
 
     @Column()
     private String profileImg;
-
+    
     @Column()
     private String profileContent;
 
@@ -46,30 +41,33 @@ public class Member {
     @Column()
     private String email;
 
+
     @Column()
     private String account;
-
     @Column()
     private String accountName;
 
     private LocalDateTime createTime;
 
+
     //@Column(nullable = false)
     @Column()
     @Enumerated(value = EnumType.STRING)
     private MemberState status;
+    /*@Column()
+    @Enumerated(value = EnumType.STRING)
+    //@Column(nullable = false)
+    private Role role;*/
+    private String roles;
+    private String provider;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "refreshToken")
+    private RefreshToken jwtRefreshToken;
 
     /*@Column()
     @Enumerated(value = EnumType.STRING)
     //@Column(nullable = false)
     private Role role;*/
-
-    private String roles;
-    private String provider;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "refreshToken")
-    private RefreshToken jwtRefreshToken;
 
     //빌더
     @Builder
