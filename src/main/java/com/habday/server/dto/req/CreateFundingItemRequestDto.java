@@ -1,13 +1,16 @@
 package com.habday.server.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.habday.server.constants.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
-import com.habday.server.dto.MemberProfileRequestDto;
+import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+
+import static com.habday.server.constants.FundingState.PROGRESS;
 
 @Getter
 @NoArgsConstructor
@@ -36,7 +39,7 @@ public class CreateFundingItemRequestDto {
         this.finishDate = finishDate;
     }
 
-    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate) {
+    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate, Member member) {
         return FundingItem.builder()
                 .fundingItemImg(fundingItemImg)
                 .fundingName(fundingName)
@@ -46,10 +49,13 @@ public class CreateFundingItemRequestDto {
                 .goalPrice(goalPrice)
                 .startDate(startDate)
                 .finishDate(finishDate)
+                .status(PROGRESS)
+                .member(member)
                 .build();
     }
 
-    public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate){
+    /*public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate){
         return new CreateFundingItemRequestDto(fundingItemImg, fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
     }
+     */
 }

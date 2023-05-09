@@ -1,15 +1,10 @@
 package com.habday.server.domain.member;
 
-import com.habday.server.constants.FundingState;
 import com.habday.server.constants.MemberState;
-import com.habday.server.domain.payment.Payment;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter //@Data
@@ -91,5 +86,39 @@ public class Member {
         this.roles = roles;
         this.provider = provider;
     }
+
+    public Member update(String nickName, String birthday, String profileContent, String account, String accountName) {
+        this.nickName = nickName;
+        this.birthday = birthday;
+        this.profileContent = profileContent;
+        this.account = account;
+        this.accountName = accountName;
+
+        return this;
+    }
+
+    /*public String getRoleKey() {
+        return this.role.getKey();
+    }*/
+
+    /**
+     *  refresh 생성자, setter
+     */
+    /*public void createRefreshToken(RefreshToken refreshToken) {
+        this.jwtRefreshToken = refreshToken;
+    }
+    public void SetRefreshToken(String refreshToken) {
+        this.jwtRefreshToken.setRefreshToken(refreshToken);
+    }*/
+
+    /**
+     * 사용자가 다양한 권한을 가지고 있을수 있음
+     */
+    /*public List<String> getRoleList() {
+        if (this.roles.length() > 0) {
+            return Arrays.asList(this.roles.split(","));
+        }
+        return new ArrayList<>();
+    }*/
 
 }
