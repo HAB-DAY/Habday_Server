@@ -110,8 +110,6 @@ public class NaverService {
             member = Member.builder()
                     .name(profile.response.name)
                     .password(null) //필요없으니 일단 아무거도 안넣음. 원하는데로 넣으면 됌
-                    .nickName(profile.response.nickname)
-                    .birthday(profile.response.birthday)
                     .profileImg(profile.response.profile_image)
                     .email(profile.response.email)
                     .roles("USER")
