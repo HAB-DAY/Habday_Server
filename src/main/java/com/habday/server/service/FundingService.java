@@ -8,9 +8,13 @@ import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
+import com.habday.server.domain.payment.Payment;
+import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
+import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.exception.CustomException;
+import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -32,44 +37,46 @@ public class FundingService {
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
     private final VerifyIamportService verifyIamportService;
+    private final PaymentRepository paymentRepository;
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId){
+        Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
+                orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
+        /*FundingItem selectedFunding = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID)); //todo 스케쥴 시간을 프론트에서 받아올지는 고민임.
+        Date schedule_at = java.sql.Date.valueOf(selectedFunding.getFinishDate());
+        log.debug("participateFunding date: " + schedule_at);*/
 
-        //todo save 예외처리 자세하게(없는 연관정보로 요청했다거나, 필요한 데이터 누락됐다거나 상황별 exception 자세하게
-        //todo paymentId가 없으면 데이터 저장되면 안되는데....?
+        IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(
+                NoneAuthPayScheduleRequestDto.builder()
+                        .customer_uid(selectedPayment.getBillingKey())
+                        .merchant_uid(verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId))
+                        .schedule_at(fundingRequestDto.getFundingDate())
+                        .amount(fundingRequestDto.getAmount())
+                        .name(fundingRequestDto.getName())
+                        .buyer_name(fundingRequestDto.getBuyer_name())
+                        .buyer_tel(fundingRequestDto.getBuyer_tel())
+                        .buyer_email(fundingRequestDto.getBuyer_email())
+                        .build()
+        );
+        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+        if (scheduleResult.getCode() !=0 ) {
+            throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
+        }
 
-
-        FundingItem fundingItem = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        //todo int에는 null 값이 들어갈 수 없다! 위의 로직에서 오류 남.
-
-        Member member = memberRepository.findById(memberId)
+        //todo 저장할 때 NoneAuthPayScheduleRequestDto와 ParticipateFundingRequestDto 합쳐야 하는데..
+        /*Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        //todo 같은 아이템에 중복 펀딩 가능하게!!!(jpa가 자동으로 save를 update 처리 함)
-        try{
-            fundingMemberRepository.save(FundingMember.builder()
+        fundingMemberRepository.save(FundingMember.builder()
                     .name(fundingRequestDto.getName())
                     .amount(fundingRequestDto.getAmount())
                     .message(fundingRequestDto.getMessage())
                     .fundingDate(fundingRequestDto.getFundingDate())
                     .paymentId(fundingRequestDto.getPaymentId())
-                    .fundingItem(fundingItem)
+                    .fundingItem(selectedFunding)
                     .member(member)
-                    .build()
-            );
-        }catch (Exception e){
-            log.debug("FundingService save error: " + e);
-            throw new CustomException(PARTICIPATE_FUNDING_SAVE_FAIL);
-        }
-        /*IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(fundingRequestDto.getScheduleData());
-        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
-        if (scheduleResult.getCode() == 1) {
-            log.debug("FundingService.participateFunding 코드 1");
-            throw new CustomException(PAY_SCHEDULING_FAIL);
-        }//todo 에러용 BaseResponse 따로 만들기
-        //todo iamport의 code와 messsage 담기(메시지 안나옴)
+                    .build()*/
 
-        return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());*/
-        return null;//임시
+        return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
     }
 }

@@ -1,5 +1,6 @@
 package com.habday.server.dto.req.iamport;
 
+import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -16,7 +17,8 @@ public class NoneAuthPayScheduleRequestDto {//todo customer_uidì™€ merchant_uidë
     private String buyer_tel;
     private String buyer_email;
 
-    private NoneAuthPayScheduleRequestDto(String customer_uid, String merchant_uid, Date schedule_at,
+    @Builder
+    public NoneAuthPayScheduleRequestDto(String customer_uid, String merchant_uid, Date schedule_at,
                     BigDecimal amount, String name, String buyer_name, String buyer_tel, String buyer_email){
         this.customer_uid = customer_uid;
         this.merchant_uid = merchant_uid;

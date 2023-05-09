@@ -52,7 +52,7 @@ public class VerifyIamportService {
         return "cus_m" + memberId + "_p" + paymentNum;//ex) cus_m2_p2
     }
 
-    private String createMerchantUid(Long fundingItemId, Long memberId){
+    public String createMerchantUid(Long fundingItemId, Long memberId){
         Long itemNum = fundingItemRepository.countByIdAndMemberId(fundingItemId, memberId) + 1;
         return "mer_f" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer_f1_m2_i2
     }
@@ -128,8 +128,5 @@ public class VerifyIamportService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //todo 매우 중요!!! 아이앰포트 서버의 결과를 반영해야 함. 저장 결과가 이상하면 에러 던지고 롤백 해야 함
-        //이 결과를 fundingService에 반환해 거기서 db에 저장
     }
 }

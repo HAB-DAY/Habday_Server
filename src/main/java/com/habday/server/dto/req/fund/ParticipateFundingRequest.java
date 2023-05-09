@@ -6,6 +6,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 public class ParticipateFundingRequest {
@@ -18,7 +19,7 @@ public class ParticipateFundingRequest {
     private String message;
 
     @NotNull(message="결제 시간은 필수입니다.")
-    private LocalDate fundingDate;
+    private Date fundingDate;
 
     @NotNull(message="금액은 필수입니다.")
     @Min(value = 101, message="최소 금액은 101원 입니다.")
