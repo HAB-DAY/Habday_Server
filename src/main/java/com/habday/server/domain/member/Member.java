@@ -89,10 +89,12 @@ public class Member {
         this.provider = provider;
     }
 
-    public Member update(String name, String email, String profileImg) {
-        this.name = name;
-        this.email = email;
-        this.profileImg = profileImg;
+    public Member update(String nickName, String birthday, String profileContent, String account, String accountName) {
+        this.nickName = nickName;
+        this.birthday = birthday;
+        this.profileContent = profileContent;
+        this.account = account;
+        this.accountName = accountName;
 
         return this;
     }

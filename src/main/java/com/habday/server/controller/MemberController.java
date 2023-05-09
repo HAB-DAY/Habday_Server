@@ -8,6 +8,7 @@ import com.habday.server.dto.MemberProfileRequestDto;
 import com.habday.server.dto.MemberProfileResponse;
 import com.habday.server.dto.req.CreateFundingItemRequestDto;
 import com.habday.server.dto.res.CreateFundingItemResponse;
+import com.habday.server.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,12 @@ public class MemberController {
     private final MemberRepository memberRepository;
     private final FundingItemRepository fundingItemRepository;
 
-    @PostMapping("/save/memberProfile")
-    public ResponseEntity<MemberProfileResponse> saveMemberProfile(@RequestBody MemberProfileRequestDto request) {
-        memberRepository.save(request.toVerifyMemberProfile(request.getId(), request.getNickName(), request.getBirthday(), request.getProfileContent(), request.getAccount(), request.getAccountName()));
+    private final MemberService memberService;
+
+
+    @PutMapping("/save/memberProfile/{memberId}")
+    public ResponseEntity<MemberProfileResponse> saveMemberProfile(@PathVariable("memberId") Long memberId, @RequestBody MemberProfileRequestDto request) {
+        memberService.updateMemberProfile(memberId, request);
         return MemberProfileResponse.newResponse(VERIFY_MEMBER_PROFILE_SUCCESS);
     }
 
