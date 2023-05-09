@@ -1,10 +1,12 @@
 package com.habday.server.domain.member;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.habday.server.constants.MemberState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter //@Data
@@ -29,7 +31,8 @@ public class Member {
 
     //@Column(nullable = false)
     @Column()
-    private String birthday;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate birthday;
 
     @Column()
     private String profileImg;
@@ -71,7 +74,7 @@ public class Member {
 
     //빌더
     @Builder
-    public Member(Long id, String name, String password, String nickName, String birthday, String profileImg, String profileContent, String email, String account, String accountName, LocalDateTime createTime, String roles, String provider) {
+    public Member(Long id, String name, String password, String nickName, LocalDate birthday, String profileImg, String profileContent, String email, String account, String accountName, LocalDateTime createTime, String roles, String provider) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -87,7 +90,7 @@ public class Member {
         this.provider = provider;
     }
 
-    public Member update(String nickName, String birthday, String profileContent, String account, String accountName) {
+    public Member update(String nickName, LocalDate birthday, String profileContent, String account, String accountName) {
         this.nickName = nickName;
         this.birthday = birthday;
         this.profileContent = profileContent;

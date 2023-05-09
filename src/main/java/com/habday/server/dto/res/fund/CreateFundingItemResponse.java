@@ -1,8 +1,7 @@
-package com.habday.server.dto.res;
+package com.habday.server.dto.res.fund;
 
 import com.habday.server.constants.SuccessCode;
 import com.habday.server.dto.BaseResponse;
-import com.habday.server.dto.MemberProfileResponse;
 import org.springframework.http.ResponseEntity;
 
 public class CreateFundingItemResponse extends BaseResponse {

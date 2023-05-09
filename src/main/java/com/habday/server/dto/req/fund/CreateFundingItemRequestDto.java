@@ -1,4 +1,4 @@
-package com.habday.server.dto.req;
+package com.habday.server.dto.req.fund;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.habday.server.constants.FundingState;

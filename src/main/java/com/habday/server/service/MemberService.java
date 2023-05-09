@@ -1,16 +1,12 @@
 package com.habday.server.service;
 
 import com.habday.server.constants.CustomException;
-import com.habday.server.domain.User;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
-import com.habday.server.dto.MemberProfileRequestDto;
-import com.habday.server.repository.UserRepository;
+import com.habday.server.dto.req.member.MemberProfileRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 

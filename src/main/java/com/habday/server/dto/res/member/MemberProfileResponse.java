@@ -1,6 +1,7 @@
-package com.habday.server.dto;
+package com.habday.server.dto.res.member;
 
 import com.habday.server.constants.SuccessCode;
+import com.habday.server.dto.BaseResponse;
 import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 

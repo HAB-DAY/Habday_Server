@@ -1,15 +1,17 @@
-package com.habday.server.dto;
+package com.habday.server.dto.req.member;
 
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Getter
 @NoArgsConstructor
 public class MemberProfileRequestDto {
     private String nickName;
-    private String birthday;
+    private LocalDate birthday;
     private String profileContent;
     private String account;
     private String accountName;
