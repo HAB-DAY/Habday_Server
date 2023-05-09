@@ -27,7 +27,7 @@ public class FundingController {
     private final FundingService fundingService;
 
     @PostMapping("/participateFunding")
-    public @ResponseBody ResponseEntity<ParticipateFundingResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto) throws IamportResponseException, IOException {
+    public @ResponseBody ResponseEntity<ParticipateFundingResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto){
 
         ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,1L);
         return ParticipateFundingResponse.newResponse(PARTICIPATE_FUNDING_SUCCESS, responseDto);

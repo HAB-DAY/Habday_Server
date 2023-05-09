@@ -33,7 +33,7 @@ public class FundingService {
     private final MemberRepository memberRepository;
     private final VerifyIamportService verifyIamportService;
     @Transactional//예외 발생 시 롤백해줌
-    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) throws IamportResponseException, IOException {
+    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId){
 
         //todo save 예외처리 자세하게(없는 연관정보로 요청했다거나, 필요한 데이터 누락됐다거나 상황별 exception 자세하게
         //todo paymentId가 없으면 데이터 저장되면 안되는데....?
