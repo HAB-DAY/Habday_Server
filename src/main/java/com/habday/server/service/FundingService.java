@@ -2,6 +2,7 @@ package com.habday.server.service;
 
 import com.google.gson.Gson;
 import com.habday.server.constants.ExceptionCode;
+import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -24,6 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -40,17 +44,19 @@ public class FundingService {
     private final PaymentRepository paymentRepository;
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId){
+        String merchantUid = verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
+        log.debug("createMerchantUid: " + merchantUid);
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
-        /*FundingItem selectedFunding = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID)); //todo 스케쥴 시간을 프론트에서 받아올지는 고민임.
-        Date schedule_at = java.sql.Date.valueOf(selectedFunding.getFinishDate());
-        log.debug("participateFunding date: " + schedule_at);*/
+        FundingItem fundingItem = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.builder()
                         .customer_uid(selectedPayment.getBillingKey())
-                        .merchant_uid(verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId))
+                        .merchant_uid(merchantUid)
                         .schedule_at(fundingRequestDto.getFundingDate())
                         .amount(fundingRequestDto.getAmount())
                         .name(fundingRequestDto.getName())
@@ -64,19 +70,36 @@ public class FundingService {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
-        //todo 저장할 때 NoneAuthPayScheduleRequestDto와 ParticipateFundingRequestDto 합쳐야 하는데..
-        /*Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        log.debug("FundingService date: " + LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()));
         fundingMemberRepository.save(FundingMember.builder()
                     .name(fundingRequestDto.getName())
                     .amount(fundingRequestDto.getAmount())
                     .message(fundingRequestDto.getMessage())
-                    .fundingDate(fundingRequestDto.getFundingDate())
+                    .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
                     .paymentId(fundingRequestDto.getPaymentId())
-                    .fundingItem(selectedFunding)
+                    .payment_status(ScheduledPayState.ready)
+                    .merchant_id(merchantUid)
+                    .imp_uid(selectedPayment.getBillingKey())
+                    .fundingItem(fundingItem)
                     .member(member)
-                    .build()*/
+                    .build());
+
+        BigDecimal totalPrice = calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
+        int percentage = calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
+        fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
+    }
+
+    private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
+        if (totalPrice == null) {
+            log.debug("fundingService: totalPrice null임" + totalPrice);
+            totalPrice = BigDecimal.ZERO;
+        }
+        return amount.add(totalPrice);
+    }
+
+    private int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
+        return totalPrice.divide(goalPrice).intValue();
     }
 }

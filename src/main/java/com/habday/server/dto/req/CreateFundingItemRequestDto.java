@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -16,16 +17,16 @@ public class CreateFundingItemRequestDto {
     private String fundingItemImg;
     private String fundingName;
     private String fundDetail;
-    private int itemPrice;
-    private int totalPrice;
-    private int goalPrice;
+    private BigDecimal itemPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal goalPrice;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate finishDate;
 
     @Builder
-    public CreateFundingItemRequestDto(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate) {
+    public CreateFundingItemRequestDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
@@ -36,7 +37,7 @@ public class CreateFundingItemRequestDto {
         this.finishDate = finishDate;
     }
 
-    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate) {
+    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
         return FundingItem.builder()
                 .fundingItemImg(fundingItemImg)
                 .fundingName(fundingName)
@@ -49,7 +50,7 @@ public class CreateFundingItemRequestDto {
                 .build();
     }
 
-    public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate){
+    public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
         return new CreateFundingItemRequestDto(fundingItemImg, fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
     }
 }
