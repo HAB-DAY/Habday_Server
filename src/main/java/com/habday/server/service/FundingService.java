@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -42,10 +43,29 @@ public class FundingService {
     private final MemberRepository memberRepository;
     private final VerifyIamportService verifyIamportService;
     private final PaymentRepository paymentRepository;
+
+    private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
+        if (totalPrice == null) {
+            log.debug("fundingService: totalPrice null임" + totalPrice);
+            totalPrice = BigDecimal.ZERO;
+        }
+        return amount.add(totalPrice);
+    }
+
+    private int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
+        return totalPrice.divide(goalPrice).intValue();
+    }
+
+    private Date calPayDate(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, 30);//펀딩 종료 30분 후에 결제
+        return new Date(calendar.getTimeInMillis());
+    }
+
     @Transactional//예외 발생 시 롤백해줌
-    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId){
+    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
         String merchantUid = verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
-        log.debug("createMerchantUid: " + merchantUid);
 
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
@@ -54,7 +74,8 @@ public class FundingService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        Date scheduleDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date scheduleDate = calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
 
         IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(
@@ -74,36 +95,24 @@ public class FundingService {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
-        log.debug("FundingService date: " + LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()));
+
         fundingMemberRepository.save(FundingMember.builder()
-                    .name(fundingRequestDto.getName())
-                    .amount(fundingRequestDto.getAmount())
-                    .message(fundingRequestDto.getMessage())
-                    .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
-                    .paymentId(fundingRequestDto.getPaymentId())
-                    .payment_status(ScheduledPayState.ready)
-                    .merchant_id(merchantUid)
-                    .imp_uid(selectedPayment.getBillingKey())
-                    .fundingItem(fundingItem)
-                    .member(member)
-                    .build());
+                .name(fundingRequestDto.getName())
+                .amount(fundingRequestDto.getAmount())
+                .message(fundingRequestDto.getMessage())
+                .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
+                .paymentId(fundingRequestDto.getPaymentId())
+                .payment_status(ScheduledPayState.ready)
+                .merchant_id(merchantUid)
+                .imp_uid(selectedPayment.getBillingKey())
+                .fundingItem(fundingItem)
+                .member(member)
+                .build());
 
         BigDecimal totalPrice = calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
         int percentage = calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
         fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
-    }
-
-    private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
-        if (totalPrice == null) {
-            log.debug("fundingService: totalPrice null임" + totalPrice);
-            totalPrice = BigDecimal.ZERO;
-        }
-        return amount.add(totalPrice);
-    }
-
-    private int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
-        return totalPrice.divide(goalPrice).intValue();
     }
 }

@@ -81,7 +81,7 @@ public class VerifyIamportController {
     /**예약결제 확인**/
     @GetMapping("/noneauthpay/showschedules/{customer_uid}")
     public @ResponseBody IamportResponse<ScheduleList> showSchedules(@PathVariable String customer_uid, @RequestParam String schedule_status, @RequestParam int page) throws IamportResponseException, IOException {
-        GetScheduleData getScheduleData = new GetScheduleData(1682265600, 1682344800, schedule_status, page, 8);
+        GetScheduleData getScheduleData = new GetScheduleData(1683991752, 1686733200, schedule_status, page, 8);
         return iamportClient.getPaymentSchedule(getScheduleData);
     }
 
