@@ -38,7 +38,7 @@ public class FundingService {
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
-    private final PayService verifyIamportService;
+    private final PayService payService;
     private final PaymentRepository paymentRepository;
 
     private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
@@ -62,7 +62,7 @@ public class FundingService {
 
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
-        String merchantUid = verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
+        String merchantUid = payService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
 
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
@@ -75,7 +75,7 @@ public class FundingService {
         Date scheduleDate = calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
 
-        IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(
+        IamportResponse<List<Schedule>> scheduleResult =  payService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.builder()
                         .customer_uid(selectedPayment.getBillingKey())
                         .merchant_uid(merchantUid)

@@ -8,11 +8,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@DynamicInsert
 @Getter
 @NoArgsConstructor
 @Entity
@@ -48,11 +51,14 @@ public class FundingMember{
     @Column
     private String imp_uid;
 
-    @Column
+    @ColumnDefault("0")
     private BigDecimal cancel_amount;
 
     @Column
     private String reason;
+
+    @Column
+    private LocalDate cancelDate;
 
     @Column
     private String fail_reason;
@@ -79,6 +85,14 @@ public class FundingMember{
         this.imp_uid = imp_uid;
         this.fundingItem = fundingItem;
         this.member = member;
+    }
+
+    public FundingMember updateCancel(BigDecimal cancel_amount, String reason, ScheduledPayState payment_status, LocalDate cancelDate){
+        this.cancel_amount = cancel_amount;
+        this.reason = reason;
+        this.payment_status = payment_status;
+        this.cancelDate = cancelDate;
+        return this;
     }
 
 }

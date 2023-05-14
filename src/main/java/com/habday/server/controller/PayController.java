@@ -1,12 +1,8 @@
 package com.habday.server.controller;
 
 import com.habday.server.constants.ScheduledPayState;
-import com.habday.server.constants.SuccessCode;
 import com.habday.server.dto.req.iamport.*;
-import com.habday.server.dto.res.iamport.GetBillingKeyResponse;
-import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
-import com.habday.server.dto.res.iamport.GetPaymentListsResponse;
-import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
+import com.habday.server.dto.res.iamport.*;
 import com.habday.server.service.PayService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -24,7 +20,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.habday.server.constants.SuccessCode.CREATE_BILLING_KEY_SUCCESS;
+import static com.habday.server.constants.SuccessCode.*;
 
 @Slf4j
 @Controller
@@ -34,21 +30,21 @@ public class PayController {
     // 생성자를 통해 REST API 와 REST API secret 입력
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
-    private final PayService verifyIamportService;
+    private final PayService payService;
 
     //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
     public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
-        GetBillingKeyResponseDto responseDto = verifyIamportService.getBillingKey(billingKeyRequest, 1L);
+        GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, 1L);
         return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
 
     /** 저장된 결제정보 가져오기**/
     @GetMapping("/noneauthpay/getPaymentLists") //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
     public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(){
-        GetPaymentListsResponseDto responseDto = verifyIamportService.getPaymentLists(1L);
-        return GetPaymentListsResponse.newResponse(SuccessCode.GET_PAYMENT_LISTS_SUCCESS, responseDto);
+        GetPaymentListsResponseDto responseDto = payService.getPaymentLists(1L);
+        return GetPaymentListsResponse.newResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
     }
 
 
@@ -68,10 +64,9 @@ public class PayController {
     //todo null체크
     /**예약 취소**/
     @PostMapping("/noneauthpay/unschedule")
-    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto) throws IamportResponseException, IOException {
-        UnscheduleData unscheduleData = new UnscheduleData(unscheduleRequestDto.getCustomer_uid());
-        unscheduleData.addMerchantUid(unscheduleRequestDto.getMerchant_uid());//누락되면 빌링키에 관련된 모든 예약정보 일괄취소
-        return iamportClient.unsubscribeSchedule(unscheduleData);
+    public @ResponseBody ResponseEntity<UnscheduleResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){
+        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, 1L);
+        return UnscheduleResponse.newResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
 
 
@@ -86,7 +81,7 @@ public class PayController {
 
     /** 결제 취소 **/
     @PostMapping("/cancel")
-    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayReqeustDto cancelPayReqeustDto) throws IamportResponseException, IOException {
+    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayRequestDto cancelPayRequestDto) throws IamportResponseException, IOException {
         //상품번호로 db 검색해서 (imp_uid, amount, cancel_amount) 가져오기
         BigDecimal amount = new BigDecimal(101); //
         BigDecimal cancel_amount = BigDecimal.ZERO;
@@ -95,9 +90,9 @@ public class PayController {
         if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
             return new IamportResponse<>();
         }
-        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayReqeustDto.getCancel_request_amount());
+        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayRequestDto.getCancel_request_amount());
         cancelData.setChecksum(cancelableAmount);
-        cancelData.setReason(cancelPayReqeustDto.getReason());
+        cancelData.setReason(cancelPayRequestDto.getReason());
         log.debug("cancel 완료 직전임");
         return iamportClient.cancelPaymentByImpUid(cancelData);
     }
