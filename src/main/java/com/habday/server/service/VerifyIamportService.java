@@ -1,8 +1,7 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
-import com.habday.server.constants.ExceptionCode;
-import com.habday.server.domain.fundingItem.FundingItemRepository;
+import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
@@ -42,7 +41,7 @@ import static com.habday.server.constants.ExceptionCode.*;
 public class VerifyIamportService {
     private final PaymentRepository paymentRepository;
     private final MemberRepository memberRepository;
-    private final FundingItemRepository fundingItemRepository;
+    private final FundingMemberRepository fundingMemberRepository;
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
 
@@ -53,7 +52,7 @@ public class VerifyIamportService {
     }
 
     public String createMerchantUid(Long fundingItemId, Long memberId){
-        Long itemNum = fundingItemRepository.countByIdAndMemberId(fundingItemId, memberId) + 1;
+        Long itemNum = fundingMemberRepository.countByFundingItemIdAndMemberId(fundingItemId, memberId) + 1;
         return "mer_f" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer_f1_m2_i2
     }
     @Transactional

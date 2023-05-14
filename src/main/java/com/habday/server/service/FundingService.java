@@ -46,6 +46,7 @@ public class FundingService {
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId){
         String merchantUid = verifyIamportService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
         log.debug("createMerchantUid: " + merchantUid);
+
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
         FundingItem fundingItem = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
@@ -53,11 +54,14 @@ public class FundingService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
+        Date scheduleDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        log.debug("schedule date: " + scheduleDate);
+
         IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.builder()
                         .customer_uid(selectedPayment.getBillingKey())
                         .merchant_uid(merchantUid)
-                        .schedule_at(fundingRequestDto.getFundingDate())
+                        .schedule_at(scheduleDate)
                         .amount(fundingRequestDto.getAmount())
                         .name(fundingRequestDto.getName())
                         .buyer_name(fundingRequestDto.getBuyer_name())
