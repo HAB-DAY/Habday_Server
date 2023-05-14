@@ -38,6 +38,7 @@ public class FundingService {
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
+    private final IamportService iamportService;
     private final PayService payService;
     private final PaymentRepository paymentRepository;
 
@@ -75,7 +76,7 @@ public class FundingService {
         Date scheduleDate = calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
 
-        IamportResponse<List<Schedule>> scheduleResult =  payService.noneAuthPaySchedule(
+        IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.builder()
                         .customer_uid(selectedPayment.getBillingKey())
                         .merchant_uid(merchantUid)

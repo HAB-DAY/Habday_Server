@@ -10,7 +10,6 @@ import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
-import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto.PaymentList;
@@ -18,11 +17,7 @@ import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
 import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
-import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.BillingCustomerData;
-import com.siot.IamportRestClient.request.ScheduleData;
-import com.siot.IamportRestClient.request.ScheduleEntry;
 import com.siot.IamportRestClient.request.UnscheduleData;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
@@ -48,8 +43,7 @@ public class PayService {
     private final MemberRepository memberRepository;
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
-    private final IamportClient iamportClient =
-            new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
+    private final IamportService iamportService;
 
 
     private String createCustomerUid(Long memberId){
@@ -70,7 +64,7 @@ public class PayService {
             throw new CustomException(CARD_ALREADY_EXIST);
 
         String customer_uid = createCustomerUid(memberId);
-        IamportResponse<BillingCustomer> iamportResponse = getBillingKeyFromIamport(billingKeyRequest, customer_uid);
+        IamportResponse<BillingCustomer> iamportResponse = iamportService.getBillingKeyFromIamport(billingKeyRequest, customer_uid);
         log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
 
         if(iamportResponse.getCode() != 0){
@@ -90,23 +84,6 @@ public class PayService {
         return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), customer_uid, iamportResponse.getCode(), iamportResponse.getMessage());
     }
 
-    private IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
-        BillingCustomerData billingCustomerData = new BillingCustomerData(
-                customer_uid, billingKeyRequest.getCard_number(),
-                billingKeyRequest.getExpiry(), billingKeyRequest.getBirth());
-
-        billingCustomerData.setPwd2Digit(billingKeyRequest.getPwd_2digit());
-        billingCustomerData.setPg("nice.nictest04m");
-
-        try {
-            return iamportClient.postBillingCustomer(customer_uid, billingCustomerData);
-        } catch (IOException e) {
-            throw new CustomException(BILLING_KEY_INTERNAL_ERROR);
-        } catch (IamportResponseException e) {
-            throw new CustomException(BILLING_KEY_INTERNAL_ERROR);
-        }
-    }
-
     public GetPaymentListsResponseDto getPaymentLists(Long memberId){
         List<PaymentList> paymentLists =  paymentRepository.findByMemberId(memberId);
         if (paymentLists == null){
@@ -114,40 +91,6 @@ public class PayService {
         }
 
         return GetPaymentListsResponseDto.of(paymentLists);
-    }
-
-    public IamportResponse<List<Schedule>> noneAuthPaySchedule(NoneAuthPayScheduleRequestDto scheduleRequestDto){
-        ScheduleEntry scheduleEntry= new ScheduleEntry(
-                scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
-        scheduleEntry.setName(scheduleRequestDto.getName());
-        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
-        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
-        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
-
-        ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
-        scheduleData.addSchedule(scheduleEntry);
-        try {
-            return iamportClient.subscribeSchedule(scheduleData);
-        } catch (IamportResponseException e) {
-            throw new CustomException(PAY_SCHEDULING_INTERNAL_ERROR);
-        } catch (IOException e) {
-            throw new CustomException(PAY_SCHEDULING_INTERNAL_ERROR);
-        }
-    }
-
-    private IamportResponse<List<Schedule>> unscheduleFromIamport(Long paymentId, String merchant_uid){
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
-
-        UnscheduleData unscheduleData = new UnscheduleData(payment.getBillingKey());//paymentId 주기
-        unscheduleData.addMerchantUid(merchant_uid);//누락되면 빌링키에 관련된 모든 예약정보 일괄취소
-        try {
-            return iamportClient.unsubscribeSchedule(unscheduleData);
-        } catch (IamportResponseException e) {
-            throw new CustomException(PAY_UNSCHEDULING_INTERNAL_ERROR);
-        } catch (IOException e) {
-            throw new CustomException(PAY_UNSCHEDULING_INTERNAL_ERROR);
-        }
     }
 
     public UnscheduleResponseDto noneAuthPayUnschedule(NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, Long memberId){
@@ -162,7 +105,7 @@ public class PayService {
             throw new CustomException(ALREADY_CANCELED);
         }
 
-        IamportResponse<List<Schedule>> iamportResponse = unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchant_id());
+        IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchant_id());
 
         if(iamportResponse.getCode() != 0){
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_INTERNAL_ERROR, iamportResponse.getMessage());
