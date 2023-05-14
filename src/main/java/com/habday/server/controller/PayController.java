@@ -1,6 +1,5 @@
 package com.habday.server.controller;
 
-import com.google.gson.Gson;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.constants.SuccessCode;
 import com.habday.server.dto.req.iamport.*;
@@ -8,17 +7,15 @@ import com.habday.server.dto.res.iamport.GetBillingKeyResponse;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponse;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
-import com.habday.server.service.VerifyIamportService;
+import com.habday.server.service.PayService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.*;
 import com.siot.IamportRestClient.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,11 +30,11 @@ import static com.habday.server.constants.SuccessCode.CREATE_BILLING_KEY_SUCCESS
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/verifyIamport")
-public class VerifyIamportController {
+public class PayController {
     // 생성자를 통해 REST API 와 REST API secret 입력
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
-    private final VerifyIamportService verifyIamportService;
+    private final PayService verifyIamportService;
 
     //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/

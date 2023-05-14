@@ -23,13 +23,9 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.PropertyValueException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceException;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -38,7 +34,7 @@ import static com.habday.server.constants.ExceptionCode.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class VerifyIamportService {
+public class PayService {
     private final PaymentRepository paymentRepository;
     private final MemberRepository memberRepository;
     private final FundingMemberRepository fundingMemberRepository;

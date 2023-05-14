@@ -1,7 +1,6 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
-import com.habday.server.constants.ExceptionCode;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
@@ -16,7 +15,6 @@ import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
-import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -41,7 +38,7 @@ public class FundingService {
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
-    private final VerifyIamportService verifyIamportService;
+    private final PayService verifyIamportService;
     private final PaymentRepository paymentRepository;
 
     private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
