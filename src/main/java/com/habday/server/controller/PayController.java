@@ -1,63 +1,62 @@
 package com.habday.server.controller;
 
-import com.google.gson.Gson;
 import com.habday.server.constants.ScheduledPayState;
-import com.habday.server.constants.SuccessCode;
+import com.habday.server.domain.fundingMember.FundingMember;
+import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.dto.req.iamport.*;
-import com.habday.server.dto.res.iamport.GetBillingKeyResponse;
-import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
-import com.habday.server.dto.res.iamport.GetPaymentListsResponse;
-import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
-import com.habday.server.service.VerifyIamportService;
+import com.habday.server.dto.res.iamport.*;
+import com.habday.server.exception.CustomExceptionWithMessage;
+import com.habday.server.service.PayService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.*;
 import com.siot.IamportRestClient.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
 
-import static com.habday.server.constants.SuccessCode.CREATE_BILLING_KEY_SUCCESS;
+import static com.habday.server.constants.ExceptionCode.WEBHOOK_FAIL;
+import static com.habday.server.constants.ScheduledPayState.fail;
+import static com.habday.server.constants.SuccessCode.*;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/verifyIamport")
-public class VerifyIamportController {
+public class PayController {
     // 생성자를 통해 REST API 와 REST API secret 입력
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
-    private final VerifyIamportService verifyIamportService;
+    private final PayService payService;
+    private final FundingMemberRepository fundingMemberRepository;
 
-    //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
-    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
-        GetBillingKeyResponseDto responseDto = verifyIamportService.getBillingKey(billingKeyRequest, 1L);
+    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
+        GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, 1L);
         return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
 
     /** 저장된 결제정보 가져오기**/
     @GetMapping("/noneauthpay/getPaymentLists") //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
     public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(){
-        GetPaymentListsResponseDto responseDto = verifyIamportService.getPaymentLists(1L);
-        return GetPaymentListsResponse.newResponse(SuccessCode.GET_PAYMENT_LISTS_SUCCESS, responseDto);
+        GetPaymentListsResponseDto responseDto = payService.getPaymentLists(1L);
+        return GetPaymentListsResponse.newResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
     }
 
 
     /** 빌링키에 매핑된 결제 데이터 확인하기 **/
-    @GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
+    /*@GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
     public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
         return iamportClient.getBillingCustomer(customer_uid);
-    }
+    }*/
 
     /** 비인증 결제(빌링키) 방식 예약 결제(FundingController에서 연결 예정)**/
     /*@PostMapping("/noneauthpay/schedule")
@@ -69,25 +68,22 @@ public class VerifyIamportController {
     //todo null체크
     /**예약 취소**/
     @PostMapping("/noneauthpay/unschedule")
-    public @ResponseBody IamportResponse<List<Schedule>> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto) throws IamportResponseException, IOException {
-        UnscheduleData unscheduleData = new UnscheduleData(unscheduleRequestDto.getCustomer_uid());
-        unscheduleData.addMerchantUid(unscheduleRequestDto.getMerchant_uid());//누락되면 빌링키에 관련된 모든 예약정보 일괄취소
-        return iamportClient.unsubscribeSchedule(unscheduleData);
+    public @ResponseBody ResponseEntity<UnscheduleResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){
+        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, 1L);
+        return UnscheduleResponse.newResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
 
 
-    /**예약결제 확인**/
-    @GetMapping("/noneauthpay/showschedules/{customer_uid}")
-    public @ResponseBody IamportResponse<ScheduleList> showSchedules(@PathVariable String customer_uid, @RequestParam String schedule_status, @RequestParam int page) throws IamportResponseException, IOException {
-        GetScheduleData getScheduleData = new GetScheduleData(1682265600, 1682344800, schedule_status, page, 8);
-        return iamportClient.getPaymentSchedule(getScheduleData);
+    /** 예약결제 확인 **/
+    @GetMapping("/noneauthpay/showschedules")
+    public @ResponseBody IamportResponse<ScheduleList> showSchedules(@RequestBody ShowSchedulesRequestDto showSchedulesRequestDto){
+        return payService.showSchedules(showSchedulesRequestDto);
     }
-
 
 
     /** 결제 취소 **/
     @PostMapping("/cancel")
-    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayReqeustDto cancelPayReqeustDto) throws IamportResponseException, IOException {
+    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayRequestDto cancelPayRequestDto) throws IamportResponseException, IOException {
         //상품번호로 db 검색해서 (imp_uid, amount, cancel_amount) 가져오기
         BigDecimal amount = new BigDecimal(101); //
         BigDecimal cancel_amount = BigDecimal.ZERO;
@@ -96,9 +92,9 @@ public class VerifyIamportController {
         if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
             return new IamportResponse<>();
         }
-        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayReqeustDto.getCancel_request_amount());
+        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayRequestDto.getCancel_request_amount());
         cancelData.setChecksum(cancelableAmount);
-        cancelData.setReason(cancelPayReqeustDto.getReason());
+        cancelData.setReason(cancelPayRequestDto.getReason());
         log.debug("cancel 완료 직전임");
         return iamportClient.cancelPaymentByImpUid(cancelData);
     }
@@ -117,9 +113,12 @@ public class VerifyIamportController {
         }
 
         IamportResponse<Payment> response = iamportClient.paymentByImpUid(callbackRequestDto.getImp_uid());
+
+        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
         //order db에 저장된 요청 금액 == response로 받은 imp_uid에서 보낸 금액이 일치하는지 확인-> db에 저장
-        if (callbackRequestDto.getStatus() == ScheduledPayState.fail.getMsg()){
-            log.debug("callback 리스폰스 호출/: " + response.getResponse().getFailReason());
+        if (callbackRequestDto.getStatus() == fail.getMsg()){
+            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
+            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
         }
 
         //todo db에 저장하기
