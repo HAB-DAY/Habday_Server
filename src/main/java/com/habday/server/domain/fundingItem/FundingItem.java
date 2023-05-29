@@ -35,7 +35,7 @@ public class FundingItem {
     private String fundDetail;
 
     @Column
-    private BigDecimal itemPrice;//링크 첨부?
+    private BigDecimal itemPrice;
 
     @ColumnDefault("0")
     private BigDecimal totalPrice;

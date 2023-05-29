@@ -13,6 +13,7 @@ import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
+import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
@@ -112,5 +113,27 @@ public class FundingService {
         fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
+    }
+
+    public ShowFundingContentResponseDto showFundingContent(Long fundingItemId){
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        Member member = fundingItem.getMember();
+        if (member == null)
+            throw new CustomException(NO_MEMBER_ID_SAVED);
+
+        return ShowFundingContentResponseDto.builder()
+                .fundingItemImg(fundingItem.getFundingItemImg())
+                .fundingName(fundingItem.getFundingName())
+                .fundDetail(fundingItem.getFundDetail())
+                .itemPrice(fundingItem.getItemPrice())
+                .totalPrice(fundingItem.getTotalPrice())
+                .goalPrice(fundingItem.getGoalPrice())
+                .startDate(fundingItem.getStartDate())
+                .finishDate(fundingItem.getFinishDate())
+                .percentage(fundingItem.getPercentage())
+                .status(fundingItem.getStatus())
+                .hostName(member.getName())
+                .build();
     }
 }
