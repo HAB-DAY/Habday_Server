@@ -1,8 +1,11 @@
 package com.habday.server.controller;
 
 import com.habday.server.constants.ScheduledPayState;
+import com.habday.server.domain.fundingMember.FundingMember;
+import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.res.iamport.*;
+import com.habday.server.exception.CustomExceptionWithMessage;
 import com.habday.server.service.PayService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -18,8 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
 
+import static com.habday.server.constants.ExceptionCode.WEBHOOK_FAIL;
+import static com.habday.server.constants.ScheduledPayState.fail;
 import static com.habday.server.constants.SuccessCode.*;
 
 @Slf4j
@@ -31,8 +35,8 @@ public class PayController {
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
     private final PayService payService;
+    private final FundingMemberRepository fundingMemberRepository;
 
-    //todo 예외 throw 없애기
     /** 아이앰포트 rest api로 빌링키 획득하기 **/
     @PostMapping("/noneauthpay/getBillingKey")
     public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
@@ -70,13 +74,11 @@ public class PayController {
     }
 
 
-    /**예약결제 확인**/
-    @GetMapping("/noneauthpay/showschedules/{customer_uid}")
-    public @ResponseBody IamportResponse<ScheduleList> showSchedules(@PathVariable String customer_uid, @RequestParam String schedule_status, @RequestParam int page) throws IamportResponseException, IOException {
-        GetScheduleData getScheduleData = new GetScheduleData(1683991752, 1686733200, schedule_status, page, 8);
-        return iamportClient.getPaymentSchedule(getScheduleData);
+    /** 예약결제 확인 **/
+    @GetMapping("/noneauthpay/showschedules")
+    public @ResponseBody IamportResponse<ScheduleList> showSchedules(@RequestBody ShowSchedulesRequestDto showSchedulesRequestDto){
+        return payService.showSchedules(showSchedulesRequestDto);
     }
-
 
 
     /** 결제 취소 **/
@@ -111,9 +113,12 @@ public class PayController {
         }
 
         IamportResponse<Payment> response = iamportClient.paymentByImpUid(callbackRequestDto.getImp_uid());
+
+        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
         //order db에 저장된 요청 금액 == response로 받은 imp_uid에서 보낸 금액이 일치하는지 확인-> db에 저장
-        if (callbackRequestDto.getStatus() == ScheduledPayState.fail.getMsg()){
-            log.debug("callback 리스폰스 호출/: " + response.getResponse().getFailReason());
+        if (callbackRequestDto.getStatus() == fail.getMsg()){
+            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
+            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
         }
 
         //todo db에 저장하기

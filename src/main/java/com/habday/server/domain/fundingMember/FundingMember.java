@@ -45,14 +45,15 @@ public class FundingMember{
     @Enumerated(value = EnumType.STRING)
     private ScheduledPayState payment_status;
 
-    @Column
-    private String merchant_id;
+    @Column(name = "merchant_id")
+    private String merchantId;
 
-    @Column
-    private String imp_uid;
+    @Column(name = "imp_uid")
+    private String impUid;
 
     @ColumnDefault("0")
-    private BigDecimal cancel_amount;
+    @Column(name = "cancel_amount")
+    private BigDecimal cancelAmount;
 
     @Column
     private String reason;
@@ -73,7 +74,7 @@ public class FundingMember{
 
     @Builder
     public FundingMember(String name, BigDecimal amount, String message, LocalDate fundingDate, Long paymentId,
-                         String merchant_id, String imp_uid, FundingItem fundingItem, Member member,
+                         String merchantId, String impUid, FundingItem fundingItem, Member member,
                          ScheduledPayState payment_status){
         this.name = name;
         this.amount = amount;
@@ -81,17 +82,23 @@ public class FundingMember{
         this.fundingDate = fundingDate;
         this.paymentId = paymentId;
         this.payment_status = payment_status;
-        this.merchant_id = merchant_id;
-        this.imp_uid = imp_uid;
+        this.merchantId = merchantId;
+        this.impUid = impUid;
         this.fundingItem = fundingItem;
         this.member = member;
     }
 
-    public FundingMember updateCancel(BigDecimal cancel_amount, String reason, ScheduledPayState payment_status, LocalDate cancelDate){
-        this.cancel_amount = cancel_amount;
+    public FundingMember updateCancel(BigDecimal cancelAmount, String reason, ScheduledPayState payment_status, LocalDate cancelDate){
+        this.cancelAmount = cancelAmount;
         this.reason = reason;
         this.payment_status = payment_status;
         this.cancelDate = cancelDate;
+        return this;
+    }
+
+    public FundingMember updateWebhookFail(ScheduledPayState payment_status, String fail_reason){
+        this.payment_status = payment_status;
+        this.fail_reason = fail_reason;
         return this;
     }
 

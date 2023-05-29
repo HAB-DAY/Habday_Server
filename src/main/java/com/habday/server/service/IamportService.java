@@ -7,21 +7,22 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
 import com.habday.server.exception.CustomException;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.BillingCustomerData;
-import com.siot.IamportRestClient.request.ScheduleData;
-import com.siot.IamportRestClient.request.ScheduleEntry;
-import com.siot.IamportRestClient.request.UnscheduleData;
+import com.siot.IamportRestClient.request.*;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
+import com.siot.IamportRestClient.response.ScheduleList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -37,6 +38,12 @@ public class IamportService {
     private final FundingItemRepository fundingItemRepository;
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
+
+    public Integer getUnixTimeStamp(int year, int month, int date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, date);
+        return (int) calendar.getTimeInMillis() / 1000;
+    }
     public IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(
                 customer_uid, billingKeyRequest.getCard_number(),
@@ -87,4 +94,21 @@ public class IamportService {
             throw new CustomException(PAY_UNSCHEDULING_INTERNAL_ERROR);
         }
     }
+
+    //예약내역 확인
+    public IamportResponse<ScheduleList> showSchedulesFromIamport(ShowSchedulesRequestDto requestDto){
+        Integer schedule_from = getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
+        Integer schedule_to = getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
+        log.debug("IamportService.showSchedules: " + schedule_from + " "  + schedule_to);
+        GetScheduleData getScheduleData = new GetScheduleData(schedule_from, schedule_to, requestDto.getSchedule_status(), requestDto.getPage(), 8);
+        try {
+            return iamportClient.getPaymentSchedule(getScheduleData);
+        } catch (IamportResponseException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //모든 결제 내역 확인
 }

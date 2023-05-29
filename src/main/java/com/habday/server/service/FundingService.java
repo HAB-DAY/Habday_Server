@@ -101,8 +101,8 @@ public class FundingService {
                 .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
                 .paymentId(fundingRequestDto.getPaymentId())
                 .payment_status(ScheduledPayState.ready)
-                .merchant_id(merchantUid)
-                .imp_uid(selectedPayment.getBillingKey())
+                .merchantId(merchantUid)
+                .impUid(selectedPayment.getBillingKey())
                 .fundingItem(fundingItem)
                 .member(member)
                 .build());

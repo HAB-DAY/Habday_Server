@@ -11,6 +11,7 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
+import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto.PaymentList;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
@@ -18,18 +19,19 @@ import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.request.GetScheduleData;
 import com.siot.IamportRestClient.request.UnscheduleData;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
+import com.siot.IamportRestClient.response.ScheduleList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.List;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -99,13 +101,13 @@ public class PayService {
         FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId())
                 .orElseThrow(()-> new CustomException(NO_FUNDING_ITEM_ID));
 
-        BigDecimal cancelableAmount = fundingMember.getAmount().subtract(fundingMember.getCancel_amount());
+        BigDecimal cancelableAmount = fundingMember.getAmount().subtract(fundingMember.getCancelAmount());
 
         if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
             throw new CustomException(ALREADY_CANCELED);
         }
 
-        IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchant_id());
+        IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchantId());
 
         if(iamportResponse.getCode() != 0){
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_INTERNAL_ERROR, iamportResponse.getMessage());
@@ -115,10 +117,15 @@ public class PayService {
         fundingMember.updateCancel(fundingMember.getAmount(), unscheduleRequestDto.getReason(), cancel, cancelDate);
 
         return UnscheduleResponseDto.builder()
-                .merchant_uid(fundingMember.getMerchant_id())
+                .merchant_uid(fundingMember.getMerchantId())
                 .merchant_name(fundingItem.getFundingName())
                 .cancelDate(cancelDate)
-                .amount(fundingMember.getCancel_amount())
+                .amount(fundingMember.getCancelAmount())
                 .build();
+    }
+
+    public IamportResponse<ScheduleList> showSchedules(ShowSchedulesRequestDto showSchedulesRequestDto){
+        IamportResponse<ScheduleList> iamportResponse = iamportService.showSchedulesFromIamport(showSchedulesRequestDto);
+        return iamportResponse;
     }
 }

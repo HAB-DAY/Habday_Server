@@ -24,7 +24,8 @@ public enum ExceptionCode {
     PAY_SCHEDULING_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "결제 스케쥴 등록 중 결제 모듈 에러가 발생했습니다."),
     PAY_UNSCHEDULING_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "결제 스케쥴 등록 중 결제 모듈 에러가 발생했습니다."),
     NO_FUNDING_MEMBER_ID(BAD_REQUEST, "존재하지 않는 펀딩 참여 내역 입니다."),
-    ALREADY_CANCELED(BAD_REQUEST, "이미 취소된 펀딩 결제 내역 입니다.");
+    ALREADY_CANCELED(BAD_REQUEST, "이미 취소된 펀딩 결제 내역 입니다."),
+    WEBHOOK_FAIL(BAD_REQUEST, "예약 결제 실패");
 
     private final HttpStatus status;
     private final String msg;
