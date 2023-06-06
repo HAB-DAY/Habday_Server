@@ -9,6 +9,7 @@ import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
+import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
@@ -29,13 +30,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
 import static com.habday.server.constants.ExceptionCode.*;
-import static com.habday.server.constants.ScheduledPayState.cancel;
+import static com.habday.server.constants.ScheduledPayState.*;
 
 @Slf4j
 @Service
@@ -127,5 +132,53 @@ public class PayService {
     public IamportResponse<ScheduleList> showSchedules(ShowSchedulesRequestDto showSchedulesRequestDto){
         IamportResponse<ScheduleList> iamportResponse = iamportService.showSchedulesFromIamport(showSchedulesRequestDto);
         return iamportResponse;
+    }
+
+    public void callbackSchedule(CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request){
+        String clientIp = getIp(request);
+        String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
+        List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
+
+        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
+
+        IamportResponse<com.siot.IamportRestClient.response.Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
+
+        if (!ipLists.contains(clientIp)){
+            fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
+            throw new CustomException(UNAUTHORIZED_IP);
+        }
+
+        if(!fundingMember.getAmount().equals(response.getResponse().getAmount())){
+            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
+            throw new CustomException(NO_CORRESPONDING_AMOUNT);
+        }
+
+        if(callbackRequestDto.getStatus() == paid.getMsg()){
+            fundingMember.updateWebhookSuccess(paid);
+        }else{
+            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
+            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
+        }
+
+        //todo fundingItemStatus update 하기
+    }
+
+
+    private String getIp(HttpServletRequest request) {
+        String [] headers = {"X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", };
+
+        String ip = request.getHeader("X-Forwarded-For");
+        for(String header: headers){
+            if (ip == null){
+                ip = request.getHeader(header);
+                log.info(">>>> " + header + " : " + ip);
+            }
+        }
+        if (ip == null) {
+            ip = request.getRemoteAddr();
+        }
+
+        return ip;
+
     }
 }

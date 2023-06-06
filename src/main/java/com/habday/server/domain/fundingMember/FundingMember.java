@@ -102,4 +102,9 @@ public class FundingMember{
         return this;
     }
 
+    public FundingMember updateWebhookSuccess(ScheduledPayState payment_status){
+        this.payment_status = payment_status;
+        return this;
+    }
+
 }

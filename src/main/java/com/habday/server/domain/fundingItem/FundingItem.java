@@ -3,6 +3,7 @@ package com.habday.server.domain.fundingItem;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.habday.server.constants.FundingState;
+import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
@@ -81,5 +82,8 @@ public class FundingItem {
         this.percentage = percentage;
         return this;
     }
-
+    public FundingItem updateFundingState(FundingState status){
+        this.status = status;
+        return this;
+    }
 }

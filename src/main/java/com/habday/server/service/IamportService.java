@@ -39,10 +39,12 @@ public class IamportService {
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
 
-    public Integer getUnixTimeStamp(int year, int month, int date){
+    public Long getUnixTimeStamp(int year, int month, int date){
+        log.debug("getUnixTimeStamp: "+ year + " " + month + " " + date);
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
-        return (int) calendar.getTimeInMillis() / 1000;
+        log.debug("getUnixTimeStamp: "+  calendar.getTimeInMillis() / 1000);
+        return calendar.getTimeInMillis() / 1000;
     }
     public IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(
@@ -97,16 +99,26 @@ public class IamportService {
 
     //예약내역 확인
     public IamportResponse<ScheduleList> showSchedulesFromIamport(ShowSchedulesRequestDto requestDto){
-        Integer schedule_from = getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
-        Integer schedule_to = getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
+        Long schedule_from = getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
+        Long schedule_to = getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
         log.debug("IamportService.showSchedules: " + schedule_from + " "  + schedule_to);
-        GetScheduleData getScheduleData = new GetScheduleData(schedule_from, schedule_to, requestDto.getSchedule_status(), requestDto.getPage(), 8);
+        GetScheduleData getScheduleData = new GetScheduleData(schedule_from.intValue(), schedule_to.intValue(), requestDto.getSchedule_status(), requestDto.getPage(), 8);
         try {
             return iamportClient.getPaymentSchedule(getScheduleData);
         } catch (IamportResponseException e) {
-            throw new RuntimeException(e);
+            throw new CustomException(SHOW_SCHEDULE_INTERNAL_ERROR);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CustomException(SHOW_SCHEDULE_INTERNAL_ERROR);
+        }
+    }
+
+    public IamportResponse<com.siot.IamportRestClient.response.Payment> paymentByImpUid(String imp_uid){
+        try {
+            return iamportClient.paymentByImpUid(imp_uid);
+        } catch (IamportResponseException e) {
+            throw new CustomException(GET_PAY_INFO_INTERNAL_ERROR);
+        } catch (IOException e) {
+            throw new CustomException(GET_PAY_INFO_INTERNAL_ERROR);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
+import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
@@ -12,6 +13,9 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.res.fund.GetHostingListResponseDto;
+import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
+import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
@@ -20,15 +24,16 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.habday.server.constants.ExceptionCode.*;
 
@@ -135,5 +140,40 @@ public class FundingService {
                 .status(fundingItem.getStatus())
                 .hostName(member.getName())
                 .build();
+    }
+
+    public GetHostingListResponseDto getHostItemList(Long memberId, String status, Long pointId){
+        List<HostingList> hostingLists = getLists(pointId, memberId, PageRequest.of(0, 10), status);
+        Long lastIdOfList = hostingLists.isEmpty() ? null : hostingLists.get(hostingLists.size() -1).getId();
+        return new GetHostingListResponseDto(hostingLists, hasNext(lastIdOfList));
+    }
+
+    private List<HostingList> getLists(Long pointId, Long memberId, Pageable page, String status){
+        FundingState fundingState;
+        log.debug("펀딩 상태 체크: " + status);
+        switch (status){
+            case "PROGRESS": fundingState = FundingState.PROGRESS;
+                break;
+            case "SUCCESS" : fundingState = FundingState.SUCCESS;
+                break;
+            case "FAIL" : fundingState = FundingState.FAIL;
+                break;
+            default: throw new CustomException(NO_FUNDING_STATE_EXISTS);
+        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        return pointId == null?
+                fundingItemRepository.findByStatusAndMemberOrderByIdDesc(fundingState, member, page):
+                fundingItemRepository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, fundingState, member, page);
+    }
+
+    private Boolean hasNext(Long id){
+        if(id == null) return false;
+        return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Integer page){
+        return null;
     }
 }
