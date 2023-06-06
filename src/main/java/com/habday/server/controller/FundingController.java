@@ -26,6 +26,7 @@ public class FundingController {
 
     @PostMapping("/participateFunding")
     public ResponseEntity<ParticipateFundingResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto){
+        log.debug("participateFunding error");
         ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,1L);
         return ParticipateFundingResponse.newResponse(PARTICIPATE_FUNDING_SUCCESS, responseDto);
     }

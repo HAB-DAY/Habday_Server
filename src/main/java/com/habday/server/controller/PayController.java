@@ -102,64 +102,13 @@ public class PayController {
     /** 웹훅 예약결제 컬백 **/
     @PostMapping("/callback/schedule")
     public @ResponseBody void callbackSchedule(@RequestBody CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request) throws IamportResponseException, IOException {
-        String clientIp = getIp(request);
-        String[] ipLists = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
-
-        for(String ip : ipLists){
-            if(clientIp == ip)
-                break;
-            else
-                throw new RuntimeException("비정상적인 사용자로부터의 접근입니다.");
-        }
-
-        IamportResponse<Payment> response = iamportClient.paymentByImpUid(callbackRequestDto.getImp_uid());
-
-        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
-        //order db에 저장된 요청 금액 == response로 받은 imp_uid에서 보낸 금액이 일치하는지 확인-> db에 저장
-        if (callbackRequestDto.getStatus() == fail.getMsg()){
-            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
-            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
-        }
-
-        //todo db에 저장하기
+        payService.callbackSchedule(callbackRequestDto, request);
     }
+
 
     /** 결제 테스트 페이지 **/
     @GetMapping("/payTestView")
     public String payTestView(){
         return "payview.html";
-    }
-
-
-    private String getIp(HttpServletRequest request) {
-
-        String ip = request.getHeader("X-Forwarded-For");
-
-        log.info(">>>> X-FORWARDED-FOR : " + ip);
-
-        if (ip == null) {
-            ip = request.getHeader("Proxy-Client-IP");
-            log.info(">>>> Proxy-Client-IP : " + ip);
-        }
-        if (ip == null) {
-            ip = request.getHeader("WL-Proxy-Client-IP"); // 웹로직
-            log.info(">>>> WL-Proxy-Client-IP : " + ip);
-        }
-        if (ip == null) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-            log.info(">>>> HTTP_CLIENT_IP : " + ip);
-        }
-        if (ip == null) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-            log.info(">>>> HTTP_X_FORWARDED_FOR : " + ip);
-        }
-        if (ip == null) {
-            ip = request.getRemoteAddr();
-        }
-
-        log.info(">>>> Result : IP Address : "+ip);
-
-        return ip;
-
     }
 }
