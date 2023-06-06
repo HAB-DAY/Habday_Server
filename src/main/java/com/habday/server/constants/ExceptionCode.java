@@ -26,7 +26,8 @@ public enum ExceptionCode {
     NO_FUNDING_MEMBER_ID(BAD_REQUEST, "존재하지 않는 펀딩 참여 내역 입니다."),
     ALREADY_CANCELED(BAD_REQUEST, "이미 취소된 펀딩 결제 내역 입니다."),
     WEBHOOK_FAIL(BAD_REQUEST, "예약 결제 실패"),
-    NO_MEMBER_ID_SAVED(INTERNAL_SERVER_ERROR, "펀딩 생성 시 멤버id가 저장되지 않았습니다.");
+    NO_MEMBER_ID_SAVED(INTERNAL_SERVER_ERROR, "펀딩 생성 시 멤버id가 저장되지 않았습니다."),
+    NO_FUNDING_STATE_EXISTS(BAD_REQUEST, "잘못된 펀딩 상태 입니다.");
 
     private final HttpStatus status;
     private final String msg;

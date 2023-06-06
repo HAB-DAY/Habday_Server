@@ -15,7 +15,7 @@ public class GetParticipatedListResponseDto {
     private ProgressList progressList;
     @Getter
     public static class FailList{
-        private Long fundingItemId; //FundingItem
+        private Long id; //FundingItem
         private String fundingItemImg; //FundingItem
         private String fundingName; //FundingItem
         private BigDecimal amount; //FundingMember

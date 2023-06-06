@@ -25,27 +25,31 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class RestExceptionHandler {
     @ExceptionHandler(value={CustomException.class})
     protected ResponseEntity<BaseResponse> handleCustomException(CustomException e, HttpServletRequest request) {
-        log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
+        log.warn(String.format("[%s Error1] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
         return BaseResponse.toCustomErrorResponse(e.getExceptionCode());
     }
-
+    //직접 메시지 넣기
     @ExceptionHandler(value={CustomExceptionWithMessage.class})
     protected ResponseEntity<BaseResponse> handleCustomExceptionWithMessage(CustomExceptionWithMessage e, HttpServletRequest request) {
-        log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
+        log.warn(String.format("[%s Error2] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
         return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getDescribe());
     }
+
+    //requestBody
     @ExceptionHandler(value = { MethodArgumentNotValidException.class })
     protected ResponseEntity<BaseResponse> handleMethodArgNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        log.warn(String.format("[400 Error] : %s %s", request.getMethod(), request.getRequestURI()));
+        log.warn(String.format("[400 Error3] : %s %s", request.getMethod(), request.getRequestURI()));
         return BaseResponse.toBasicErrorResponse(HttpStatus.BAD_REQUEST, e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
-    /*@ExceptionHandler(value={IamportResponseException.class, IOException.class})
-    protected ResponseEntity<BaseResponse> handleIamportResponseException(CustomExceptionWithMessage e, HttpServletRequest request) {
-        log.warn(String.format("[%s Error] : %s %s", e.getExceptionCode().getStatus(), request.getMethod(), request.getRequestURI()));
-        return BaseResponse.toCustomErrorWithMessageResponse(e.getExceptionCode(), e.getDescribe());
+    // request param
+    @ExceptionHandler(value = { MissingServletRequestParameterException.class })
+    protected ResponseEntity<BaseResponse> handleMissingRequestParameterException(MissingServletRequestParameterException e, HttpServletRequest request) {
+        log.warn(String.format("[%s Error4] : %s %s", "hi", request.getMethod(), request.getRequestURI()));
+        return BaseResponse.toBasicErrorResponse(HttpStatus.BAD_REQUEST, e.getParameterName() + "를 입력해주세요.");
     }
 
+    /*
     // request param
     @ExceptionHandler(value = { MissingServletRequestParameterException.class })
     protected ResponseEntity<BaseResponse> handleMissingRequestParameterException(MissingServletRequestParameterException e, HttpServletRequest request) {
