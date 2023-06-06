@@ -12,6 +12,8 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.res.fund.GetHostingListResponseDto;
+import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -135,5 +138,13 @@ public class FundingService {
                 .status(fundingItem.getStatus())
                 .hostName(member.getName())
                 .build();
+    }
+
+    public GetHostingListResponseDto getHostItemList(Long memberId, String status, Integer page){
+        return null;
+    }
+
+    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Integer page){
+        return null;
     }
 }
