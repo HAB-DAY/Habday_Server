@@ -3,15 +3,19 @@ package com.habday.server.domain.fundingItem;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.habday.server.constants.FundingState;
+import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-
+@DynamicInsert
 @Getter
 @NoArgsConstructor
 @Entity
@@ -32,13 +36,13 @@ public class FundingItem {
     private String fundDetail;
 
     @Column
-    private int itemPrice;//링크 첨부?
+    private BigDecimal itemPrice;
+
+    @ColumnDefault("0")
+    private BigDecimal totalPrice;
 
     @Column
-    private int totalPrice;
-
-    @Column
-    private int goalPrice;
+    private BigDecimal goalPrice;
     
     @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -60,7 +64,7 @@ public class FundingItem {
     private Member member;
 
     @Builder
-    public FundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate, FundingState status, Member member) {
+    public FundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, FundingState status, Member member) {
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
@@ -73,4 +77,13 @@ public class FundingItem {
         this.member = member;
     }
 
+    public FundingItem updatePricePercentage(BigDecimal totalPrice, int percentage){
+        this.totalPrice = totalPrice;
+        this.percentage = percentage;
+        return this;
+    }
+    public FundingItem updateFundingState(FundingState status){
+        this.status = status;
+        return this;
+    }
 }

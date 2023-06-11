@@ -1,26 +1,39 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
-import com.habday.server.constants.ExceptionCode;
+import com.habday.server.constants.FundingState;
+import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
+import com.habday.server.domain.payment.Payment;
+import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
+import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.res.fund.GetHostingListResponseDto;
+import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
+import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
+import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
-import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.IOException;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 import static com.habday.server.constants.ExceptionCode.*;
 
@@ -31,46 +44,136 @@ public class FundingService {
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
-    private final VerifyIamportService verifyIamportService;
+    private final IamportService iamportService;
+    private final PayService payService;
+    private final PaymentRepository paymentRepository;
+
+    private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
+        if (totalPrice == null) {
+            log.debug("fundingService: totalPrice null임" + totalPrice);
+            totalPrice = BigDecimal.ZERO;
+        }
+        return amount.add(totalPrice);
+    }
+
+    private int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
+        return totalPrice.divide(goalPrice).multiply(BigDecimal.valueOf(100)).intValue();
+    }
+
+    private Date calPayDate(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.MINUTE, 30);//펀딩 종료 30분 후에 결제
+        return new Date(calendar.getTimeInMillis());
+    }
+
     @Transactional//예외 발생 시 롤백해줌
-    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) throws IamportResponseException, IOException {
+    public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
+        String merchantUid = payService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
 
-        //todo save 예외처리 자세하게(없는 연관정보로 요청했다거나, 필요한 데이터 누락됐다거나 상황별 exception 자세하게
-        //todo paymentId가 없으면 데이터 저장되면 안되는데....?
-
-
+        Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
+                orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
         FundingItem fundingItem = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        //todo int에는 null 값이 들어갈 수 없다! 위의 로직에서 오류 남.
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        try{
-            fundingMemberRepository.save(FundingMember.builder()
-                    .name(fundingRequestDto.getName())
-                    .amount(fundingRequestDto.getAmount())
-                    .message(fundingRequestDto.getMessage())
-                    .fundingDate(fundingRequestDto.getFundingDate())
-                    .paymentId(fundingRequestDto.getPaymentId())
-                    .fundingItem(fundingItem)
-                    .member(member)
-                    .build()
-            );
-        }catch (Exception e){
-            log.debug("FundingService save error: " + e);
-            throw new CustomException(PARTICIPATE_FUNDING_SAVE_FAIL);
-        }
-        IamportResponse<List<Schedule>> scheduleResult =  verifyIamportService.noneAuthPaySchedule(fundingRequestDto.getScheduleData());
-        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
-        if (scheduleResult.getCode() == 1) {
-            log.debug("FundingService.participateFunding 코드 1");
-            throw new CustomException(PAY_SCHEDULING_FAIL);
-        }//todo 에러용 BaseResponse 따로 만들기
-        //todo iamport의 code와 messsage 담기(메시지 안나옴)
+        Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date scheduleDate = calPayDate(finishDateToDate);//30분 더하기
+        log.debug("schedule date: " + scheduleDate);
 
-        //todo merchantUid와 customerUid 생성 로
+        IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
+                NoneAuthPayScheduleRequestDto.builder()
+                        .customer_uid(selectedPayment.getBillingKey())
+                        .merchant_uid(merchantUid)
+                        .schedule_at(scheduleDate)
+                        .amount(fundingRequestDto.getAmount())
+                        .name(fundingRequestDto.getName())
+                        .buyer_name(fundingRequestDto.getBuyer_name())
+                        .buyer_tel(fundingRequestDto.getBuyer_tel())
+                        .buyer_email(fundingRequestDto.getBuyer_email())
+                        .build()
+        );
+        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+        if (scheduleResult.getCode() !=0 ) {
+            throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
+        }
+
+
+        fundingMemberRepository.save(FundingMember.builder()
+                .name(fundingRequestDto.getName())
+                .amount(fundingRequestDto.getAmount())
+                .message(fundingRequestDto.getMessage())
+                .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
+                .paymentId(fundingRequestDto.getPaymentId())
+                .payment_status(ScheduledPayState.ready)
+                .merchantId(merchantUid)
+                .impUid(selectedPayment.getBillingKey())
+                .fundingItem(fundingItem)
+                .member(member)
+                .build());
+
+        BigDecimal totalPrice = calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
+        int percentage = calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
+        fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
+    }
+
+    public ShowFundingContentResponseDto showFundingContent(Long fundingItemId){
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        Member member = fundingItem.getMember();
+        if (member == null)
+            throw new CustomException(NO_MEMBER_ID_SAVED);
+
+        return ShowFundingContentResponseDto.builder()
+                .fundingItemImg(fundingItem.getFundingItemImg())
+                .fundingName(fundingItem.getFundingName())
+                .fundDetail(fundingItem.getFundDetail())
+                .itemPrice(fundingItem.getItemPrice())
+                .totalPrice(fundingItem.getTotalPrice())
+                .goalPrice(fundingItem.getGoalPrice())
+                .startDate(fundingItem.getStartDate())
+                .finishDate(fundingItem.getFinishDate())
+                .percentage(fundingItem.getPercentage())
+                .status(fundingItem.getStatus())
+                .hostName(member.getName())
+                .build();
+    }
+
+    public GetHostingListResponseDto getHostItemList(Long memberId, String status, Long pointId){
+        List<HostingList> hostingLists = getLists(pointId, memberId, PageRequest.of(0, 10), status);
+        Long lastIdOfList = hostingLists.isEmpty() ? null : hostingLists.get(hostingLists.size() -1).getId();
+        return new GetHostingListResponseDto(hostingLists, hasNext(lastIdOfList));
+    }
+
+    private List<HostingList> getLists(Long pointId, Long memberId, Pageable page, String status){
+        FundingState fundingState;
+        log.debug("펀딩 상태 체크: " + status);
+        switch (status){
+            case "PROGRESS": fundingState = FundingState.PROGRESS;
+                break;
+            case "SUCCESS" : fundingState = FundingState.SUCCESS;
+                break;
+            case "FAIL" : fundingState = FundingState.FAIL;
+                break;
+            default: throw new CustomException(NO_FUNDING_STATE_EXISTS);
+        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        return pointId == null?
+                fundingItemRepository.findByStatusAndMemberOrderByIdDesc(fundingState, member, page):
+                fundingItemRepository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, fundingState, member, page);
+    }
+
+    private Boolean hasNext(Long id){
+        if(id == null) return false;
+        return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Integer page){
+        return null;
     }
 }

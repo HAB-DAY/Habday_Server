@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static com.habday.server.constants.FundingState.PROGRESS;
@@ -19,9 +20,9 @@ public class CreateFundingItemRequestDto {
     //private String fundingItemImg;
     private String fundingName;
     private String fundDetail;
-    private int itemPrice;
-    private int totalPrice;
-    private int goalPrice;
+    private BigDecimal itemPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal goalPrice;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -38,8 +39,7 @@ public class CreateFundingItemRequestDto {
         this.startDate = startDate;
         this.finishDate = finishDate;
     }
-
-    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate, Member member) {
+    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, Member member) {
         return FundingItem.builder()
                 .fundingItemImg(fundingItemImg)
                 .fundingName(fundingName)
@@ -53,9 +53,7 @@ public class CreateFundingItemRequestDto {
                 .member(member)
                 .build();
     }
-
-    /*public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate){
+    public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
         return new CreateFundingItemRequestDto(fundingItemImg, fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
     }
-     */
 }
