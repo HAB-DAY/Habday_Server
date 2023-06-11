@@ -17,7 +17,7 @@ import static com.habday.server.constants.FundingState.PROGRESS;
 @NoArgsConstructor
 public class CreateFundingItemRequestDto {
 
-    private String fundingItemImg;
+    //private String fundingItemImg;
     private String fundingName;
     private String fundDetail;
     private BigDecimal itemPrice;
@@ -29,8 +29,8 @@ public class CreateFundingItemRequestDto {
     private LocalDate finishDate;
 
     @Builder
-    public CreateFundingItemRequestDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
-        this.fundingItemImg = fundingItemImg;
+    public CreateFundingItemRequestDto(String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate) {
+        //this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
         this.itemPrice = itemPrice;
