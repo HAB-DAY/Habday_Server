@@ -18,7 +18,12 @@ public enum ExceptionCode {
 
     //펀딩참여
     NO_FUNDING_ITEM_ID(BAD_REQUEST, "존재하지 않는 펀딩 아이템 입니다."),
+
+    PARTICIPATE_FUNDING_SAVE_FAIL(BAD_REQUEST, "펀딩 참여에 실패했습니다"),
     PAY_SCHEDULING_FAIL(BAD_REQUEST, "결제 스케쥴 등록에 실패했습니다. 요청값을 확인바랍니다."),
+    NO_FUNDING_IMG(BAD_REQUEST, "펀딩을 참여하기 위해서 이미지는 필수입니다.");
+  
+
     NO_PAYMENT_EXIST(BAD_REQUEST, "선택한 결제수단에 해당하는 데이터가 없습니다. 결제수단 번호를 다시 확인해주세요."),
     PAY_SCHEDULING_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "결제 스케쥴 등록 중 결제 모듈 에러가 발생했습니다."),
     PAY_UNSCHEDULING_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "결제 스케쥴 등록 중 결제 모듈 에러가 발생했습니다."),
@@ -31,6 +36,7 @@ public enum ExceptionCode {
     UNAUTHORIZED_IP(UNAUTHORIZED, "허가되지 않은 ip 입니다."),
     GET_PAY_INFO_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "일치하는 결제 정보가 없습니다."),
     NO_CORRESPONDING_AMOUNT(INTERNAL_SERVER_ERROR,"저장된 금액과 결제된 금액이 일치하지 않습니다.");
+
 
     private final HttpStatus status;
     private final String msg;
