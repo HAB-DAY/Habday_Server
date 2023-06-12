@@ -12,7 +12,7 @@ public class CreateFundingItemRequest {
     private FundingState status;
     private Member member;
 
-    public CreateFundingItemRequestDto toSaveFundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
-        return CreateFundingItemRequestDto.of(fundingItemImg, fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
+    public CreateFundingItemRequestDto toSaveFundingItem(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
+        return CreateFundingItemRequestDto.of(fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
     }
 }
