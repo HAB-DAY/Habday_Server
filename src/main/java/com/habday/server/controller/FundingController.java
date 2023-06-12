@@ -44,11 +44,10 @@ public class FundingController {
         return GetHostingListResponse.newResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
     }
 
-    //필요한 데이터: memberId/state/날짜/페이지
-    @GetMapping("/itemList/participate")
-    public ResponseEntity<GetParticipatedListResponse> getParticipatedList(@RequestParam Long memberId, @RequestParam String status,
-        @RequestParam Integer page){
-        GetParticipatedListResponseDto responseDto = fundingService.getParticipatedList(memberId, status, page);
+    @GetMapping("/itemList/participant")
+    public ResponseEntity<GetParticipatedListResponse> getParticipatedList(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+            @RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") String status, Long lastItemId){
+        GetParticipatedListResponseDto responseDto = fundingService.getParticipatedList(memberId, status, lastItemId);
         return GetParticipatedListResponse.newResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
     }
 }

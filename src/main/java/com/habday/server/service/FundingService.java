@@ -15,7 +15,9 @@ import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetHostingListResponseDto;
 import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
+import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedList;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
+import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
@@ -143,29 +145,34 @@ public class FundingService {
     }
 
     public GetHostingListResponseDto getHostItemList(Long memberId, String status, Long pointId){
-        List<HostingList> hostingLists = getLists(pointId, memberId, PageRequest.of(0, 10), status);
+        List<HostingList> hostingLists = getPagingList_H(pointId, memberId, PageRequest.of(0, 10), status);
         Long lastIdOfList = hostingLists.isEmpty() ? null : hostingLists.get(hostingLists.size() -1).getId();
         return new GetHostingListResponseDto(hostingLists, hasNext(lastIdOfList));
     }
 
-    private List<HostingList> getLists(Long pointId, Long memberId, Pageable page, String status){
-        FundingState fundingState;
+    private List<HostingList> getPagingList_H(Long pointId, Long memberId, Pageable page, String status){
+        /*
+        * List용 status 2가지{
+        *   완료(FINISHED): SUCCESS, FAIL
+        *   진행중(PROGRESS): PROGRESS
+        * }
+        * */
         log.debug("펀딩 상태 체크: " + status);
-        switch (status){
-            case "PROGRESS": fundingState = FundingState.PROGRESS;
-                break;
-            case "SUCCESS" : fundingState = FundingState.SUCCESS;
-                break;
-            case "FAIL" : fundingState = FundingState.FAIL;
-                break;
-            default: throw new CustomException(NO_FUNDING_STATE_EXISTS);
-        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        return pointId == null?
-                fundingItemRepository.findByStatusAndMemberOrderByIdDesc(fundingState, member, page):
-                fundingItemRepository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, fundingState, member, page);
+        if (status.equals("PROGRESS")){
+            return pointId == null?
+                fundingItemRepository.findByStatusAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page):
+                fundingItemRepository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
+        }
+        else if(status.equals("FINISHED")){
+            return pointId == null?
+                fundingItemRepository.findByStatusNotAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page):
+                fundingItemRepository.findByIdLessThanAndStatusNotAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
+        }
+        else throw new CustomException(NO_FUNDING_STATE_EXISTS);
     }
 
     private Boolean hasNext(Long id){
@@ -173,7 +180,29 @@ public class FundingService {
         return fundingItemRepository.existsByIdLessThan(id);
     }
 
-    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Integer page){
-        return null;
+    private List<ParticipatedListInterface> getPagingList_P(Long pointId, Long memberId, Pageable page, String status) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        if (status.equals("PROGRESS")){
+            return pointId == null?
+                    fundingMemberRepository.getPagingListFirst_Progress(member, FundingState.PROGRESS, page) :
+                    fundingMemberRepository.getPagingListAfter_Progress(pointId, member, FundingState.PROGRESS, page);
+        }
+        else if(status.equals("FINISHED")){
+            return pointId == null?
+                    fundingMemberRepository.getPagingListFirst_Finished(member, FundingState.PROGRESS, page) :
+                    fundingMemberRepository.getPagingListAfter_Finished(pointId, member, FundingState.PROGRESS, page);
+        }
+        else throw new CustomException(NO_FUNDING_STATE_EXISTS);
+        //fundingMember & funding_item 테이블과 join 해서 fundingList에서 가져오는건 다 가져와야 함 +
+        // funding_date, payment_status)
+    }
+
+    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Long pointId){
+        List<ParticipatedListInterface> participatedLists = getPagingList_P(pointId, memberId, PageRequest.of(0, 10), status);
+        Long lastIdOfList = participatedLists.isEmpty() ? null : participatedLists.get(participatedLists.size() -1).getFundingMemberId();
+        return new GetParticipatedListResponseDto(participatedLists, hasNext(lastIdOfList));
+
     }
 }
