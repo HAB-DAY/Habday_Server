@@ -1,11 +1,9 @@
 package com.habday.server.controller;
 
-import com.habday.server.constants.ScheduledPayState;
-import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.res.iamport.*;
-import com.habday.server.exception.CustomExceptionWithMessage;
+import com.habday.server.exception.CustomException;
 import com.habday.server.service.PayService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -21,9 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import static com.habday.server.constants.ExceptionCode.WEBHOOK_FAIL;
-import static com.habday.server.constants.ScheduledPayState.fail;
+import static com.habday.server.constants.ExceptionCode.NO_PAYMENT_EXIST;
 import static com.habday.server.constants.SuccessCode.*;
 
 @Slf4j
@@ -37,11 +35,20 @@ public class PayController {
     private final PayService payService;
     private final FundingMemberRepository fundingMemberRepository;
 
-    /** 아이앰포트 rest api로 빌링키 획득하기 **/
+    /** 아이앰포트 rest api로 빌링키 획득하기(카드 등록) **/
     @PostMapping("/noneauthpay/getBillingKey")
-    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequest billingKeyRequest){
+    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest){
         GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, 1L);
         return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
+    }
+
+    /**등록된 카드 삭제**/
+    @DeleteMapping(value = {"/noneauthpay/delete/{paymentId}", "/noneauthpay/delete"})
+    public @ResponseBody ResponseEntity<DeleteBillingKeyResponse> deleteBillingKey(@PathVariable Optional<Long> paymentId){//@RequestBody DeleteBillingKeyRequestDto request
+        DeleteBillingKeyResponseDto responseDto = payService.deleteBillingKey(paymentId.orElseThrow(
+                () -> new CustomException(NO_PAYMENT_EXIST)
+        ));
+        return DeleteBillingKeyResponse.toResponse(DELETING_BILLING_KEY_SUCCESS, responseDto);
     }
 
     /** 저장된 결제정보 가져오기**/
@@ -50,20 +57,6 @@ public class PayController {
         GetPaymentListsResponseDto responseDto = payService.getPaymentLists(1L);
         return GetPaymentListsResponse.newResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
     }
-
-
-    /** 빌링키에 매핑된 결제 데이터 확인하기 **/
-    /*@GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
-    public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
-        return iamportClient.getBillingCustomer(customer_uid);
-    }*/
-
-    /** 비인증 결제(빌링키) 방식 예약 결제(FundingController에서 연결 예정)**/
-    /*@PostMapping("/noneauthpay/schedule")
-    public @ResponseBody void noneAuthPaySchedule(@RequestBody NoneAuthPayScheduleRequestDto scheduleRequestDto) throws IamportResponseException, IOException {
-        verifyIamportService.noneAuthPaySchedule(scheduleRequestDto);
-        //return iamportClient.subscribeSchedule(scheduleData);
-    }*/
 
     //todo null체크
     /**예약 취소**/
@@ -106,9 +99,10 @@ public class PayController {
     }
 
 
-    /** 결제 테스트 페이지 **/
-    @GetMapping("/payTestView")
-    public String payTestView(){
-        return "payview.html";
-    }
+    /** 빌링키에 매핑된 결제 데이터 확인하기 **/
+    /*@GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
+    public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
+        return iamportClient.getBillingCustomer(customer_uid);
+    }*/
+
 }

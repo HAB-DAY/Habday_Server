@@ -12,6 +12,8 @@ public class GetBillingKeyResponseDto {
     private int code;
     private String describe;
 
+    //카드번호 추가하기?
+
     public GetBillingKeyResponseDto(String payment_name, String customer_uid, int code, String describe){
         this.payment_name = payment_name;
         this.customer_uid = customer_uid;

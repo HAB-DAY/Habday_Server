@@ -5,7 +5,7 @@ import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
-import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
+import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
 import com.habday.server.exception.CustomException;
@@ -19,7 +19,6 @@ import com.siot.IamportRestClient.response.ScheduleList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -46,7 +45,7 @@ public class IamportService {
         log.debug("getUnixTimeStamp: "+  calendar.getTimeInMillis() / 1000);
         return calendar.getTimeInMillis() / 1000;
     }
-    public IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequest billingKeyRequest, String customer_uid){
+    public IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequestDto billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(
                 customer_uid, billingKeyRequest.getCard_number(),
                 billingKeyRequest.getExpiry(), billingKeyRequest.getBirth());
@@ -60,6 +59,16 @@ public class IamportService {
             throw new CustomException(BILLING_KEY_INTERNAL_ERROR);
         } catch (IamportResponseException e) {
             throw new CustomException(BILLING_KEY_INTERNAL_ERROR);
+        }
+    }
+
+    public IamportResponse<BillingCustomer> deleteBillingKeyFromIamport(String customerUid, String reason, String extra){
+        try {
+            return iamportClient.deleteBillingCustomer(customerUid, reason, extra);
+        } catch (IOException e) {
+            throw new CustomException(DELETING_BILLING_KEY_FAIL_INTERNAL_ERROR);
+        } catch (IamportResponseException e) {
+            throw new CustomException(DELETING_BILLING_KEY_FAIL_INTERNAL_ERROR);
         }
     }
 
