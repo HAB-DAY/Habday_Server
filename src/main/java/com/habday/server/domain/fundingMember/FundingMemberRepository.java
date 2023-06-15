@@ -22,13 +22,13 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
     @Query("select m.id as fundingMemberId, i.fundingItemImg as fundingItemImg, i.fundingName as fundingName, i.totalPrice as totalPrice, i.startDate as startDate, i.finishDate as finishDate, i.status as status, m.fundingDate as fundingDate, m.payment_status as payment_status, m.merchantId as merchantId from FundingMember m join m.fundingItem i where m.member = :member and i.status = :status order by m.id desc")
     List<ParticipatedListInterface> getPagingListFirst_Progress(Member member, FundingState status, Pageable page);
 
-    @Query("select i.id, i.fundingItemImg, i.fundingName, i.totalPrice, i.startDate, i.finishDate, i.status, m.fundingDate, m.payment_status, m.merchantId from FundingMember m join m.fundingItem i where id < :id and m.member = :member and i.status = :status order by m.id desc")
+    @Query("select i.id, i.fundingItemImg, i.fundingName, i.totalPrice, i.startDate, i.finishDate, i.status, m.fundingDate, m.payment_status, m.merchantId from FundingMember m join m.fundingItem i where m.id < :id and m.member = :member and i.status = :status order by m.id desc")
     List<ParticipatedListInterface> getPagingListAfter_Progress(Long id, Member member, FundingState status, Pageable page);
 
     //status = SUCCESS || FAIL
     @Query("select i.id, i.fundingItemImg, i.fundingName, i.totalPrice, i.startDate, i.finishDate, i.status, m.fundingDate, m.payment_status, m.merchantId from FundingMember m join m.fundingItem i where m.member = :member and i.status <> :status order by m.id desc")
     List<ParticipatedListInterface> getPagingListFirst_Finished(Member member, FundingState status, Pageable page);
 
-    @Query("select i.id, i.fundingItemImg, i.fundingName, i.totalPrice, i.startDate, i.finishDate, i.status, m.fundingDate, m.payment_status, m.merchantId from FundingMember m join m.fundingItem i where id < :id and m.member = :member and i.status <> :status order by m.id desc")
+    @Query("select i.id, i.fundingItemImg, i.fundingName, i.totalPrice, i.startDate, i.finishDate, i.status, m.fundingDate, m.payment_status, m.merchantId from FundingMember m join m.fundingItem i where m.id < :id and m.member = :member and i.status <> :status order by m.id desc")
     List<ParticipatedListInterface> getPagingListAfter_Finished(Long id, Member member, FundingState status, Pageable page);
 }
