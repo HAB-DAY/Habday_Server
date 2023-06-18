@@ -15,7 +15,6 @@ import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetHostingListResponseDto;
 import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
-import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedList;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
@@ -30,8 +29,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -85,35 +82,15 @@ public class FundingService {
         log.debug("schedule date: " + scheduleDate);
 
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
-                NoneAuthPayScheduleRequestDto.builder()
-                        .customer_uid(selectedPayment.getBillingKey())
-                        .merchant_uid(merchantUid)
-                        .schedule_at(scheduleDate)
-                        .amount(fundingRequestDto.getAmount())
-                        .name(fundingRequestDto.getName())
-                        .buyer_name(fundingRequestDto.getBuyer_name())
-                        .buyer_tel(fundingRequestDto.getBuyer_tel())
-                        .buyer_email(fundingRequestDto.getBuyer_email())
-                        .build()
-        );
+                NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
         if (scheduleResult.getCode() !=0 ) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
 
-        fundingMemberRepository.save(FundingMember.builder()
-                .name(fundingRequestDto.getName())
-                .amount(fundingRequestDto.getAmount())
-                .message(fundingRequestDto.getMessage())
-                .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
-                .paymentId(fundingRequestDto.getPaymentId())
-                .payment_status(ScheduledPayState.ready)
-                .merchantId(merchantUid)
-                .impUid(selectedPayment.getBillingKey())
-                .fundingItem(fundingItem)
-                .member(member)
-                .build());
+        fundingMemberRepository.save(FundingMember.of(fundingRequestDto, ScheduledPayState.ready, merchantUid, selectedPayment.getBillingKey()
+                ,fundingItem, member));
 
         BigDecimal totalPrice = calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
         int percentage = calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
@@ -129,19 +106,7 @@ public class FundingService {
         if (member == null)
             throw new CustomException(NO_MEMBER_ID_SAVED);
 
-        return ShowFundingContentResponseDto.builder()
-                .fundingItemImg(fundingItem.getFundingItemImg())
-                .fundingName(fundingItem.getFundingName())
-                .fundDetail(fundingItem.getFundDetail())
-                .itemPrice(fundingItem.getItemPrice())
-                .totalPrice(fundingItem.getTotalPrice())
-                .goalPrice(fundingItem.getGoalPrice())
-                .startDate(fundingItem.getStartDate())
-                .finishDate(fundingItem.getFinishDate())
-                .percentage(fundingItem.getPercentage())
-                .status(fundingItem.getStatus())
-                .hostName(member.getName())
-                .build();
+        return ShowFundingContentResponseDto.of(fundingItem, member);
     }
 
     public GetHostingListResponseDto getHostItemList(Long memberId, String status, Long pointId){

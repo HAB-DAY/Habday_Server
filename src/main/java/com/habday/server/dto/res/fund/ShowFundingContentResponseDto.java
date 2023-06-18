@@ -1,6 +1,8 @@
 package com.habday.server.dto.res.fund;
 
 import com.habday.server.constants.FundingState;
+import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +29,7 @@ public class ShowFundingContentResponseDto {
     //of를 static으로 놓고 builder 패턴을 적용해 객체를 생성해서 반환하려 해도 결국은 생성자가 필요하다.
     //따라서 생성자 따로 만들고, of 함수를 static으로 놔서 전역처럼 사용하는 것.
     @Builder
-    public ShowFundingContentResponseDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice,
+    private ShowFundingContentResponseDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice,
                BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, int percentage,
                FundingState status, String hostName){
         this.fundingItemImg = fundingItemImg;
@@ -41,6 +43,21 @@ public class ShowFundingContentResponseDto {
         this.percentage = percentage;
         this.status = status;
         this.hostName = hostName;
+    }
 
+    public static ShowFundingContentResponseDto of(FundingItem fundingItem, Member member){
+        return ShowFundingContentResponseDto.builder()
+                .fundingItemImg(fundingItem.getFundingItemImg())
+                .fundingName(fundingItem.getFundingName())
+                .fundDetail(fundingItem.getFundDetail())
+                .itemPrice(fundingItem.getItemPrice())
+                .totalPrice(fundingItem.getTotalPrice())
+                .goalPrice(fundingItem.getGoalPrice())
+                .startDate(fundingItem.getStartDate())
+                .finishDate(fundingItem.getFinishDate())
+                .percentage(fundingItem.getPercentage())
+                .status(fundingItem.getStatus())
+                .hostName(member.getName())
+                .build();
     }
 }

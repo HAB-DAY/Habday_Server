@@ -4,6 +4,7 @@ import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
+import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import org.hibernate.annotations.DynamicInsert;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @DynamicInsert
 @Getter
@@ -86,6 +88,22 @@ public class FundingMember{
         this.impUid = impUid;
         this.fundingItem = fundingItem;
         this.member = member;
+    }
+
+    public static FundingMember of(ParticipateFundingRequest fundingRequestDto, ScheduledPayState payment_status,
+                String merchantId, String impUid, FundingItem fundingItem, Member member){
+        return FundingMember.builder()
+                .name(fundingRequestDto.getName())
+                .amount(fundingRequestDto.getAmount())
+                .message(fundingRequestDto.getMessage())
+                .fundingDate(LocalDate.ofInstant(fundingRequestDto.getFundingDate().toInstant(), ZoneId.systemDefault()))
+                .paymentId(fundingRequestDto.getPaymentId())
+                .payment_status(payment_status)
+                .merchantId(merchantId)
+                .impUid(impUid)
+                .fundingItem(fundingItem)
+                .member(member)
+                .build();
     }
 
     public FundingMember updateCancel(BigDecimal cancelAmount, String reason, ScheduledPayState payment_status, LocalDate cancelDate){
