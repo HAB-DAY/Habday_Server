@@ -176,8 +176,6 @@ public class PayService {
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
             throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
         }
-
-        //todo fundingItemStatus update 하기
     }
 
 
