@@ -54,3 +54,16 @@ jobs:
         --region ap-northeast-2 \
         --acl private \ 
 	  ./springboot-intro-build.zip s3://springboot-intro-build/
+
+    # Deploy
+    - name: Deploy
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESSKEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRETKEY }}
+      run: |
+        aws deploy create-deployment \
+        --application-name springboot-intro \
+        --deployment-group-name springboot-intro-deploy-group \
+        --file-exists-behavior OVERWRITE \
+        --s3-location bucket=springboot-intro-build,bundleType=zip,key=springboot-intro-build.zip \
+        --region ap-northeast-2
