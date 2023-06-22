@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 import static com.habday.server.constants.ExceptionCode.NO_PAYMENT_EXIST;
 import static com.habday.server.constants.SuccessCode.*;
 
@@ -36,9 +37,11 @@ public class PayController {
     private final FundingMemberRepository fundingMemberRepository;
 
     /** 아이앰포트 rest api로 빌링키 획득하기(카드 등록) **/
-    @PostMapping("/noneauthpay/getBillingKey")
-    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest){
-        GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, 1L);
+    @PostMapping(value = {"/noneauthpay/getBillingKey/{memberId}", "/noneauthpay/getBillingKey/"})
+    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest, @PathVariable Optional<Long> memberId){
+        GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, memberId.orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        ));
         return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
 
@@ -52,17 +55,21 @@ public class PayController {
     }
 
     /** 저장된 결제정보 가져오기**/
-    @GetMapping("/noneauthpay/getPaymentLists") //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
-    public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(){
-        GetPaymentListsResponseDto responseDto = payService.getPaymentLists(1L);
+    @GetMapping(value = {"/noneauthpay/getPaymentLists", "/noneauthpay/getPaymentLists/{memberId}"}) //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
+    public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(@PathVariable Optional<Long> memberId){
+        GetPaymentListsResponseDto responseDto = payService.getPaymentLists(memberId.orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        ));
         return GetPaymentListsResponse.newResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
     }
 
     //todo null체크
     /**예약 취소**/
-    @PostMapping("/noneauthpay/unschedule")
-    public @ResponseBody ResponseEntity<UnscheduleResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){
-        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, 1L);
+    @PostMapping(value = {"/noneauthpay/unschedule", "/noneauthpay/unschedule/{memberId}"})
+    public @ResponseBody ResponseEntity<UnscheduleResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, @PathVariable Optional<Long> memberId){
+        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, memberId.orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        ));
         return UnscheduleResponse.newResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
 
