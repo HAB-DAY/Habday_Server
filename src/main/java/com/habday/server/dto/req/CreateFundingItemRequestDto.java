@@ -29,7 +29,7 @@ public class CreateFundingItemRequestDto {
     private LocalDate finishDate;
 
     @Builder
-    public CreateFundingItemRequestDto(String fundingName, String fundDetail, int itemPrice, int totalPrice, int goalPrice, LocalDate startDate, LocalDate finishDate) {
+    public CreateFundingItemRequestDto(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
         //this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
@@ -53,7 +53,7 @@ public class CreateFundingItemRequestDto {
                 .member(member)
                 .build();
     }
-    public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
+    /*public static CreateFundingItemRequestDto of(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
         return new CreateFundingItemRequestDto(fundingItemImg, fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
-    }
+    }*/
 }

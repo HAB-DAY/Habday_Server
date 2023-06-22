@@ -21,7 +21,7 @@ public enum ExceptionCode {
 
     PARTICIPATE_FUNDING_SAVE_FAIL(BAD_REQUEST, "펀딩 참여에 실패했습니다"),
     PAY_SCHEDULING_FAIL(BAD_REQUEST, "결제 스케쥴 등록에 실패했습니다. 요청값을 확인바랍니다."),
-    NO_FUNDING_IMG(BAD_REQUEST, "펀딩을 참여하기 위해서 이미지는 필수입니다.");
+    NO_FUNDING_IMG(BAD_REQUEST, "펀딩을 참여하기 위해서 이미지는 필수입니다."),
   
 
     NO_PAYMENT_EXIST(BAD_REQUEST, "선택한 결제수단에 해당하는 데이터가 없습니다. 결제수단 번호를 다시 확인해주세요."),
