@@ -9,8 +9,13 @@ import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
 import java.util.List;
 
 public interface FundingItemRepository extends JpaRepository<FundingItem, Long> {
+    //status = PROGRESS
     List<HostingList> findByStatusAndMemberOrderByIdDesc(FundingState status, Member member, Pageable page);
     List<HostingList> findByIdLessThanAndStatusAndMemberOrderByIdDesc(Long id, FundingState status, Member member, Pageable page);
+
+    //status = SUCCESS || FAIL
+    List<HostingList> findByStatusNotAndMemberOrderByIdDesc(FundingState status, Member member, Pageable page);
+    List<HostingList> findByIdLessThanAndStatusNotAndMemberOrderByIdDesc(Long id, FundingState status, Member member, Pageable page);
     Boolean existsByIdLessThan(Long id);
 
     /*
