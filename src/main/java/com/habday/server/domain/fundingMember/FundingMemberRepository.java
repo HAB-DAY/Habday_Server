@@ -1,9 +1,11 @@
 package com.habday.server.domain.fundingMember;
 
 import com.habday.server.constants.FundingState;
+import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedList;
+import com.habday.server.dto.res.fund.ShowFundingContentResponseDto.FundingParticipantList;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,7 @@ import java.util.List;
 public interface FundingMemberRepository extends JpaRepository<FundingMember, Long> {
     Long countByFundingItemIdAndMemberId(Long id, Long memberId);
     FundingMember findByMerchantId(String merchant_id);
+    List<FundingParticipantList> findByFundingItem(FundingItem fundingItem);
     /*
     select * from funding_member m inner join funding_item i on m.funding_item_id = i.funding_item_id
     where m.member_id = 멤버id and m.funding_item_id = 펀딩아이템id

@@ -19,6 +19,7 @@ import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
+import com.habday.server.dto.res.fund.ShowFundingContentResponseDto.FundingParticipantList;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
@@ -106,7 +107,11 @@ public class FundingService {
         if (member == null)
             throw new CustomException(NO_MEMBER_ID_SAVED);
 
-        return ShowFundingContentResponseDto.of(fundingItem, member);
+        return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem));
+    }
+
+    public List<FundingParticipantList> getParticipantList(FundingItem fundingItem){
+        return fundingMemberRepository.findByFundingItem(fundingItem);
     }
 
     public GetHostingListResponseDto getHostItemList(Long memberId, String status, Long pointId){
