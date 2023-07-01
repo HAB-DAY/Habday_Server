@@ -50,10 +50,12 @@ public class GetParticipatedListResponseDto {
     public interface ParticipatedListInterface{
         Long getFundingMemberId(); //FundingMember
         String getFundingName(); //FundingItem
-        BigDecimal getTotalPrice(); //FundingItem
-        LocalDate getStartDate(); //FundingItem
-        LocalDate getFinishDate(); //FundingItem
-        FundingState getStatus(); //FundingItem
+        String getCreatorName(); //Member
+        BigDecimal getFundingAmount(); //FundingMember
+        String getFundingItemImg();
+        //LocalDate getStartDate(); //FundingItem
+        //LocalDate getFinishDate(); //FundingItem
+        FundingState getFundingStatus(); //FundingItem
         LocalDate getFundingDate(); //FundingMember
         ScheduledPayState getPayment_status(); //FundingMember
         String getMerchantId(); //FundingMember
