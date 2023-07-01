@@ -2,6 +2,7 @@ package com.habday.server.controller;
 
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.dto.req.iamport.*;
+import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.iamport.*;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.PayService;
@@ -29,7 +30,7 @@ import static com.habday.server.constants.SuccessCode.*;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/verifyIamport")
-public class PayController {
+public class PayController{
     // 생성자를 통해 REST API 와 REST API secret 입력
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
@@ -38,39 +39,40 @@ public class PayController {
 
     /** 아이앰포트 rest api로 빌링키 획득하기(카드 등록) **/
     @PostMapping(value = {"/noneauthpay/getBillingKey/{memberId}", "/noneauthpay/getBillingKey/"})
-    public @ResponseBody ResponseEntity<GetBillingKeyResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest, @PathVariable Optional<Long> memberId){
+    public @ResponseBody ResponseEntity<CommonResponse> getBillingKey(@Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest, @PathVariable Optional<Long> memberId){
         GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));
-        return GetBillingKeyResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
+        return CommonResponse.toResponse(CREATE_BILLING_KEY_SUCCESS, responseDto);
     }
 
     /**등록된 카드 삭제**/
     @DeleteMapping(value = {"/noneauthpay/delete/{paymentId}", "/noneauthpay/delete"})
-    public @ResponseBody ResponseEntity<DeleteBillingKeyResponse> deleteBillingKey(@PathVariable Optional<Long> paymentId){//@RequestBody DeleteBillingKeyRequestDto request
+    public @ResponseBody ResponseEntity<CommonResponse> deleteBillingKey(@PathVariable Optional<Long> paymentId){//@RequestBody DeleteBillingKeyRequestDto request
         DeleteBillingKeyResponseDto responseDto = payService.deleteBillingKey(paymentId.orElseThrow(
                 () -> new CustomException(NO_PAYMENT_EXIST)
         ));
-        return DeleteBillingKeyResponse.toResponse(DELETING_BILLING_KEY_SUCCESS, responseDto);
+
+        return CommonResponse.toResponse(DELETING_BILLING_KEY_SUCCESS, responseDto);
     }
 
     /** 저장된 결제정보 가져오기**/
     @GetMapping(value = {"/noneauthpay/getPaymentLists", "/noneauthpay/getPaymentLists/{memberId}"}) //사용자 정보를 jwt에서 가져와서 사용자가 갖고 있는 결제 정보 반환하기
-    public @ResponseBody ResponseEntity<GetPaymentListsResponse> getPaymentLists(@PathVariable Optional<Long> memberId){
+    public @ResponseBody ResponseEntity<CommonResponse> getPaymentLists(@PathVariable Optional<Long> memberId){
         GetPaymentListsResponseDto responseDto = payService.getPaymentLists(memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));
-        return GetPaymentListsResponse.newResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
+        return CommonResponse.toResponse(GET_PAYMENT_LISTS_SUCCESS, responseDto);
     }
 
     //todo null체크
     /**예약 취소**/
     @PostMapping(value = {"/noneauthpay/unschedule", "/noneauthpay/unschedule/{memberId}"})
-    public @ResponseBody ResponseEntity<UnscheduleResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, @PathVariable Optional<Long> memberId){
+    public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, @PathVariable Optional<Long> memberId){
         UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));
-        return UnscheduleResponse.newResponse(PAY_UNSCHEDULING_SUCCESS, response);
+        return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
 
 
