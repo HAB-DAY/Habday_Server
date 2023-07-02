@@ -1,6 +1,7 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
+import com.habday.server.classes.UIDCreation;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -48,17 +49,8 @@ public class PayService {
     private final FundingMemberRepository fundingMemberRepository;
     private final FundingItemRepository fundingItemRepository;
     private final IamportService iamportService;
+    private final UIDCreation uidCreation;
 
-
-    private String createCustomerUid(Long memberId){
-        Long paymentNum = paymentRepository.countByMemberId(memberId)+1;
-        return "cus" + memberId + "_p" + paymentNum;//ex) cus2_p2
-    }
-
-    public String createMerchantUid(Long fundingItemId, Long memberId){
-        Long itemNum = fundingMemberRepository.countByFundingItemIdAndMemberId(fundingItemId, memberId) + 8;
-        return "mer" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer1_m2_i2
-    }
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequestDto billingKeyRequest, Long memberId){
         String cardNumber = billingKeyRequest.getCard_number();
@@ -67,7 +59,7 @@ public class PayService {
         if (existingPayment != null)
             throw new CustomException(CARD_ALREADY_EXIST);
 
-        String customer_uid = createCustomerUid(memberId);
+        String customer_uid = uidCreation.createCustomerUid(memberId);
         IamportResponse<BillingCustomer> iamportResponse = iamportService.getBillingKeyFromIamport(billingKeyRequest, customer_uid);
         log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
 

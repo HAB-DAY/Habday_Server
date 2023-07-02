@@ -1,6 +1,8 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
+import com.habday.server.classes.Calculation;
+import com.habday.server.classes.UIDCreation;
 import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
@@ -45,31 +47,13 @@ public class FundingService {
     private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
     private final IamportService iamportService;
-    private final PayService payService;
     private final PaymentRepository paymentRepository;
-
-    private BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
-        if (totalPrice == null) {
-            log.debug("fundingService: totalPrice null임" + totalPrice);
-            totalPrice = BigDecimal.ZERO;
-        }
-        return amount.add(totalPrice);
-    }
-
-    private int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
-        return totalPrice.divide(goalPrice).multiply(BigDecimal.valueOf(100)).intValue();
-    }
-
-    private Date calPayDate(Date date){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.MINUTE, 30);//펀딩 종료 30분 후에 결제
-        return new Date(calendar.getTimeInMillis());
-    }
+    private final UIDCreation uidCreation;
+    private final Calculation calculation;
 
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
-        String merchantUid = payService.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
+        String merchantUid = uidCreation.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
 
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
@@ -79,7 +63,7 @@ public class FundingService {
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date scheduleDate = calPayDate(finishDateToDate);//30분 더하기
+        Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
 
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
@@ -93,8 +77,8 @@ public class FundingService {
         fundingMemberRepository.save(FundingMember.of(fundingRequestDto, ScheduledPayState.ready, merchantUid, selectedPayment.getBillingKey()
                 ,fundingItem, member));
 
-        BigDecimal totalPrice = calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
-        int percentage = calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
+        BigDecimal totalPrice = calculation.calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
+        int percentage = calculation.calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
         fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());

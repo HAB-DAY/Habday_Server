@@ -1,5 +1,6 @@
 package com.habday.server.service;
 
+import com.habday.server.classes.Calculation;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.MemberRepository;
@@ -32,19 +33,10 @@ import static com.habday.server.constants.ExceptionCode.PAY_UNSCHEDULING_INTERNA
 @RequiredArgsConstructor
 public class IamportService {
     private final PaymentRepository paymentRepository;
-    private final MemberRepository memberRepository;
-    private final FundingMemberRepository fundingMemberRepository;
-    private final FundingItemRepository fundingItemRepository;
+    private final Calculation calculation;
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");
 
-    public Long getUnixTimeStamp(int year, int month, int date){
-        log.debug("getUnixTimeStamp: "+ year + " " + month + " " + date);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, date);
-        log.debug("getUnixTimeStamp: "+  calendar.getTimeInMillis() / 1000);
-        return calendar.getTimeInMillis() / 1000;
-    }
     public IamportResponse<BillingCustomer> getBillingKeyFromIamport(NoneAuthPayBillingKeyRequestDto billingKeyRequest, String customer_uid){
         BillingCustomerData billingCustomerData = new BillingCustomerData(
                 customer_uid, billingKeyRequest.getCard_number(),
@@ -108,8 +100,8 @@ public class IamportService {
 
     //예약내역 확인
     public IamportResponse<ScheduleList> showSchedulesFromIamport(ShowSchedulesRequestDto requestDto){
-        Long schedule_from = getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
-        Long schedule_to = getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
+        Long schedule_from = calculation.getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
+        Long schedule_to = calculation.getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
         log.debug("IamportService.showSchedules: " + schedule_from + " "  + schedule_to);
         GetScheduleData getScheduleData = new GetScheduleData(schedule_from.intValue(), schedule_to.intValue(), requestDto.getSchedule_status(), requestDto.getPage(), 8);
         try {
