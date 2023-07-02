@@ -4,9 +4,6 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
-import com.habday.server.classes.implemented.HostedList;
-import com.habday.server.classes.implemented.HostedList.HostedListDto;
-import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -14,9 +11,7 @@ import com.habday.server.domain.member.Member;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
-import com.habday.server.dto.res.fund.GetHostingListResponseDto;
-import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
-import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
+import com.habday.server.dto.res.fund.GetListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto.FundingParticipantList;
@@ -28,11 +23,9 @@ import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -100,48 +93,19 @@ public class FundingService extends Common {
      * }
      * */
 
-    public <T> GetHostingListResponseDto getHostingList(Long memberId, String status, Long pointId){
-        ListInterface listInterface = new HostedList();
+    public <T, G> GetListResponseDto getList(ListInterface listInterface, G repository, Long memberId, String status, Long pointId){
         List<T> hostingLists;
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         if (status == "PROGRESS"){
-            hostingLists = listInterface.getProgressList(fundingItemRepository, member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getProgressList(repository, member, pointId, PageRequest.of(0, 10));
         }else{
-            hostingLists = listInterface.getFinishedList(fundingItemRepository, member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getFinishedList(repository, member, pointId, PageRequest.of(0, 10));
         }
 
         Long lastIdOfList = hostingLists.isEmpty() ? null : listInterface.getId();
-        return new GetHostingListResponseDto(hostingLists, hasNext(lastIdOfList));
-    }
-
-    public GetParticipatedListResponseDto getParticipatedList(Long memberId, String status, Long pointId){
-        List<ParticipatedListInterface> participatedLists;
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        if(status == "PROGRESS"){
-            participatedLists = getProgressList_P(member, pointId, PageRequest.of(0, 10));
-        }else{
-            participatedLists = getFinishedList_p(member, pointId, PageRequest.of(0, 10));
-        }
-
-        Long lastIdOfList = participatedLists.isEmpty() ? null : participatedLists.get(participatedLists.size() -1).getFundingMemberId();
-        return new GetParticipatedListResponseDto(participatedLists, hasNext(lastIdOfList));
-    }
-
-
-    private List<ParticipatedListInterface> getProgressList_P(Member member, Long pointId, Pageable page) {
-        return pointId == null?
-                fundingMemberRepository.getPagingListFirst_Progress(member, FundingState.PROGRESS, page) :
-                fundingMemberRepository.getPagingListAfter_Progress(pointId, member, FundingState.PROGRESS, page);
-    }
-
-    private List<ParticipatedListInterface> getFinishedList_p(Member member, Long pointId, Pageable page) {
-        return pointId == null?
-                fundingMemberRepository.getPagingListFirst_Finished(member, FundingState.PROGRESS, page) :
-                fundingMemberRepository.getPagingListAfter_Finished(pointId, member, FundingState.PROGRESS, page);
+        return new GetListResponseDto(hostingLists, hasNext(lastIdOfList));
     }
 
     private Boolean hasNext(Long id){

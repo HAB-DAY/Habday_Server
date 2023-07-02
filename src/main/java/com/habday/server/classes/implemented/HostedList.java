@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
-public class HostedList implements ListInterface {
+public class HostedList implements ListInterface<HostedList.HostedListDto, FundingItemRepository> {
     //HostedList 객체의 생성 시점과 빈주입을 한 fundingItemRepository의 생성 시점이 맞지 않아서 발생하는 문제
     public List<HostedListDto> lists;
     @Getter
