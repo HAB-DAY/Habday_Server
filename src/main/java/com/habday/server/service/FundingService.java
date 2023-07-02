@@ -183,12 +183,14 @@ public class FundingService {
     // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
     public void checkFundingFinishDate(FundingItem fundingItem){
         System.out.println("getFinishDate^^ " + fundingItem.getFinishDate());
-        LocalDate now = LocalDate.now(); //현재 날짜 구하기
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 포맷정의
-        String formatNow = now.format(formatter); //현재 날짜 포맷 적용
-        String formatFinishDate = fundingItem.getFinishDate().format(formatter); //펀딩 종료 날짜 포맷 적용
 
-        if (formatNow == formatFinishDate) { //현재날짜가 펀딩 종료 날짜일 경우
+        LocalDate now = LocalDate.now(); //현재 날짜 구하기
+        System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 포맷정의
+        //String formatNow = now.format(formatter); //현재 날짜 포맷 적용
+
+        if (now.isEqual(fundingItem.getFinishDate())) {
+        //if (formatNow == fundingItem.getFinishDate()) { //현재날짜가 펀딩 종료 날짜일 경우
             checkFundingGoalPercent(fundingItem.getItemPrice(), fundingItem.getTotalPrice(), fundingItem.getGoalPrice());
             //status SUCCESS로 바꾸기
         } else {
@@ -201,7 +203,7 @@ public class FundingService {
         BigDecimal realPercent = totalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
         if (goalPercent.compareTo(realPercent) == 0 ||  goalPercent.compareTo(realPercent) == 1) {
-
+            System.out.println("최소 목표퍼센트 이상 달성함");
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             throw new CustomException(FAIL_FINISH_FUNDING);
         }

@@ -79,5 +79,6 @@ public class FundingController {
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
 
         fundingService.checkFundingFinishDate(fundingItem);
+
     }
 }
