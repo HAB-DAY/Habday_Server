@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
+import com.habday.server.classes.implemented.HostedList;
+import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -23,6 +25,7 @@ import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -39,10 +42,10 @@ public class FundingService extends Common {
     private final Calculation calculation;
     private final IamportService iamportService;
 
+
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
         String merchantUid = uidCreation.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
-
         Payment selectedPayment = paymentRepository.findById(fundingRequestDto.getPaymentId()).
                 orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
         FundingItem fundingItem = fundingItemRepository.findById(fundingRequestDto.getFundingItemId())
@@ -53,7 +56,7 @@ public class FundingService extends Common {
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
-
+        //아이앰포트
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
@@ -61,7 +64,7 @@ public class FundingService extends Common {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
-
+        //저장
         fundingMemberRepository.save(FundingMember.of(fundingRequestDto, ScheduledPayState.ready, merchantUid, selectedPayment.getBillingKey()
                 ,fundingItem, member));
 
@@ -93,15 +96,15 @@ public class FundingService extends Common {
      * }
      * */
 
-    public <T, G> GetListResponseDto getList(ListInterface listInterface, G repository, Long memberId, String status, Long pointId){
+    public <T> GetListResponseDto getList(ListInterface listInterface, Long memberId, String status, Long pointId){
         List<T> hostingLists;
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         if (status == "PROGRESS"){
-            hostingLists = listInterface.getProgressList(repository, member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getProgressList(member, pointId, PageRequest.of(0, 10));
         }else{
-            hostingLists = listInterface.getFinishedList(repository, member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getFinishedList(member, pointId, PageRequest.of(0, 10));
         }
 
         Long lastIdOfList = hostingLists.isEmpty() ? null : listInterface.getId();

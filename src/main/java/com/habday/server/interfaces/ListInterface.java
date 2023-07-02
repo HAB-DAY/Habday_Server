@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 //HostedList/ParticipatedList
-public interface ListInterface<T, G> {
-    public List<T> getProgressList(G repository, Member member, Long pointId, Pageable page);
+public interface ListInterface<T> {
+    public List<T> getProgressList(Member member, Long pointId, Pageable page);
 
-    public List<T> getFinishedList(G repository, Member member, Long pointId,  Pageable page);
+    public List<T> getFinishedList(Member member, Long pointId,  Pageable page);
 
     public Long getId();
 }

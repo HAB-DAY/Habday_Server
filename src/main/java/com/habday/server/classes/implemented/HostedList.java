@@ -1,20 +1,25 @@
 package com.habday.server.classes.implemented;
 
+import com.habday.server.classes.Common;
 import com.habday.server.constants.FundingState;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.interfaces.ListInterface;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
-@Slf4j
-public class HostedList implements ListInterface<HostedList.HostedListDto, FundingItemRepository> {
+@Component
+@RequiredArgsConstructor
+public class HostedList implements ListInterface {
     //HostedList 객체의 생성 시점과 빈주입을 한 fundingItemRepository의 생성 시점이 맞지 않아서 발생하는 문제
     public List<HostedListDto> lists;
+    public final FundingItemRepository fundingItemRepository;
     @Getter
     public static class HostedListDto{
         private Long id; //FundingItem
@@ -39,21 +44,19 @@ public class HostedList implements ListInterface<HostedList.HostedListDto, Fundi
     }
 
     @Override
-    public List<HostedListDto> getProgressList(FundingItemRepository repository, Member member, Long pointId, Pageable page) {
+    public List<HostedListDto> getProgressList(Member member, Long pointId, Pageable page) {
         if(pointId == null)
-            lists = repository.findByStatusAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page);
+            return lists = fundingItemRepository.findByStatusAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page);
         else
-            lists =repository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
-        return lists;
+            return lists =fundingItemRepository.findByIdLessThanAndStatusAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
     }
 
     @Override
-    public List<HostedListDto> getFinishedList(FundingItemRepository repository, Member member, Long pointId, Pageable page) {
+    public List<HostedListDto> getFinishedList( Member member, Long pointId, Pageable page) {
         if(pointId == null)
-            lists = repository.findByStatusNotAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page);
+            return lists = fundingItemRepository.findByStatusNotAndMemberOrderByIdDesc(FundingState.PROGRESS, member, page);
         else
-            lists = repository.findByIdLessThanAndStatusNotAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
-        return lists;
+            return lists = fundingItemRepository.findByIdLessThanAndStatusNotAndMemberOrderByIdDesc(pointId, FundingState.PROGRESS, member, page);
     }
 
     @Override
