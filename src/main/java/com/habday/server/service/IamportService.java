@@ -1,6 +1,7 @@
 package com.habday.server.service;
 
 import com.habday.server.classes.Calculation;
+import com.habday.server.classes.Common;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.MemberRepository;
@@ -31,8 +32,7 @@ import static com.habday.server.constants.ExceptionCode.PAY_UNSCHEDULING_INTERNA
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class IamportService {
-    private final PaymentRepository paymentRepository;
+public class IamportService extends Common {
     private final Calculation calculation;
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");

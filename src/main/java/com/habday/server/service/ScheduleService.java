@@ -1,12 +1,13 @@
 package com.habday.server.service;
 
+import com.habday.server.classes.Common;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class ScheduleService {
+public class ScheduleService extends Common {
     @Scheduled(cron = "0 5 0 * * *") // 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         /*

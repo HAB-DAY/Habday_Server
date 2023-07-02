@@ -35,7 +35,6 @@ public class PayController{
     private final IamportClient iamportClient =
             new IamportClient("3353771108105637", "CrjUGS59xKtdBK1eYdj7r4n5TnuEDGcQo12NLdRCetjCUCnMsDFk5Q9IqOlhhH7QELBdakQTIB5WfPcg");;
     private final PayService payService;
-    private final FundingMemberRepository fundingMemberRepository;
 
     /** 아이앰포트 rest api로 빌링키 획득하기(카드 등록) **/
     @PostMapping(value = {"/noneauthpay/getBillingKey/{memberId}", "/noneauthpay/getBillingKey/"})

@@ -1,5 +1,6 @@
 package com.habday.server.controller;
 
+import com.habday.server.classes.Common;
 import com.habday.server.config.S3Uploader;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
@@ -25,9 +26,7 @@ import static com.habday.server.constants.SuccessCode.VERIFY_MEMBER_PROFILE_SUCC
 
 @RestController
 @RequiredArgsConstructor
-public class MemberController {
-    private final MemberRepository memberRepository;
-    private final FundingItemRepository fundingItemRepository;
+public class MemberController extends Common {
     private final MemberService memberService;
     @Autowired
     private S3Uploader s3Uploader;

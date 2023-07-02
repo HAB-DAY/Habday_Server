@@ -1,5 +1,6 @@
 package com.habday.server.service;
 
+import com.habday.server.classes.Common;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.MemberProfileRequestDto;
@@ -12,8 +13,7 @@ import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService {
-    private final MemberRepository memberRepository;
+public class MemberService extends Common {
 
     @Transactional
     public void updateMemberProfile(Long memberId, MemberProfileRequestDto requestDto) {

@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class UIDCreation {
-    private final FundingMemberRepository fundingMemberRepository;
-    private final PaymentRepository paymentRepository;
+public class UIDCreation extends Common{
 
     public String createCustomerUid(Long memberId){
         Long paymentNum = paymentRepository.countByMemberId(memberId)+1;

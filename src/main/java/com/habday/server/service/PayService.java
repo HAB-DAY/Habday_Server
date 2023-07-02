@@ -1,6 +1,7 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
+import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
@@ -43,11 +44,7 @@ import static com.habday.server.constants.ScheduledPayState.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PayService {
-    private final PaymentRepository paymentRepository;
-    private final MemberRepository memberRepository;
-    private final FundingMemberRepository fundingMemberRepository;
-    private final FundingItemRepository fundingItemRepository;
+public class PayService extends Common {
     private final IamportService iamportService;
     private final UIDCreation uidCreation;
 

@@ -2,6 +2,7 @@ package com.habday.server.service;
 
 import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
+import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
@@ -42,12 +43,7 @@ import static com.habday.server.constants.ExceptionCode.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FundingService {
-    private final FundingMemberRepository fundingMemberRepository;
-    private final FundingItemRepository fundingItemRepository;
-    private final MemberRepository memberRepository;
-    private final IamportService iamportService;
-    private final PaymentRepository paymentRepository;
+public class FundingService extends Common {
     private final UIDCreation uidCreation;
     private final Calculation calculation;
 
