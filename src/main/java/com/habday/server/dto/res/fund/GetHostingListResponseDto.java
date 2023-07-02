@@ -11,35 +11,12 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class GetHostingListResponseDto {
-    private List<HostedListDto> hostingLists;
+public class GetHostingListResponseDto<T> {
+    private List<T> hostingLists;
     private Boolean hasNext;
 
-    public GetHostingListResponseDto(List<HostedListDto> hostingLists, Boolean hasNext){
+    public GetHostingListResponseDto(List<T> hostingLists, Boolean hasNext){
         this.hostingLists = hostingLists;
         this.hasNext = hasNext;
-    }
-
-    @Getter
-    public static class HostingList{
-        private Long id; //FundingItem
-        private String fundingItemImg; //FundingItem
-        private String fundingName; //FundingItem
-        private BigDecimal totalPrice; //FundingItem
-        private LocalDate startDate; //FundingItem
-        private LocalDate finishDate; //FundingItem
-        private FundingState status; //FundingItem
-
-        public HostingList(Long id, String fundingItemImg, String fundingName,
-                           BigDecimal totalPrice, LocalDate startDate, LocalDate finishDate,
-                           FundingState status){
-            this.id = id;
-            this.fundingItemImg = fundingItemImg;
-            this.fundingName = fundingName;
-            this.totalPrice = totalPrice;
-            this.startDate = startDate;
-            this.finishDate = finishDate;
-            this.status = status;
-        }
     }
 }

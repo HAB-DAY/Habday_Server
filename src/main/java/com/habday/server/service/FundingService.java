@@ -9,17 +9,12 @@ import com.habday.server.classes.implemented.HostedList.HostedListDto;
 import com.habday.server.constants.FundingState;
 import com.habday.server.constants.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
-import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
-import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
-import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
-import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetHostingListResponseDto;
-import com.habday.server.dto.res.fund.GetHostingListResponseDto.HostingList;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto;
 import com.habday.server.dto.res.fund.GetParticipatedListResponseDto.ParticipatedListInterface;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
@@ -105,19 +100,19 @@ public class FundingService extends Common {
      * }
      * */
 
-    public GetHostingListResponseDto getHostingList(Long memberId, String status, Long pointId){
-        ListInterface hostedList = new HostedList();
-        List<HostedListDto> hostingLists;
+    public <T> GetHostingListResponseDto getHostingList(Long memberId, String status, Long pointId){
+        ListInterface listInterface = new HostedList();
+        List<T> hostingLists;
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         if (status == "PROGRESS"){
-            hostingLists = hostedList.getProgressList(member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getProgressList(fundingItemRepository, member, pointId, PageRequest.of(0, 10));
         }else{
-            hostingLists = hostedList.getFinishedList(member, pointId, PageRequest.of(0, 10));
+            hostingLists = listInterface.getFinishedList(fundingItemRepository, member, pointId, PageRequest.of(0, 10));
         }
 
-        Long lastIdOfList = hostingLists.isEmpty() ? null : hostingLists.get(hostingLists.size() -1).getId();
+        Long lastIdOfList = hostingLists.isEmpty() ? null : listInterface.getId();
         return new GetHostingListResponseDto(hostingLists, hasNext(lastIdOfList));
     }
 
@@ -135,6 +130,7 @@ public class FundingService extends Common {
         Long lastIdOfList = participatedLists.isEmpty() ? null : participatedLists.get(participatedLists.size() -1).getFundingMemberId();
         return new GetParticipatedListResponseDto(participatedLists, hasNext(lastIdOfList));
     }
+
 
     private List<ParticipatedListInterface> getProgressList_P(Member member, Long pointId, Pageable page) {
         return pointId == null?
