@@ -3,6 +3,7 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.classes.implemented.ParticipatedList;
+import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.fund.*;
@@ -17,6 +18,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
+import static com.habday.server.constants.ExceptionCode.NO_FUNDING_ITEM_ID;
 import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 import static com.habday.server.constants.SuccessCode.*;
 
@@ -72,5 +74,14 @@ public class FundingController extends Common {
             Long lastItemId){
         GetListResponseDto responseDto = fundingService.getList(participatedList, memberId,"FINISHED", lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+    }
+
+    @GetMapping("/checkSuccess/{fundingItemId}")
+    public void checkFundingResult(@PathVariable Long fundingItemId) {
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+        fundingService.checkFundingFinishDate(fundingItem);
+
     }
 }

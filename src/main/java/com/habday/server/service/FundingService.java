@@ -29,7 +29,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -114,5 +116,32 @@ public class FundingService extends Common {
     private Boolean hasNext(Long id){
         if(id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
+    public void checkFundingFinishDate(FundingItem fundingItem){
+        LocalDate now = LocalDate.now(); //현재 날짜 구하기
+        System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
+
+        if (now.isEqual(fundingItem.getFinishDate())) { // 현재날짜가 펀딩 종료 날짜일 경우
+            checkFundingGoalPercent(fundingItem.getItemPrice(), fundingItem.getTotalPrice(), fundingItem.getGoalPrice());
+            //status SUCCESS로 바꾸기
+        } else {
+            throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
+        }
+    }
+
+    public void checkFundingGoalPercent(BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice) {
+        BigDecimal goalPercent = goalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); //최소목표퍼센트
+        BigDecimal realPercent = totalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); // 실제달성퍼센트
+
+        System.out.println("goalPercent^^ " + goalPercent);
+        System.out.println("realPercent^^ " + realPercent);
+        System.out.println("realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+        if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
+            System.out.println("최소 목표퍼센트 이상 달성함");
+        } else { // 펀딩 최소 목표 퍼센트에 달성 못함
+            throw new CustomException(FAIL_FINISH_FUNDING);
+        }
     }
 }
