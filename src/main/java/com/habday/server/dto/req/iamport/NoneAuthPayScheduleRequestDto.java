@@ -1,5 +1,6 @@
 package com.habday.server.dto.req.iamport;
 
+import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,7 +19,7 @@ public class NoneAuthPayScheduleRequestDto {//todo customer_uidì™€ merchant_uidë
     private String buyer_email;
 
     @Builder
-    public NoneAuthPayScheduleRequestDto(String customer_uid, String merchant_uid, Date schedule_at,
+    private NoneAuthPayScheduleRequestDto(String customer_uid, String merchant_uid, Date schedule_at,
                     BigDecimal amount, String name, String buyer_name, String buyer_tel, String buyer_email){
         this.customer_uid = customer_uid;
         this.merchant_uid = merchant_uid;
@@ -30,9 +31,17 @@ public class NoneAuthPayScheduleRequestDto {//todo customer_uidì™€ merchant_uidë
         this.buyer_email = buyer_email;
     }
 
-    public static NoneAuthPayScheduleRequestDto of(String customer_uid, String merchant_uid, Date schedule_at,
-                     BigDecimal amount, String name, String buyer_name, String buyer_tel, String buyer_email){
-        return new NoneAuthPayScheduleRequestDto(customer_uid, merchant_uid, schedule_at, amount, name, buyer_name, buyer_tel, buyer_email);
+    public static NoneAuthPayScheduleRequestDto of(ParticipateFundingRequest fundingRequestDto, String customer_uid, String merchant_uid, Date schedule_at){
+        return NoneAuthPayScheduleRequestDto.builder()
+                .customer_uid(customer_uid)
+                .merchant_uid(merchant_uid)
+                .schedule_at(schedule_at)
+                .amount(fundingRequestDto.getAmount())
+                .name(fundingRequestDto.getName())
+                .buyer_name(fundingRequestDto.getBuyer_name())
+                .buyer_tel(fundingRequestDto.getBuyer_tel())
+                .buyer_email(fundingRequestDto.getBuyer_email())
+                .build();
     }
 
     public String printRequest(){

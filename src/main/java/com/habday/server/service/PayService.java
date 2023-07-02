@@ -10,18 +10,16 @@ import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
-import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequest;
+import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
+import com.habday.server.dto.res.iamport.DeleteBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetBillingKeyResponseDto;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto.PaymentList;
 import com.habday.server.dto.res.iamport.GetPaymentListsResponseDto;
 import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
-import com.siot.IamportRestClient.exception.IamportResponseException;
-import com.siot.IamportRestClient.request.GetScheduleData;
-import com.siot.IamportRestClient.request.UnscheduleData;
 import com.siot.IamportRestClient.response.BillingCustomer;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
@@ -36,7 +34,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -55,15 +52,15 @@ public class PayService {
 
     private String createCustomerUid(Long memberId){
         Long paymentNum = paymentRepository.countByMemberId(memberId)+1;
-        return "cus_m" + memberId + "_p" + paymentNum;//ex) cus_m2_p2
+        return "cus" + memberId + "_p" + paymentNum;//ex) cus2_p2
     }
 
     public String createMerchantUid(Long fundingItemId, Long memberId){
         Long itemNum = fundingMemberRepository.countByFundingItemIdAndMemberId(fundingItemId, memberId) + 8;
-        return "mer_f" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer_f1_m2_i2
+        return "mer" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer1_m2_i2
     }
     @Transactional
-    public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequest billingKeyRequest, Long memberId){
+    public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequestDto billingKeyRequest, Long memberId){
         String cardNumber = billingKeyRequest.getCard_number();
         Payment existingPayment = paymentRepository.findByCardNumberEnd(cardNumber.substring(15, 19));
 
@@ -89,6 +86,26 @@ public class PayService {
                 .build());
 
         return GetBillingKeyResponseDto.of(billingKeyRequest.getPayment_name(), customer_uid, iamportResponse.getCode(), iamportResponse.getMessage());
+    }
+
+    public DeleteBillingKeyResponseDto deleteBillingKey(Long paymentId){
+        log.debug("paymentId: " + paymentId);
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
+        IamportResponse<BillingCustomer> iamportResponse = iamportService.deleteBillingKeyFromIamport(payment.getBillingKey(),
+                "사용자의 요청으로 인한 카드 삭제", "extra none");
+        log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
+        if(iamportResponse.getCode() != 0){
+            throw new CustomExceptionWithMessage(DELETING_BILLING_KEY_FAIL_INTERNAL_ERROR, iamportResponse.getMessage());
+        }
+
+        paymentRepository.delete(payment);
+        return DeleteBillingKeyResponseDto.builder()
+                .isDelete(true)
+                .paymentName(payment.getPaymentName())
+                .cardNumberEnd(payment.getCardNumberEnd())
+                .paymentId(paymentId)
+                .build();
     }
 
     public GetPaymentListsResponseDto getPaymentLists(Long memberId){
@@ -159,8 +176,6 @@ public class PayService {
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
             throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
         }
-
-        //todo fundingItemStatus update 하기
     }
 
 

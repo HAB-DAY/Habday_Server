@@ -33,7 +33,9 @@ public enum ExceptionCode {
     NO_FUNDING_STATE_EXISTS(BAD_REQUEST, "잘못된 펀딩 상태 입니다."),
     UNAUTHORIZED_IP(UNAUTHORIZED, "허가되지 않은 ip 입니다."),
     GET_PAY_INFO_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "일치하는 결제 정보가 없습니다."),
-    NO_CORRESPONDING_AMOUNT(INTERNAL_SERVER_ERROR,"저장된 금액과 결제된 금액이 일치하지 않습니다.");
+    NO_CORRESPONDING_AMOUNT(INTERNAL_SERVER_ERROR,"저장된 금액과 결제된 금액이 일치하지 않습니다."),
+    DELETING_BILLING_KEY_FAIL_INTERNAL_ERROR(INTERNAL_SERVER_ERROR, "빌링키 삭제 중 결제 모듈 에러가 발생했습니다.");
+//    DELETING_BILLING_KEY_FAIL();
 
 
     private final HttpStatus status;

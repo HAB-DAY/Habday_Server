@@ -1,13 +1,12 @@
 package com.habday.server.dto.req.iamport;
 
 import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
-public class NoneAuthPayBillingKeyRequest {
+public class NoneAuthPayBillingKeyRequestDto {
     private String payment_name;
 
     @NotNull(message = "카드번호를 입력해주세요.")
