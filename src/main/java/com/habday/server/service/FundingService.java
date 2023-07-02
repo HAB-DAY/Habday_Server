@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.habday.server.constants.ExceptionCode.*;
@@ -177,5 +178,32 @@ public class FundingService {
     private Boolean hasNext(Long id){
         if(id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
+    public void checkFundingFinishDate(FundingItem fundingItem){
+        System.out.println("getFinishDate^^ " + fundingItem.getFinishDate());
+        LocalDate now = LocalDate.now(); //현재 날짜 구하기
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 포맷정의
+        String formatNow = now.format(formatter); //현재 날짜 포맷 적용
+        String formatFinishDate = fundingItem.getFinishDate().format(formatter); //펀딩 종료 날짜 포맷 적용
+
+        if (formatNow == formatFinishDate) { //현재날짜가 펀딩 종료 날짜일 경우
+            checkFundingGoalPercent(fundingItem.getItemPrice(), fundingItem.getTotalPrice(), fundingItem.getGoalPrice());
+            //status SUCCESS로 바꾸기
+        } else {
+            throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
+        }
+    }
+
+    public void checkFundingGoalPercent(BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice) {
+        BigDecimal goalPercent = goalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); //최소목표퍼센트
+        BigDecimal realPercent = totalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); // 실제달성퍼센트
+
+        if (goalPercent.compareTo(realPercent) == 0 ||  goalPercent.compareTo(realPercent) == 1) {
+
+        } else { // 펀딩 최소 목표 퍼센트에 달성 못함
+            throw new CustomException(FAIL_FINISH_FUNDING);
+        }
     }
 }

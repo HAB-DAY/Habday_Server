@@ -1,5 +1,8 @@
 package com.habday.server.controller;
 
+import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
+import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.fund.*;
@@ -14,6 +17,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
+import static com.habday.server.constants.ExceptionCode.NO_FUNDING_ITEM_ID;
 import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
 import static com.habday.server.constants.SuccessCode.*;
 
@@ -24,6 +28,7 @@ import static com.habday.server.constants.SuccessCode.*;
 @RequestMapping("/funding")
 public class FundingController {
     private final FundingService fundingService;
+    private final FundingItemRepository fundingItemRepository;
 
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
     public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
@@ -66,5 +71,13 @@ public class FundingController {
             Long lastItemId){
         GetParticipatedListResponseDto responseDto = fundingService.getParticipatedList(memberId, "FINISHED", lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+    }
+
+    @GetMapping("/checkSuccess/{fundingItemId}")
+    public void checkFundingResult(@PathVariable Long fundingItemId) {
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+        fundingService.checkFundingFinishDate(fundingItem);
     }
 }
