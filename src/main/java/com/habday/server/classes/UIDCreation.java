@@ -14,7 +14,7 @@ public class UIDCreation extends Common{
     }
 
     public String createMerchantUid(Long fundingItemId, Long memberId){
-        Long itemNum = fundingMemberRepository.countByFundingItemIdAndMemberId(fundingItemId, memberId) + 8;
+        Long itemNum = fundingMemberRepository.countByFundingItemIdAndMemberId(fundingItemId, memberId) + 10;
         return "mer" + fundingItemId + "_m" + memberId + "_i" + itemNum;//특정 아이템에 멤버 참여 횟수 정하기 ex)mer1_m2_i2
     }
 }

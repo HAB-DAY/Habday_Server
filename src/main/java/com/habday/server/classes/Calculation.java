@@ -27,7 +27,7 @@ public class Calculation {
     }
 
     public int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
-        return totalPrice.divide(goalPrice).multiply(BigDecimal.valueOf(100)).intValue();
+        return totalPrice.divide(goalPrice, 2, BigDecimal.ROUND_CEILING).multiply(BigDecimal.valueOf(100)).intValue();
     }
 
     public Date calPayDate(Date date){
