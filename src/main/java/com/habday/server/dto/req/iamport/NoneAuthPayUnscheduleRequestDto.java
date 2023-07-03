@@ -14,4 +14,9 @@ public class NoneAuthPayUnscheduleRequestDto {
 
     @NotNull(message="예약 결제 취소 이유를 입력해주세요.")
     private String reason;
+
+    public NoneAuthPayUnscheduleRequestDto(Long fundingMemberId, String reason){
+        this.fundingMemberId = fundingMemberId;
+        this.reason = reason;
+    }
 }

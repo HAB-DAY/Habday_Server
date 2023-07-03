@@ -106,7 +106,7 @@ public class PayService extends Common {
         return GetPaymentListsResponseDto.of(paymentLists);
     }
 
-    public UnscheduleResponseDto noneAuthPayUnschedule(NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, Long memberId){
+    public UnscheduleResponseDto noneAuthPayUnschedule(NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){
         FundingMember fundingMember = fundingMemberRepository.findById(unscheduleRequestDto.getFundingMemberId())
                 .orElseThrow(() -> new CustomException(NO_FUNDING_MEMBER_ID));
         FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId())
@@ -138,51 +138,5 @@ public class PayService extends Common {
     public IamportResponse<ScheduleList> showSchedules(ShowSchedulesRequestDto showSchedulesRequestDto){
         IamportResponse<ScheduleList> iamportResponse = iamportService.showSchedulesFromIamport(showSchedulesRequestDto);
         return iamportResponse;
-    }
-
-    public void callbackSchedule(CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request){
-        String clientIp = getIp(request);
-        String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
-        List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
-
-        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
-
-        IamportResponse<com.siot.IamportRestClient.response.Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
-
-        if (!ipLists.contains(clientIp)){
-            fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
-            throw new CustomException(UNAUTHORIZED_IP);
-        }
-
-        if(!fundingMember.getAmount().equals(response.getResponse().getAmount())){
-            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-            throw new CustomException(NO_CORRESPONDING_AMOUNT);
-        }
-
-        if(callbackRequestDto.getStatus() == paid.getMsg()){
-            fundingMember.updateWebhookSuccess(paid);
-        }else{
-            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
-            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
-        }
-    }
-
-
-    private String getIp(HttpServletRequest request) {
-        String [] headers = {"X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR", };
-
-        String ip = request.getHeader("X-Forwarded-For");
-        for(String header: headers){
-            if (ip == null){
-                ip = request.getHeader(header);
-                log.info(">>>> " + header + " : " + ip);
-            }
-        }
-        if (ip == null) {
-            ip = request.getRemoteAddr();
-        }
-
-        return ip;
-
     }
 }

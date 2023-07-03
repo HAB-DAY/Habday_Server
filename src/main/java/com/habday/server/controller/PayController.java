@@ -68,9 +68,11 @@ public class PayController{
     /**예약 취소**/
     @PostMapping(value = {"/noneauthpay/unschedule", "/noneauthpay/unschedule/{memberId}"})
     public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, @PathVariable Optional<Long> memberId){
-        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto, memberId.orElseThrow(
+        memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
-        ));
+        );
+
+        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto);
         return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
 
@@ -99,18 +101,5 @@ public class PayController{
         log.debug("cancel 완료 직전임");
         return iamportClient.cancelPaymentByImpUid(cancelData);
     }
-
-    /** 웹훅 예약결제 컬백 **/
-    @PostMapping("/callback/schedule")
-    public @ResponseBody void callbackSchedule(@RequestBody CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request) throws IamportResponseException, IOException {
-        payService.callbackSchedule(callbackRequestDto, request);
-    }
-
-
-    /** 빌링키에 매핑된 결제 데이터 확인하기 **/
-    /*@GetMapping("/noneauthpay/showbillinginfo/{customer_uid}")
-    public @ResponseBody IamportResponse<BillingCustomer> showBillingInfo(@PathVariable String customer_uid) throws IamportResponseException, IOException {
-        return iamportClient.getBillingCustomer(customer_uid);
-    }*/
 
 }
