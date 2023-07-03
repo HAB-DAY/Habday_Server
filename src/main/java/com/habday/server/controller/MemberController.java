@@ -46,7 +46,7 @@ public class MemberController extends Common {
 
         String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
 
-        fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getTotalPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
+        fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
         return CreateFundingItemResponse.newResponse(CREATE_FUNDING_ITEM_SUCCESS);
     }
 

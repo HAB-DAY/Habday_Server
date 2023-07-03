@@ -21,7 +21,6 @@ public class CreateFundingItemRequestDto {
     private String fundingName;
     private String fundDetail;
     private BigDecimal itemPrice;
-    private BigDecimal totalPrice;
     private BigDecimal goalPrice;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
@@ -29,23 +28,21 @@ public class CreateFundingItemRequestDto {
     private LocalDate finishDate;
 
     @Builder
-    public CreateFundingItemRequestDto(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
+    public CreateFundingItemRequestDto(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate) {
         //this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
         this.itemPrice = itemPrice;
-        this.totalPrice = totalPrice;
         this.goalPrice = goalPrice;
         this.startDate = startDate;
         this.finishDate = finishDate;
     }
-    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, Member member) {
+    public FundingItem toCreateFundingItem(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, Member member) {
         return FundingItem.builder()
                 .fundingItemImg(fundingItemImg)
                 .fundingName(fundingName)
                 .fundDetail(fundDetail)
                 .itemPrice(itemPrice)
-                .totalPrice(totalPrice)
                 .goalPrice(goalPrice)
                 .startDate(startDate)
                 .finishDate(finishDate)
@@ -53,7 +50,7 @@ public class CreateFundingItemRequestDto {
                 .member(member)
                 .build();
     }
-    public static CreateFundingItemRequestDto of(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
-        return new CreateFundingItemRequestDto(fundingName, fundDetail, itemPrice, totalPrice, goalPrice, startDate, finishDate);
+    public static CreateFundingItemRequestDto of(String fundingName, String fundDetail, BigDecimal itemPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate){
+        return new CreateFundingItemRequestDto(fundingName, fundDetail, itemPrice, goalPrice, startDate, finishDate);
     }
 }
