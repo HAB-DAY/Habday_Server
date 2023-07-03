@@ -26,7 +26,7 @@ public class FundingCloseController extends Common {
     public void checkFundingResult(@PathVariable Long fundingItemId) {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        fundingCloseService.checkFundingGoalPercent(fundingItem);
+        fundingCloseService.checkFundingFinishDate(fundingItem);
         //scheduleService.checkFundingFinishDate(fundingItem);
     }
 

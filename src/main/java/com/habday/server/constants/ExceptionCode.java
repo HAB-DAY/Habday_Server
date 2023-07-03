@@ -39,7 +39,10 @@ public enum ExceptionCode {
 
     // 펀딩 종료
     NOT_FINISH_FUNDING(BAD_REQUEST, "펀딩이 아직 종료되지 않았습니다."),
-    FAIL_FINISH_FUNDING(BAD_REQUEST, "펀딩 목표 퍼센트에 달성하지 못했습니다.");
+    ALREADY_FINISHED_FUNDING(BAD_REQUEST, "이미 완료된 펀딩입니다."),
+    FAIL_FINISH_FUNDING(BAD_REQUEST, "펀딩 목표 퍼센트에 달성하지 못했습니다."),
+
+    FAIL_WHILE_UNSCHEDULING(INTERNAL_SERVER_ERROR, "펀딩 실패로 인한 예약 결제 취소 중 알 수 없는 에러가 발생했습니다.");
 
 
     private final HttpStatus status;

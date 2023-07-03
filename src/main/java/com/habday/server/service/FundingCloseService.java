@@ -1,11 +1,13 @@
 package com.habday.server.service;
 
 import com.habday.server.classes.Common;
+import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.constants.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
+import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
@@ -14,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Response;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,6 +37,7 @@ import static com.habday.server.constants.ScheduledPayState.paid;
 public class FundingCloseService extends Common {
     private final PayService payService;
     private final IamportService iamportService;
+    private final RestInterface restInterface;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -55,9 +61,9 @@ public class FundingCloseService extends Common {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
-        System.out.println("goalPercent^^ " + goalPercent);
-        System.out.println("realPercent^^ " + realPercent);
-        System.out.println("realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+        log.debug("goalPercent^^ " + goalPercent);
+        log.debug("realPercent^^ " + realPercent);
+        log.debug("realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
             log.debug("최소 목표퍼센트 이상 달성함");
@@ -67,8 +73,13 @@ public class FundingCloseService extends Common {
             List<FundingMember>  fundingMemberList = fundingMemberRepository.good(fundingItem);
             fundingMemberList.forEach(fundingMember -> {
                 NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(fundingMember.getId(), "목표 달성 실패로 인한 결제 취소");
-                payService.noneAuthPayUnschedule(request);//예약결제 취소 후fundingMember status cancel로 업데이트
-                //TODO 펀딩 실패 메일 보내기
+                Call<UnscheduleResponseDto> call = restInterface.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
+                try {
+                    Response<UnscheduleResponseDto> response = call.execute();
+                } catch (IOException e) {
+                    throw new CustomException(FAIL_WHILE_UNSCHEDULING);
+                }
+                //TODO response로 펀딩 실패 메일 보내기
             });
             throw new CustomException(FAIL_FINISH_FUNDING);
         }
@@ -79,18 +90,21 @@ public class FundingCloseService extends Common {
         LocalDate now = LocalDate.now(); //현재 날짜 구하기
         System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
 
-        if (now.isEqual(fundingItem.getFinishDate())) { // 현재날짜가 펀딩 종료 날짜일 경우
+        if (now.compareTo(fundingItem.getFinishDate()) == 0){
             checkFundingGoalPercent(fundingItem);
-            //status SUCCESS로 바꾸기
-        } else {
+        } else if(now.compareTo(fundingItem.getFinishDate()) < 0){
+            log.debug("종료 이전");
             throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
+        }else{
+            log.debug("종료 이후");
+            throw new CustomException(ALREADY_FINISHED_FUNDING);
         }
     }
 
     /*
         <웹훅>
      * 1. 12시반  예약결제 실행
-     * 2. 웹훅에서 fundingMember payState paid로 update
+     * 2. 웹훅에서 fundingMember.payment_status paid로 update
      * 3. 결제 실패 시 실패 메일과 수동 결제 링크 보내기
      * 4. 결제 성공 시 결제 성공 메일 보내기
      * */

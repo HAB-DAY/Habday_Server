@@ -66,11 +66,11 @@ public class PayController{
 
     //todo null체크
     /**예약 취소**/
-    @PostMapping(value = {"/noneauthpay/unschedule", "/noneauthpay/unschedule/{memberId}"})
-    public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto, @PathVariable Optional<Long> memberId){
-        memberId.orElseThrow(
-                () -> new CustomException(NO_MEMBER_ID)
-        );
+    @PostMapping(value = {"/noneauthpay/unschedule"})
+    public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){//, @PathVariable Optional<Long> memberId
+//        memberId.orElseThrow(
+//                () -> new CustomException(NO_MEMBER_ID)
+//        );
 
         UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto);
         return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
