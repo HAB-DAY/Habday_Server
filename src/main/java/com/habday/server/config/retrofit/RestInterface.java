@@ -9,7 +9,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface RestInterface {
-    @POST("/verifyIamport/noneauthpay/unschedule")
+    @POST("verifyIamport/noneauthpay/unschedule")
     Call<UnscheduleResponseDto> unscheduleApi(
             @Body NoneAuthPayUnscheduleRequestDto requestDto
     );

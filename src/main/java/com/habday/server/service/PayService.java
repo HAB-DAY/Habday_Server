@@ -106,24 +106,24 @@ public class PayService extends Common {
         return GetPaymentListsResponseDto.of(paymentLists);
     }
 
+    @Transactional
     public UnscheduleResponseDto noneAuthPayUnschedule(NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){
         FundingMember fundingMember = fundingMemberRepository.findById(unscheduleRequestDto.getFundingMemberId())
                 .orElseThrow(() -> new CustomException(NO_FUNDING_MEMBER_ID));
         FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId())
                 .orElseThrow(()-> new CustomException(NO_FUNDING_ITEM_ID));
-
         BigDecimal cancelableAmount = fundingMember.getAmount().subtract(fundingMember.getCancelAmount());
 
         if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
+            log.debug("noneAuthPayUnschedule: 이미 환불 완료");
             throw new CustomException(ALREADY_CANCELED);
         }
-
         IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchantId());
-
+        log.debug("noneAuthPayUnschedule: 5" + new Gson().toJson(iamportResponse));
         if(iamportResponse.getCode() != 0){
+            log.debug("noneAuthPayUnschedule: 아이앰포트 응답 오류");
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_INTERNAL_ERROR, iamportResponse.getMessage());
         }
-
         LocalDate cancelDate = LocalDate.now();
         fundingMember.updateCancel(fundingMember.getAmount(), unscheduleRequestDto.getReason(), cancel, cancelDate);
 
