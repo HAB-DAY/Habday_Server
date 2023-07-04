@@ -134,19 +134,28 @@ public class FundingCloseService extends Common {
 
         if (!ipLists.contains(clientIp)){
             fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
-            throw new CustomException(UNAUTHORIZED_IP);
+            log.debug("callbackSchedule() ip 주소 안맞음");
+            return;
+            //throw new CustomException(UNAUTHORIZED_IP);
+            //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
         if(!fundingMember.getAmount().equals(response.getResponse().getAmount())){
             fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-            throw new CustomException(NO_CORRESPONDING_AMOUNT);
+            log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+            return;
+            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
             fundingMember.updateWebhookSuccess(paid);
+            log.debug("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
+            // TODO 결제 성공 메일 보내기
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
-            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
+            log.debug("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
+            // TODO 수동 결제 링크 보내기
+            //throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
         }
     }
 
