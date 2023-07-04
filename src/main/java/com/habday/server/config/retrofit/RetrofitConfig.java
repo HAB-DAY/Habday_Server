@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class RetrofitConfig {
-    private static String API_TEST_URL = "http://localhost:9000/";//CmnConst.server;
+    private static String API_TEST_URL = CmnConst.localhost;//CmnConst.server;
 
     @Bean(name="okHttpClient")
     public OkHttpClient okHttpClient() {

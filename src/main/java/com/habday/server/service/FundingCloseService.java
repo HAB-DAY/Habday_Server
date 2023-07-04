@@ -1,6 +1,7 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
+import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.constants.FundingState;
@@ -39,6 +40,7 @@ import static com.habday.server.constants.ScheduledPayState.paid;
 public class FundingCloseService extends Common {
     private final IamportService iamportService;
     private final RestInterface restService;
+    private final Calculation calculation;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -51,26 +53,23 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    @Scheduled(cron = "0 16 1 * * *") // 매일 밤 0시 5분에 실행
+    @Scheduled(cron = "0 41 1 * * *") // 0 5 0 * * * 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
         List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
         overdatedFundings.forEach(fundingItem -> {
             log.debug("오늘 마감 fundingItem: " + fundingItem.getId());
-            checkFundingGoalPercent(fundingItem.getId());
+            checkFundingGoalPercent(fundingItem);
         });
         log.info("schedule 끝");
     }
     @Transactional
-    public void checkFundingGoalPercent(Long fundingItemId) {
-        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
-                () -> new CustomException(NO_FUNDING_ITEM_ID)
-        );
+    public void checkFundingGoalPercent(FundingItem fundingItem) {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
         log.debug(fundingItem.getId() + "goalPercent^^ " + goalPercent);
-       log.debug(fundingItem.getId() + "realPercent^^ " + realPercent);
+        log.debug(fundingItem.getId() + "realPercent^^ " + realPercent);
         log.debug(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
@@ -93,15 +92,20 @@ public class FundingCloseService extends Common {
             });
             //throw new CustomException(FAIL_FINISH_FUNDING);
         }
+
+        //fundingItemRepository.save(fundingItem);
     }
 
     // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
-    public void checkFundingFinishDate(FundingItem fundingItem){
+    public void checkFundingFinishDate(Long fundingItemId){
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
         LocalDate now = LocalDate.now(); //현재 날짜 구하기
         System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
 
         if (now.compareTo(fundingItem.getFinishDate()) == 0){
-            checkFundingGoalPercent(fundingItem.getId());
+            checkFundingGoalPercent(fundingItem);
         } else if(now.compareTo(fundingItem.getFinishDate()) < 0){
             log.debug("종료 이전");
             throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
@@ -118,6 +122,7 @@ public class FundingCloseService extends Common {
      * 3. 결제 실패 시 실패 메일과 수동 결제 링크 보내기
      * 4. 결제 성공 시 결제 성공 메일 보내기
      * */
+    @Transactional
     public void callbackSchedule(CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request){
         String clientIp = getIp(request);
         String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};

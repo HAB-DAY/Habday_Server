@@ -24,10 +24,7 @@ public class FundingCloseController extends Common {
 
     @GetMapping("/checkSuccess/{fundingItemId}")
     public void checkFundingResult(@PathVariable Long fundingItemId) {
-        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        fundingCloseService.checkFundingFinishDate(fundingItem);
-        //scheduleService.checkFundingFinishDate(fundingItem);
+        fundingCloseService.checkFundingFinishDate(fundingItemId);
     }
 
     /** 웹훅 예약결제 컬백 **/

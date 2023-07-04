@@ -10,6 +10,7 @@ import java.util.Date;
 @Slf4j
 @Component
 public class Calculation {
+    // TODO 현재 시간을 unixTimeStamp로 바꿔서 customeruid/merchantuid에 쓰기
     public Long getUnixTimeStamp(int year, int month, int date){
         log.debug("getUnixTimeStamp: "+ year + " " + month + " " + date);
         Calendar calendar = Calendar.getInstance();
