@@ -58,7 +58,7 @@ public class FundingService extends Common {
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
         log.debug("schedule date: " + scheduleDate);
-        //아이앰포트
+        //아이앰포트에 스케쥴 걸기
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
@@ -66,12 +66,14 @@ public class FundingService extends Common {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
-        //저장
+        //펀딩 참여 정보 저장
         fundingMemberRepository.save(FundingMember.of(fundingRequestDto, ScheduledPayState.ready, merchantUid, selectedPayment.getBillingKey()
                 ,fundingItem, member));
 
         BigDecimal totalPrice = calculation.calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
         int percentage = calculation.calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
+
+        //펀딩 아이템 누적 금액 update
         fundingItem.updatePricePercentage(totalPrice, percentage);
 
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
@@ -116,32 +118,5 @@ public class FundingService extends Common {
     private Boolean hasNext(Long id){
         if(id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
-    }
-
-    // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
-    public void checkFundingFinishDate(FundingItem fundingItem){
-        LocalDate now = LocalDate.now(); //현재 날짜 구하기
-        System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
-
-        if (now.isEqual(fundingItem.getFinishDate())) { // 현재날짜가 펀딩 종료 날짜일 경우
-            checkFundingGoalPercent(fundingItem.getItemPrice(), fundingItem.getTotalPrice(), fundingItem.getGoalPrice());
-            //status SUCCESS로 바꾸기
-        } else {
-            throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
-        }
-    }
-
-    public void checkFundingGoalPercent(BigDecimal itemPrice, BigDecimal totalPrice, BigDecimal goalPrice) {
-        BigDecimal goalPercent = goalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); //최소목표퍼센트
-        BigDecimal realPercent = totalPrice.divide(itemPrice, BigDecimal.ROUND_DOWN); // 실제달성퍼센트
-
-        System.out.println("goalPercent^^ " + goalPercent);
-        System.out.println("realPercent^^ " + realPercent);
-        System.out.println("realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
-        if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
-            System.out.println("최소 목표퍼센트 이상 달성함");
-        } else { // 펀딩 최소 목표 퍼센트에 달성 못함
-            throw new CustomException(FAIL_FINISH_FUNDING);
-        }
     }
 }

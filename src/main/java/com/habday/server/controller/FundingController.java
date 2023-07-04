@@ -75,13 +75,4 @@ public class FundingController extends Common {
         GetListResponseDto responseDto = fundingService.getList(participatedList, memberId,"FINISHED", lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
     }
-
-    @GetMapping("/checkSuccess/{fundingItemId}")
-    public void checkFundingResult(@PathVariable Long fundingItemId) {
-        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-
-        fundingService.checkFundingFinishDate(fundingItem);
-
-    }
 }
