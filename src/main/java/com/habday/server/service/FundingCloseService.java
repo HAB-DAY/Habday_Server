@@ -53,7 +53,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    @Scheduled(cron = "0 41 1 * * *") // 0 5 0 * * * 매일 밤 0시 5분에 실행
+    @Scheduled(cron = "0 5 0 * * *") // 0 5 0 * * * 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
         List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
