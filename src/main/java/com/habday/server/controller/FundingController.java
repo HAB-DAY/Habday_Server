@@ -3,7 +3,10 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.classes.implemented.ParticipatedList;
+import com.habday.server.config.S3Uploader;
 import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.member.Member;
+import com.habday.server.dto.req.CreateFundingItemRequestDto;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.fund.*;
@@ -11,11 +14,14 @@ import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.Optional;
 
 import static com.habday.server.constants.ExceptionCode.NO_FUNDING_ITEM_ID;
@@ -26,11 +32,13 @@ import static com.habday.server.constants.SuccessCode.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/funding")
+@RequestMapping("/api/v1/funding")
 public class FundingController extends Common {
     private final FundingService fundingService;
     private final ParticipatedList participatedList;
     private final HostedList hostedList;
+    @Autowired
+    private S3Uploader s3Uploader;
 
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
     public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
@@ -67,6 +75,19 @@ public class FundingController extends Common {
             Long lastItemId){
         GetListResponseDto responseDto = fundingService.getList(participatedList, memberId, "PROGRESS", lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+    }
+
+    @PostMapping("/create/fundingItem/{memberId}")
+    public ResponseEntity<CommonResponse> createFundingItem(@PathVariable("memberId") Long memberId, @RequestPart(value="fundingItemImg") MultipartFile fundingItemImg, @RequestPart(value="dto") CreateFundingItemRequestDto request) throws IOException {
+        System.out.println("fundingItemImg^^" + fundingItemImg.toString());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
+
+        FundingItem fundingItem = fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
+        String responseDto = "http://13.124.209.40:8080/funding/showFundingContent?itemId=" + fundingItem.getId();
+        return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
     }
 
     @GetMapping("/itemList/participated/finished")

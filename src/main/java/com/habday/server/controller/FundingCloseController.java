@@ -18,7 +18,7 @@ import static com.habday.server.constants.ExceptionCode.NO_FUNDING_ITEM_ID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/fundingClose")
+@RequestMapping("/api/v1/fundingClose")
 public class FundingCloseController extends Common {
     private final FundingCloseService fundingCloseService;
 

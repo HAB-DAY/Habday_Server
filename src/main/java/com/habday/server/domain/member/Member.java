@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Getter //@Data
 @NoArgsConstructor
@@ -102,23 +105,23 @@ public class Member {
     }*/
 
     /**
+     * 사용자가 다양한 권한을 가지고 있을수 있음
+     */
+    public List<String> getRoleList() {
+        if(this.roles.length()>0) {
+            return Arrays.asList(this.roles.split(","));
+        }
+        return new ArrayList<>();
+    }
+
+    /**
      *  refresh 생성자, setter
      */
-    /*public void createRefreshToken(RefreshToken refreshToken) {
+    public void createRefreshToken(RefreshToken refreshToken) {
         this.jwtRefreshToken = refreshToken;
     }
     public void SetRefreshToken(String refreshToken) {
         this.jwtRefreshToken.setRefreshToken(refreshToken);
-    }*/
-
-    /**
-     * 사용자가 다양한 권한을 가지고 있을수 있음
-     */
-    /*public List<String> getRoleList() {
-        if (this.roles.length() > 0) {
-            return Arrays.asList(this.roles.split(","));
-        }
-        return new ArrayList<>();
-    }*/
+    }
 
 }
