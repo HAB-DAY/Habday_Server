@@ -72,43 +72,33 @@ public class FundingCloseService extends Common {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
-        log.debug(fundingItem.getId() + "goalPercent^^ " + goalPercent);
-        log.debug(fundingItem.getId() + "realPercent^^ " + realPercent);
-        log.debug(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+        log.info(fundingItem.getId() + "goalPercent^^ " + goalPercent);
+        log.info(fundingItem.getId() + "realPercent^^ " + realPercent);
+        log.info(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
 
-        List<FundingMember> fundingMemberList = fundingMemberRepository.getMatchesWithFundingItem(fundingItem);
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
-            log.debug("최소 목표퍼센트 이상 달성함");
-            //TODO 펀딩 성공 메일 보내기
-            String[] emails = {"yeonj630@gmail.com", "yeonj630@sookmyung.ac.kr"};
-            fundingMemberList.forEach((fundingMember) -> {
-                String email = fundingMember.getMember().getEmail();
-                EmailMessage emailMessage = EmailMessage.builder()
-                        .to(emails)
-                        .subject("HABDAY" + "펀딩 성공 알림" )
-                        .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
-                                "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
-                        .build();
-                emailService.sendEmail(emailMessage);
-            });
+            log.info("최소 목표퍼센트 이상 달성함");
+
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(getReceiverList(fundingItem))
+                    .subject("HABDAY" + "펀딩 성공 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
+                            "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
+                    .build();
+            emailService.sendEmail(emailMessage);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
-            log.debug("최소 목표퍼센트 이상 달성 실패");
+            log.info("최소 목표퍼센트 이상 달성 실패");
             fundingItem.updateFundingState(FundingState.FAIL);//update안됨
-            fundingMemberList.forEach(fundingMember -> {
-                NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(fundingMember.getId(), "목표 달성 실패로 인한 결제 취소");
-                Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
-                try {
-                    Response<UnscheduleResponseDto> response = call.execute();
-                    log.debug("response: " + new Gson().toJson(response.body()));
-                } catch (IOException e) {
-                    throw new CustomException(FAIL_WHILE_UNSCHEDULING);
-                }
+            //펀딩 참여자 가져오기
+            List<Long> fundingMemberId = fundingMemberRepository.getFundingItemIdMatchesFundingItem(fundingItem);
+            fundingMemberId.forEach(id -> {
+                //예약결제 취소
+                unschedulePayment(id);
                 //TODO response로 펀딩 실패 메일 보내기
-                String[] emails = {"yeonj630@gmail.com", "yeonj630@sookmyung.ac.kr"};
-                String email = fundingMember.getMember().getEmail();
+
                 EmailMessage emailMessage = EmailMessage.builder()
-                        .to(emails)
+                        .to(getReceiverList(fundingItem))
                         .subject("HABDAY" + "펀딩 실패 알림" )
                         .message("'" + fundingItem.getFundingName()+"' 펀딩이 실패했습니다. \n" +
                                 "실패한 펀딩은 결제처리가 되지 않습니다.")
@@ -137,6 +127,23 @@ public class FundingCloseService extends Common {
         }else{
             log.debug("종료 이후");
             throw new CustomException(ALREADY_FINISHED_FUNDING);
+        }
+    }
+
+    public String[] getReceiverList(FundingItem fundingItem){
+        List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
+        log.debug("mailList: "  + new Gson().toJson(mailList));
+        return mailList.toArray(new String[mailList.size()]);
+    }
+
+    public void unschedulePayment(Long id){
+        NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
+        Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
+        try {
+            Response<UnscheduleResponseDto> response = call.execute();
+            log.debug("response: " + new Gson().toJson(response.body()));
+        } catch (IOException e) {
+            throw new CustomException(FAIL_WHILE_UNSCHEDULING);
         }
     }
 

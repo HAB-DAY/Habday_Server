@@ -15,8 +15,11 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
     Long countByFundingItemIdAndMemberId(Long id, Long memberId);
     FundingMember findByMerchantId(String merchant_id);
     List<FundingParticipantList> findByFundingItem(FundingItem fundingItem);
-    @Query("select fm from FundingMember fm where fm.fundingItem = :fundingItem")
-    List<FundingMember> getMatchesWithFundingItem(FundingItem fundingItem);
+    @Query("select fm.id from FundingMember fm where fm.fundingItem = :fundingItem")
+    List<Long> getFundingItemIdMatchesFundingItem(FundingItem fundingItem);
+
+    @Query("select m.email from FundingMember fm join fm.member m where fm.fundingItem = :fundingItem")
+    List<String> getMailList(FundingItem fundingItem);
     //List<FundingMember> findByFundingItem(FundingItem fundingItem);
     /*
     select * from funding_member m inner join funding_item i on m.funding_item_id = i.funding_item_id
