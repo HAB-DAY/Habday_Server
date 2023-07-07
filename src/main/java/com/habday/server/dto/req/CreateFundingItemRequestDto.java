@@ -1,7 +1,6 @@
 package com.habday.server.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.habday.server.constants.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static com.habday.server.constants.FundingState.PROGRESS;
+import static com.habday.server.constants.state.FundingState.PROGRESS;
 
 @Getter
 @NoArgsConstructor

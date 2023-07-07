@@ -1,7 +1,7 @@
 package com.habday.server.domain.fundingItem;
 
 import com.habday.server.classes.implemented.HostedList.HostedListDto;
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.member.Member;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

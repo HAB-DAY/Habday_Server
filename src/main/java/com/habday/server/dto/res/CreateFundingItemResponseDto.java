@@ -1,6 +1,6 @@
 package com.habday.server.dto.res;
 
-import com.habday.server.constants.SuccessCode;
+import com.habday.server.constants.code.SuccessCode;
 import com.habday.server.dto.BaseResponse;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

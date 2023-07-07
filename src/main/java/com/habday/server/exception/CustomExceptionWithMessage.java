@@ -1,6 +1,6 @@
 package com.habday.server.exception;
 
-import com.habday.server.constants.ExceptionCode;
+import com.habday.server.constants.code.ExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

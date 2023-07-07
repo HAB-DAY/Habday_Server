@@ -1,6 +1,6 @@
 package com.habday.server.domain.friendRequest;
 
-import com.habday.server.constants.FriendRequestState;
+import com.habday.server.constants.state.FriendRequestState;
 import com.habday.server.domain.member.Member;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

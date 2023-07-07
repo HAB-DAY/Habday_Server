@@ -2,11 +2,7 @@ package com.habday.server.service;
 
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
-import com.habday.server.domain.fundingItem.FundingItemRepository;
-import com.habday.server.domain.fundingMember.FundingMemberRepository;
-import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
-import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
@@ -23,11 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.List;
 
-import static com.habday.server.constants.ExceptionCode.*;
-import static com.habday.server.constants.ExceptionCode.PAY_UNSCHEDULING_INTERNAL_ERROR;
+import static com.habday.server.constants.code.ExceptionCode.*;
+import static com.habday.server.constants.code.ExceptionCode.PAY_UNSCHEDULING_INTERNAL_ERROR;
 
 @Slf4j
 @Service

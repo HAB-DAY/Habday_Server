@@ -4,14 +4,9 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.domain.fundingItem.FundingItem;
-import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
-import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
-import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
-import com.habday.server.domain.payment.PaymentRepository;
-import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.req.iamport.ShowSchedulesRequestDto;
@@ -31,15 +26,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static com.habday.server.constants.ExceptionCode.*;
-import static com.habday.server.constants.ScheduledPayState.*;
+import static com.habday.server.constants.code.ExceptionCode.*;
+import static com.habday.server.constants.state.ScheduledPayState.*;
 
 @Slf4j
 @Service

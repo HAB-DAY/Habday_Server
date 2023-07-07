@@ -1,14 +1,12 @@
 package com.habday.server.domain.fundingMember;
 
-import com.habday.server.constants.FundingState;
-import com.habday.server.constants.ScheduledPayState;
+import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 

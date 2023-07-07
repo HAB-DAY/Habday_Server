@@ -1,8 +1,7 @@
 package com.habday.server.dto.res.fund;
 
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
-import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
 import lombok.Getter;

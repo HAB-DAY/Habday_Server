@@ -3,15 +3,17 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
+import com.habday.server.config.email.EmailMessage;
+import com.habday.server.config.email.EmailService;
 import com.habday.server.config.retrofit.RestInterface;
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
-import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +33,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.habday.server.constants.CmnConst.scheduleCron;
-import static com.habday.server.constants.ExceptionCode.*;
-import static com.habday.server.constants.ScheduledPayState.fail;
-import static com.habday.server.constants.ScheduledPayState.paid;
+import static com.habday.server.constants.code.ExceptionCode.*;
+import static com.habday.server.constants.state.ScheduledPayState.fail;
+import static com.habday.server.constants.state.ScheduledPayState.paid;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class FundingCloseService extends Common {
     private final IamportService iamportService;
     private final RestInterface restService;
     private final Calculation calculation;
+    private final EmailService emailService;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -72,14 +75,26 @@ public class FundingCloseService extends Common {
         log.debug(fundingItem.getId() + "goalPercent^^ " + goalPercent);
         log.debug(fundingItem.getId() + "realPercent^^ " + realPercent);
         log.debug(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+
+        List<FundingMember> fundingMemberList = fundingMemberRepository.getMatchesWithFundingItem(fundingItem);
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
             log.debug("최소 목표퍼센트 이상 달성함");
             //TODO 펀딩 성공 메일 보내기
+            String[] emails = {"yeonj630@gmail.com", "yeonj630@sookmyung.ac.kr"};
+            fundingMemberList.forEach((fundingMember) -> {
+                String email = fundingMember.getMember().getEmail();
+                EmailMessage emailMessage = EmailMessage.builder()
+                        .to(emails)
+                        .subject("HABDAY" + "펀딩 성공 알림" )
+                        .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
+                                "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
+                        .build();
+                emailService.sendEmail(emailMessage);
+            });
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.debug("최소 목표퍼센트 이상 달성 실패");
             fundingItem.updateFundingState(FundingState.FAIL);//update안됨
-            List<FundingMember>  fundingMemberList = fundingMemberRepository.getMatchesWithFundingItem(fundingItem);
             fundingMemberList.forEach(fundingMember -> {
                 NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(fundingMember.getId(), "목표 달성 실패로 인한 결제 취소");
                 Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
@@ -90,6 +105,15 @@ public class FundingCloseService extends Common {
                     throw new CustomException(FAIL_WHILE_UNSCHEDULING);
                 }
                 //TODO response로 펀딩 실패 메일 보내기
+                String[] emails = {"yeonj630@gmail.com", "yeonj630@sookmyung.ac.kr"};
+                String email = fundingMember.getMember().getEmail();
+                EmailMessage emailMessage = EmailMessage.builder()
+                        .to(emails)
+                        .subject("HABDAY" + "펀딩 실패 알림" )
+                        .message("'" + fundingItem.getFundingName()+"' 펀딩이 실패했습니다. \n" +
+                                "실패한 펀딩은 결제처리가 되지 않습니다.")
+                        .build();
+                emailService.sendEmail(emailMessage);
             });
             //throw new CustomException(FAIL_FINISH_FUNDING);
         }

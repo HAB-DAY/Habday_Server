@@ -1,6 +1,6 @@
 package com.habday.server.domain.fundingMember;
 
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.classes.implemented.ParticipatedList.ParticipatedListInterface;

@@ -1,6 +1,6 @@
 package com.habday.server.domain.member;
 
-import com.habday.server.constants.MemberState;
+import com.habday.server.constants.state.MemberState;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import static com.habday.server.constants.ExceptionCode.FAIL_SENDING_MAIL;
+import static com.habday.server.constants.code.ExceptionCode.FAIL_SENDING_MAIL;
 
 @Slf4j
 @Service
