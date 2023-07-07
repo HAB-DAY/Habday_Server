@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.habday.server.constants.CmnConst.scheduleCron;
 import static com.habday.server.constants.ExceptionCode.*;
 import static com.habday.server.constants.ScheduledPayState.fail;
 import static com.habday.server.constants.ScheduledPayState.paid;
@@ -53,7 +54,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    @Scheduled(cron = "0 5 0 * * *") // 0 5 0 * * * 매일 밤 0시 5분에 실행
+    @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
         List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
