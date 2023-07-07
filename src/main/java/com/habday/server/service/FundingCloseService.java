@@ -161,6 +161,8 @@ public class FundingCloseService extends Common {
         List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
 
         FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
+        FundingItem fundingItem = fundingMember.getFundingItem();
+        BigDecimal amount = fundingMember.getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
 
@@ -172,22 +174,40 @@ public class FundingCloseService extends Common {
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
-        if(!fundingMember.getAmount().equals(response.getResponse().getAmount())){
+        if(!amount.equals(response.getResponse().getAmount())){
             fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
             log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
             return;
             //throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
+        String[] receiver = {fundingMember.getMember().getEmail()};
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
             fundingMember.updateWebhookSuccess(paid);
             log.debug("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             // TODO 결제 성공 메일 보내기
+
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(receiver)
+                    .subject("HABDAY" + "결제 성공 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 결제가 성공했습니다. \n" +
+                            "총 결제 금액은 : " + amount + "입니다.\n" +
+                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                    .build();
+            emailService.sendEmail(emailMessage);
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
             log.debug("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             // TODO 수동 결제 링크 보내기
-            //throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(receiver)
+                    .subject("HABDAY" + "결제 실패 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 결제가 실패했습니다. \n" +
+                            "결제 실패 이유는 " + "입니다. \n" +
+                            "다시 결제: " + " \n" +
+                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                    .build();
+            emailService.sendEmail(emailMessage);
         }
     }
 
