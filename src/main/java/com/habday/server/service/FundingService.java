@@ -4,9 +4,7 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
-import com.habday.server.classes.implemented.HostedList;
-import com.habday.server.classes.implemented.ParticipatedList;
-import com.habday.server.constants.ScheduledPayState;
+import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
@@ -25,16 +23,13 @@ import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.habday.server.constants.ExceptionCode.*;
+import static com.habday.server.constants.code.ExceptionCode.*;
 
 @Slf4j
 @Service

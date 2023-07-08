@@ -3,15 +3,17 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
+import com.habday.server.config.email.EmailMessage;
+import com.habday.server.config.email.EmailService;
 import com.habday.server.config.retrofit.RestInterface;
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
-import com.habday.server.exception.CustomExceptionWithMessage;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +32,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.habday.server.constants.ExceptionCode.*;
-import static com.habday.server.constants.ScheduledPayState.fail;
-import static com.habday.server.constants.ScheduledPayState.paid;
+import static com.habday.server.constants.CmnConst.scheduleCron;
+import static com.habday.server.constants.code.ExceptionCode.*;
+import static com.habday.server.constants.state.ScheduledPayState.fail;
+import static com.habday.server.constants.state.ScheduledPayState.paid;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,6 +44,7 @@ public class FundingCloseService extends Common {
     private final IamportService iamportService;
     private final RestInterface restService;
     private final Calculation calculation;
+    private final EmailService emailService;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -53,7 +57,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    @Scheduled(cron = "0 5 0 * * *") // 0 5 0 * * * 매일 밤 0시 5분에 실행
+    @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
         List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
@@ -68,27 +72,38 @@ public class FundingCloseService extends Common {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
-        log.debug(fundingItem.getId() + "goalPercent^^ " + goalPercent);
-        log.debug(fundingItem.getId() + "realPercent^^ " + realPercent);
-        log.debug(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+        log.info(fundingItem.getId() + "goalPercent^^ " + goalPercent);
+        log.info(fundingItem.getId() + "realPercent^^ " + realPercent);
+        log.info(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
-            log.debug("최소 목표퍼센트 이상 달성함");
-            //TODO 펀딩 성공 메일 보내기
+            log.info("최소 목표퍼센트 이상 달성함");
+
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(getReceiverList(fundingItem))
+                    .subject("HABDAY" + "펀딩 성공 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
+                            "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
+                    .build();
+            emailService.sendEmail(emailMessage);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
-            log.debug("최소 목표퍼센트 이상 달성 실패");
+            log.info("최소 목표퍼센트 이상 달성 실패");
             fundingItem.updateFundingState(FundingState.FAIL);//update안됨
-            List<FundingMember>  fundingMemberList = fundingMemberRepository.getMatchesWithFundingItem(fundingItem);
-            fundingMemberList.forEach(fundingMember -> {
-                NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(fundingMember.getId(), "목표 달성 실패로 인한 결제 취소");
-                Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
-                try {
-                    Response<UnscheduleResponseDto> response = call.execute();
-                    log.debug("response: " + new Gson().toJson(response.body()));
-                } catch (IOException e) {
-                    throw new CustomException(FAIL_WHILE_UNSCHEDULING);
-                }
+            //펀딩 참여자 가져오기
+            List<Long> fundingMemberId = fundingMemberRepository.getFundingItemIdMatchesFundingItem(fundingItem);
+            fundingMemberId.forEach(id -> {
+                //예약결제 취소
+                unschedulePayment(id);
                 //TODO response로 펀딩 실패 메일 보내기
+
+                EmailMessage emailMessage = EmailMessage.builder()
+                        .to(getReceiverList(fundingItem))
+                        .subject("HABDAY" + "펀딩 실패 알림" )
+                        .message("'" + fundingItem.getFundingName()+"' 펀딩이 실패했습니다. \n" +
+                                "실패한 펀딩은 결제처리가 되지 않습니다.")
+                        .build();
+                emailService.sendEmail(emailMessage);
             });
             //throw new CustomException(FAIL_FINISH_FUNDING);
         }
@@ -115,6 +130,23 @@ public class FundingCloseService extends Common {
         }
     }
 
+    public String[] getReceiverList(FundingItem fundingItem){
+        List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
+        log.debug("mailList: "  + new Gson().toJson(mailList));
+        return mailList.toArray(new String[mailList.size()]);
+    }
+
+    public void unschedulePayment(Long id){
+        NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
+        Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
+        try {
+            Response<UnscheduleResponseDto> response = call.execute();
+            log.debug("response: " + new Gson().toJson(response.body()));
+        } catch (IOException e) {
+            throw new CustomException(FAIL_WHILE_UNSCHEDULING);
+        }
+    }
+
     /*
         <웹훅>
      * 1. 12시반  예약결제 실행
@@ -129,24 +161,53 @@ public class FundingCloseService extends Common {
         List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
 
         FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
+        FundingItem fundingItem = fundingMember.getFundingItem();
+        BigDecimal amount = fundingMember.getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
 
         if (!ipLists.contains(clientIp)){
             fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
-            throw new CustomException(UNAUTHORIZED_IP);
+            log.debug("callbackSchedule() ip 주소 안맞음");
+            return;
+            //throw new CustomException(UNAUTHORIZED_IP);
+            //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
-        if(!fundingMember.getAmount().equals(response.getResponse().getAmount())){
+        if(!amount.equals(response.getResponse().getAmount())){
             fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-            throw new CustomException(NO_CORRESPONDING_AMOUNT);
+            log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+            return;
+            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
+        String[] receiver = {fundingMember.getMember().getEmail()};
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
             fundingMember.updateWebhookSuccess(paid);
+            log.debug("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
+            // TODO 결제 성공 메일 보내기
+
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(receiver)
+                    .subject("HABDAY" + "결제 성공 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 결제가 성공했습니다. \n" +
+                            "총 결제 금액은 : " + amount + "입니다.\n" +
+                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                    .build();
+            emailService.sendEmail(emailMessage);
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
-            throw new CustomExceptionWithMessage(WEBHOOK_FAIL, response.getResponse().getFailReason());
+            log.debug("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
+            // TODO 수동 결제 링크 보내기
+            EmailMessage emailMessage = EmailMessage.builder()
+                    .to(receiver)
+                    .subject("HABDAY" + "결제 실패 알림" )
+                    .message("'" + fundingItem.getFundingName()+"' 결제가 실패했습니다. \n" +
+                            "결제 실패 이유는 " + "입니다. \n" +
+                            "다시 결제: " + " \n" +
+                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                    .build();
+            emailService.sendEmail(emailMessage);
         }
     }
 

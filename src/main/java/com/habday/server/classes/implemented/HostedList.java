@@ -1,13 +1,11 @@
 package com.habday.server.classes.implemented;
 
-import com.habday.server.classes.Common;
-import com.habday.server.constants.FundingState;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.interfaces.ListInterface;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 

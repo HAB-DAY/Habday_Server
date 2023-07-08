@@ -1,14 +1,12 @@
 package com.habday.server.classes.implemented;
 
-import com.habday.server.classes.Common;
-import com.habday.server.constants.FundingState;
-import com.habday.server.constants.ScheduledPayState;
+import com.habday.server.constants.state.FundingState;
+import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.interfaces.ListInterface;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

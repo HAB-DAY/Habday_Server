@@ -8,8 +8,6 @@ import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.MemberProfileRequestDto;
 import com.habday.server.dto.MemberProfileResponse;
 import com.habday.server.dto.req.CreateFundingItemRequestDto;
-import com.habday.server.dto.res.CreateFundingItemResponseDto;
-import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
-import static com.habday.server.constants.SuccessCode.*;
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
+import static com.habday.server.constants.code.SuccessCode.*;
 
 @RestController
 @RequiredArgsConstructor

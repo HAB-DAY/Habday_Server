@@ -1,5 +1,6 @@
 package com.habday.server.classes;
 
+import com.habday.server.constants.CmnConst;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +35,7 @@ public class Calculation {
     public Date calPayDate(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.MINUTE, 30);//펀딩 종료 30분 후에 결제
+        calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 30분 후에 결제
         return new Date(calendar.getTimeInMillis());
     }
 }

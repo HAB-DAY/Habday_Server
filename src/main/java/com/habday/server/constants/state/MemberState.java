@@ -1,4 +1,4 @@
-package com.habday.server.constants;
+package com.habday.server.constants.state;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

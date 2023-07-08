@@ -3,7 +3,6 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.classes.implemented.ParticipatedList;
-import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.fund.*;
@@ -18,9 +17,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
-import static com.habday.server.constants.ExceptionCode.NO_FUNDING_ITEM_ID;
-import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
-import static com.habday.server.constants.SuccessCode.*;
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
+import static com.habday.server.constants.code.SuccessCode.*;
 
 //펀딩 생성, 참여, 삭제, 조회 등 모든 펀딩 로직이 들어가는 부분(추후에 필요할 시 컨트롤러 나눌 예정
 @Slf4j

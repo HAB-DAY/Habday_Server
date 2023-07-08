@@ -1,6 +1,5 @@
 package com.habday.server.controller;
 
-import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.iamport.*;
@@ -16,15 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static com.habday.server.constants.ExceptionCode.NO_MEMBER_ID;
-import static com.habday.server.constants.ExceptionCode.NO_PAYMENT_EXIST;
-import static com.habday.server.constants.SuccessCode.*;
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
+import static com.habday.server.constants.code.ExceptionCode.NO_PAYMENT_EXIST;
+import static com.habday.server.constants.code.SuccessCode.*;
 
 @Slf4j
 @Controller
