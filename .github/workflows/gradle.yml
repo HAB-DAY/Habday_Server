@@ -50,7 +50,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESSKEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRETKEY }}
       run: |
-        aws s3 cp --region ap-northeast-2 --acl private ./springboot-intro-build.zip s3://springboot-intro-build/
+        aws s3 cp --region ap-northeast-2 --acl private ./springboot-intro-build.zip s3://habday/springboot-intro-build.zip
 
     # Deploy
     - name: Deploy
