@@ -1,14 +1,14 @@
 #!/bin/bash
-BUILD_JAR=$(ls /home/ec2-user/action/build/libs/*.jar)
-JAR_NAME=$(basename $BUILD_JAR)
-echo "> build 파일명: $JAR_NAME" >> /home/ec2-user/action/deploy.log
+BUILD_WAR=$(ls /home/ec2-user/action/*.war)
+WAR_NAME=$(basename $BUILD_WAR)
+echo "> build 파일명: $WAR_NAME" >> /home/ec2-user/action/deploy.log
 
-echo "> build 파일 복사" >> /home/ec2-user/action/deploy.log
+#echo "> build 파일 복사" >> /home/ec2-user/action/deploy.log
 DEPLOY_PATH=/home/ec2-user/action/
-cp $BUILD_JAR $DEPLOY_PATH
+#cp $BUILD_WAR $DEPLOY_PATH
 
 echo "> 현재 실행중인 애플리케이션 pid 확인" >> /home/ec2-user/action/deploy.log
-CURRENT_PID=$(pgrep -f $JAR_NAME)
+CURRENT_PID=$(pgrep -f $WAR_NAME)
 
 if [ -z $CURRENT_PID ]
 then
@@ -19,6 +19,6 @@ else
   sleep 5
 fi
 
-DEPLOY_JAR=$DEPLOY_PATH$JAR_NAME
+DEPLOY_JAR=$DEPLOY_PATH$WAR_NAME
 echo "> DEPLOY_JAR 배포"    >> /home/ec2-user/action/deploy.log
 nohup java -jar $DEPLOY_JAR >> /home/ec2-user/deploy.log 2>/home/ec2-user/action/deploy_err.log &
