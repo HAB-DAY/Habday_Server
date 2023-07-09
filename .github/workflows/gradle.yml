@@ -34,12 +34,15 @@ jobs:
     #Build
     - name: Build with Gradle
       run: ./gradlew bootwar
+      
     # 전송할 파일을 담을 디렉토리 생성
     - name: Make Directory for deliver
       run: mkdir deploy
+      
     # War 파일 Copy
     - name: Copy War
       run: cp ./build/libs/*.war ./deploy/
+      
     # 압축파일 형태로 전달
     - name: Make zip file
       run: zip -r -qq -j ./springboot-intro-build.zip ./deploy
@@ -51,6 +54,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRETKEY }}
       run: aws s3 cp --region ap-northeast-2 ./springboot-intro-build.zip s3://${{secrets.S3_BUCKET}}/springboot-intro-build.zip
  #aws s3 cp --region ap-northeast-2 --acl private ./springboot-intro-build.zip s3://springboot-intro-build
+ 
     # Deploy
     - name: Deploy
       env:
@@ -58,8 +62,9 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRETKEY }}
       run: |
         aws deploy create-deployment \
-        --application-name springboot-intro \
-        --deployment-group-name springboot-intro-deploy-group \
+        --application-name cicd-habday \
+        --deployment-config-name CodeDeployDefault.AllAtOnce \
+        --deployment-group-name cicd-habday \
         --file-exists-behavior OVERWRITE \
-        --s3-location bucket=springboot-intro-build,bundleType=zip,key=springboot-intro-build.zip \
+        --s3-location bucket=${{secrets.S3_BUCKET}},bundleType=zip,key=springboot-intro-build.zip \
         --region ap-northeast-2
