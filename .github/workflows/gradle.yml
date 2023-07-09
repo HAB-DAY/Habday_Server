@@ -43,6 +43,14 @@ jobs:
     - name: Copy War
       run: cp ./build/libs/*.war ./deploy/
       
+    # appspec.yml Copy
+    - name: Copy appspec
+      run: cp ./appspec.yml ./deploy/    
+      
+    # scripts폴더 Copy
+    - name: Copy scripts
+      run: cp ./scripts/* ./deploy/   
+      
     # 압축파일 형태로 전달
     - name: Make zip file
       run: zip -r -qq -j ./springboot-intro-build.zip ./deploy
