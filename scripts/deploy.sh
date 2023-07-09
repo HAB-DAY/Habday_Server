@@ -1,5 +1,5 @@
 #!/bin/bash
-#BUILD_WAR=$(ls /home/ec2-user/action/*.war)
+BUILD_WAR=$(ls /home/ec2-user/action/*.war)
 WAR_NAME=$(basename $BUILD_WAR)
 echo "> build 파일명: $WAR_NAME" >> /home/ec2-user/action/deploy.log
 
