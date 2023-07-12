@@ -5,11 +5,13 @@ import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.classes.implemented.ParticipatedList;
+import com.habday.server.config.S3Uploader;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.payment.Payment;
+import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetListResponseDto;
@@ -26,6 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.mail.Multipart;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.*;
@@ -39,6 +45,8 @@ public class FundingService extends Common {
     private final UIDCreation uidCreation;
     private final Calculation calculation;
     private final IamportService iamportService;
+    private final S3Uploader s3Uploader;
+
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -127,5 +135,16 @@ public class FundingService extends Common {
     private Boolean hasNext(Long id){
         if(id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId){
+
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        log.debug("request: 2"+  request.getMessage());
+        try {
+            String fundingItemImgUrl = s3Uploader.upload(img, "images");
+        } catch (IOException e) {
+            throw new CustomException(FAIL_UPLOADING_IMG);
+        }
     }
 }

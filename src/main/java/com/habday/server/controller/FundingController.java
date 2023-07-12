@@ -3,6 +3,9 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.classes.implemented.ParticipatedList;
+import com.habday.server.config.S3Uploader;
+import com.habday.server.domain.member.Member;
+import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.fund.*;
@@ -10,13 +13,17 @@ import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.Optional;
 
+import static com.habday.server.constants.code.ExceptionCode.FAIL_UPLOADING_IMG;
 import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 import static com.habday.server.constants.code.SuccessCode.*;
 
@@ -29,7 +36,6 @@ public class FundingController extends Common {
     private final FundingService fundingService;
     //private final ParticipatedList participatedList;
     private final HostedList hostedList;
-
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
     public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
         log.debug("participateFunding error");
@@ -37,6 +43,15 @@ public class FundingController extends Common {
                 () -> new CustomException(NO_MEMBER_ID)
         ));
         return CommonResponse.toResponse(PARTICIPATE_FUNDING_SUCCESS, responseDto);
+    }
+
+    @PostMapping(value = {"/confirm", "confirm/{memberId}"})
+    public ResponseEntity<CommonResponse> confirm(@RequestPart(value = "img") MultipartFile img, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
+        log.debug("request: "+  request.getMessage());
+        fundingService.confirm(img, request, memberId.orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        ));
+        return CommonResponse.toResponse(FUNDING_CONFIRMATION_SUCCESS, null);
     }
 
     @GetMapping("/showFundingContent")
@@ -80,6 +95,5 @@ public class FundingController extends Common {
 //        GetListResponseDto responseDto = fundingService.getList(participatedList, memberId,"FINISHED", lastItemId);
 //        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
 //    }
-
 
 }
