@@ -72,9 +72,9 @@ public class FundingCloseService extends Common {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
-        log.info(fundingItem.getId() + "goalPercent^^ " + goalPercent);
-        log.info(fundingItem.getId() + "realPercent^^ " + realPercent);
-        log.info(fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+        log.info("itemId: " + fundingItem.getId() + "goalPercent^^ " + goalPercent);
+        log.info("itemId: " + fundingItem.getId() + "realPercent^^ " + realPercent);
+        log.info("itemId: " +fundingItem.getId() + "realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
 
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
@@ -137,13 +137,15 @@ public class FundingCloseService extends Common {
     }
 
     public void unschedulePayment(Long id){
+        log.debug("unschedulePayment: start");
         NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
         Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
         try {
-            Response<UnscheduleResponseDto> response = call.execute();
-            log.debug("response: " + new Gson().toJson(response.body()));
+            Response<UnscheduleResponseDto> response = call.execute();//각각의 요청에 대해서만 익셉션이 생길 테니까 익셉션이 이 함수까지는 안오겠지,,?
+            log.debug("unschedulePayment response: " + new Gson().toJson(response.body()));
         } catch (IOException e) {
-            throw new CustomException(FAIL_WHILE_UNSCHEDULING);
+            log.debug("unschedule Paymentretrofit 오류: " + e);
+            //throw new CustomException(FAIL_WHILE_UNSCHEDULING);
         }
     }
 
@@ -165,6 +167,7 @@ public class FundingCloseService extends Common {
         BigDecimal amount = fundingMember.getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
+        log.debug("response: " + new Gson().toJson(response));
 
         if (!ipLists.contains(clientIp)){
             fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
@@ -174,12 +177,18 @@ public class FundingCloseService extends Common {
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
-        if(!amount.equals(response.getResponse().getAmount())){
-            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-            log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
-            return;
-            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
-        }
+        log.debug("callbackSchedule(): member-amount : " + amount);
+        log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+        log.debug("callbackSchedule() 결제 금액 안맞음 isEqual" + amount.equals(response.getResponse().getAmount()));
+        log.debug("callbackSchedule() 결제 금액 안맞음 compareTo" + amount.compareTo(response.getResponse().getAmount()));
+
+//        if(!amount.equals(response.getResponse().getAmount())){
+//            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
+//            log.debug("callbackSchedule(): member-amount : " + amount);
+//            log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+//            return;
+//            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
+//        }
         String[] receiver = {fundingMember.getMember().getEmail()};
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
