@@ -26,11 +26,12 @@ public class EmailService {
             mimeMessageHelper.setSubject(emailMessage.getSubject()); // 메일 제목
             mimeMessageHelper.setText(emailMessage.getMessage(), false); // 메일 본문 내용, HTML 여부
             javaMailSender.send(mimeMessage);
-            log.info("Success");
+            log.info("mail sending Success");
             return true;
         }catch (MessagingException e){
-            log.info("fail");
-            throw new CustomException(FAIL_SENDING_MAIL);
+            log.info("mail sending fail" + e);
+            return false;
+            //throw new CustomException(FAIL_SENDING_MAIL);
         }
     }
 }

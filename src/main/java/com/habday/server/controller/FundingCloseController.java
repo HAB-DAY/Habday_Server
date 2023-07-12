@@ -1,12 +1,16 @@
 package com.habday.server.controller;
 
+import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.config.email.EmailMessage;
 import com.habday.server.config.email.EmailService;
 import com.habday.server.constants.CmnConst;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.service.FundingCloseService;
+import com.habday.server.service.IamportService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.response.IamportResponse;
+import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,7 @@ import java.io.IOException;
 public class FundingCloseController extends Common {
     private final FundingCloseService fundingCloseService;
     private final EmailService emailService;
+    private final IamportService iamportService;
 
     @GetMapping("/checkSuccess/{fundingItemId}")
     public void checkFundingResult(@PathVariable Long fundingItemId) {
@@ -44,5 +49,12 @@ public class FundingCloseController extends Common {
                         "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
                 .build();
         emailService.sendEmail(emailMessage);
+    }
+
+
+    @GetMapping("/test2")
+    public void test2(){
+        IamportResponse<Payment> response= iamportService.paymentByImpUid("imps_007416502943");
+        log.debug("response: " + new Gson().toJson(response));
     }
 }
