@@ -26,29 +26,17 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
     where m.member_id = 멤버id and m.funding_item_id = 펀딩아이템id
     */
 
-    /*
-    * <가져올 데이터>
-    * //fundingItemId
-    * //fundingMemberId(주문 기록이랑 매칭됨)
-    * 펀딩이름
-    * 펀딩 생성자 이름
-    * 내가 펀딩한 금액
-    * 펀딩 아이템 이미지
-    * //전체 금액
-    * //펀딩 끝
-    * //펀딩 시작
-    * //펀딩 참여 날짜(피그마에 없음)
-    * //(merchantId)상품번호
-    * //(payment_status)결제 상태
-    * //(status) 펀딩 상태
-    * */
+    @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.member = :member order by fm.id desc")
+    List<ParticipatedListInterface> getPagingListFirst(Member member, Pageable page);
+
+    @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member order by fm.id desc")
+    List<ParticipatedListInterface> getPagingListAfter(Long id, Member member, Pageable page);
 
     /*
     * 참여한 펀딩 리스트 가져오기
     * status = PROGRESS
     * 페이지네이션 = 1
     * */
-    //@Query("select m.id as fundingMemberId, i.fundingItemImg as fundingItemImg, i.fundingName as fundingName, i.totalPrice as totalPrice, i.startDate as startDate, i.finishDate as finishDate, i.status as status, m.fundingDate as fundingDate, m.payment_status as payment_status, m.merchantId as merchantId from FundingMember m join m.fundingItem i where m.member = :member and i.status = :status order by m.id desc")
     @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.member = :member and i.status = :status order by fm.id desc")
     List<ParticipatedListInterface> getPagingListFirst_Progress(Member member, FundingState status, Pageable page);
 
@@ -57,7 +45,6 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
      * status = PROGRESS
      * 페이지네이션 > 1
      * */
-    //@Query("select m.id as fundingMemberId, i.fundingItemImg as fundingItemImg, i.fundingName as fundingName, i.totalPrice as totalPrice, i.startDate as startDate, i.finishDate as finishDate, i.status as status, m.fundingDate as fundingDate, m.payment_status as payment_status, m.merchantId as merchantId from FundingMember m join m.fundingItem i where m.id < :id and m.member = :member and i.status = :status order by m.id desc")
     @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member and i.status = :status order by fm.id desc")
     List<ParticipatedListInterface> getPagingListAfter_Progress(Long id, Member member, FundingState status, Pageable page);
 
@@ -66,7 +53,6 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
      * status = SUCCESS || FAIL(이미 끝난 펀딩)
      * 페이지네이션 = 1
      * */
-    //@Query("select m.id as fundingMemberId, i.fundingItemImg as fundingItemImg, i.fundingName as fundingName, i.totalPrice as totalPrice, i.startDate as startDate, i.finishDate as finishDate, i.status as status, m.fundingDate as fundingDate, m.payment_status as payment_status, m.merchantId as merchantId from FundingMember m join m.fundingItem i where m.member = :member and i.status <> :status order by m.id desc")
     @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.member = :member and i.status <> :status order by fm.id desc")
     List<ParticipatedListInterface> getPagingListFirst_Finished(Member member, FundingState status, Pageable page);
 
@@ -75,7 +61,6 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
      * status = SUCCESS || FAIL(이미 끝난 펀딩)
      * 페이지네이션 > 1
      * */
-    //@Query("select m.id as fundingMemberId, i.fundingItemImg as fundingItemImg, i.fundingName as fundingName, i.totalPrice as totalPrice, i.startDate as startDate, i.finishDate as finishDate, i.status as status, m.fundingDate as fundingDate, m.payment_status as payment_status, m.merchantId as merchantId from FundingMember m join m.fundingItem i where m.id < :id and m.member = :member and i.status <> :status order by m.id desc")
     @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member and i.status <> :status order by fm.id desc")
     List<ParticipatedListInterface> getPagingListAfter_Finished(Long id, Member member, FundingState status, Pageable page);
 }

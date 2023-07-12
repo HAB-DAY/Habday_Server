@@ -18,6 +18,7 @@ public enum SuccessCode {
     PAY_UNSCHEDULING_SUCCESS(OK, "펀딩 예약 결제 취소에 성공했습니다."),
     SHOW_FUNDING_CONTENT_SUCCESS(OK, "펀딩 아이템 정보 조회에 성공했습니다."),
     GET_FUNDING_LIST_SUCCESS(OK, "참여한 펀딩 정보 조회에 성공했습니다."),
+    GET_HOSTING_LIST_SUCCESS(OK, "주최한 펀딩 정보 조회에 성공했습니다."),
     DELETING_BILLING_KEY_SUCCESS(OK, "빌링키 삭제에 성공했습니다.");
 
     private final HttpStatus status;

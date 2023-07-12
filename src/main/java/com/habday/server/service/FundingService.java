@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
+import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -108,6 +109,19 @@ public class FundingService extends Common {
 
         Long lastIdOfList = hostingLists.isEmpty() ? null : listInterface.getId();
         return new GetListResponseDto(hostingLists, hasNext(lastIdOfList));
+    }
+
+    public GetListResponseDto getParticipateList(Long memberId, Long pointId){
+        List <ParticipatedList.ParticipatedListInterface> participatedList;
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        if(pointId == null)
+            participatedList = fundingMemberRepository.getPagingListFirst(member, PageRequest.of(0, 10));
+        else
+            participatedList = fundingMemberRepository.getPagingListAfter(pointId, member, PageRequest.of(0, 10));
+
+        Long lastIdOfList = participatedList.isEmpty() ? null : participatedList.get(participatedList.size() -1).getFundingMemberId();
+        return new GetListResponseDto(participatedList, hasNext(lastIdOfList));
     }
 
     private Boolean hasNext(Long id){

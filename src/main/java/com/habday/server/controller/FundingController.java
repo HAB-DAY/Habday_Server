@@ -27,7 +27,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @RequestMapping("/funding")
 public class FundingController extends Common {
     private final FundingService fundingService;
-    private final ParticipatedList participatedList;
+    //private final ParticipatedList participatedList;
     private final HostedList hostedList;
 
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
@@ -47,30 +47,39 @@ public class FundingController extends Common {
 
     @GetMapping("/itemList/hosted/progress")
     public ResponseEntity<CommonResponse> getHostingList_progress(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
-                                                                  Long lastItemId){
+           Long lastItemId){
 
         GetListResponseDto responseDto = fundingService.getList(hostedList, memberId, "PROGRESS", lastItemId);
-        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+        return CommonResponse.toResponse(GET_HOSTING_LIST_SUCCESS, responseDto);
     }
 
     @GetMapping("/itemList/hosted/finished")
     public ResponseEntity<CommonResponse> getHostingList_finished(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
            Long lastItemId){
         GetListResponseDto responseDto = fundingService.getList(hostedList, memberId, "FINISHED", lastItemId);
+        return CommonResponse.toResponse(GET_HOSTING_LIST_SUCCESS, responseDto);
+    }
+
+    @GetMapping("/itemList/participated")
+    public ResponseEntity<CommonResponse> getParticipatedList(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+           Long lastItemId){
+        GetListResponseDto responseDto = fundingService.getParticipateList(memberId,lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
     }
 
-    @GetMapping("/itemList/participated/progress")
-    public ResponseEntity<CommonResponse> getParticipatedList_progress(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
-            Long lastItemId){
-        GetListResponseDto responseDto = fundingService.getList(participatedList, memberId, "PROGRESS", lastItemId);
-        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
-    }
+//    @GetMapping("/itemList/participated/progress")
+//    public ResponseEntity<CommonResponse> getParticipatedList_progress(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+//            Long lastItemId){
+//        GetListResponseDto responseDto = fundingService.getList(participatedList, memberId, "PROGRESS", lastItemId);
+//        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+//    }
+//
+//    @GetMapping("/itemList/participated/finished")
+//    public ResponseEntity<CommonResponse> getParticipatedList_finished(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+//            Long lastItemId){
+//        GetListResponseDto responseDto = fundingService.getList(participatedList, memberId,"FINISHED", lastItemId);
+//        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
+//    }
 
-    @GetMapping("/itemList/participated/finished")
-    public ResponseEntity<CommonResponse> getParticipatedList_finished(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
-            Long lastItemId){
-        GetListResponseDto responseDto = fundingService.getList(participatedList, memberId,"FINISHED", lastItemId);
-        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
-    }
+
 }
