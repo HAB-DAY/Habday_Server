@@ -41,7 +41,7 @@ public class FundingCloseController extends Common {
     @GetMapping("/test")
     public void test(){
         //String email = fundingMember.getMember().getEmail();
-        String[] receiveList = {"yeonj630@gmail.com", "yeonj630@sookmyung.ac.kr"};
+        String[] receiveList = {"yeonj630@gmail.com"};
         EmailMessage emailMessage = EmailMessage.builder()
                 .to(receiveList)
                 .subject("HABDAY" + "펀딩 성공 알림" )
