@@ -13,16 +13,16 @@ import java.util.Date;
 public class Calculation {
     // TODO 현재 시간을 unixTimeStamp로 바꿔서 customeruid/merchantuid에 쓰기
     public Long getUnixTimeStamp(int year, int month, int date){
-        log.debug("getUnixTimeStamp: "+ year + " " + month + " " + date);
+        log.info("getUnixTimeStamp: "+ year + " " + month + " " + date);
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, date);
-        log.debug("getUnixTimeStamp: "+  calendar.getTimeInMillis() / 1000);
+        log.info("getUnixTimeStamp: "+  calendar.getTimeInMillis() / 1000);
         return calendar.getTimeInMillis() / 1000;
     }
 
     public BigDecimal calTotalPrice(BigDecimal amount, BigDecimal totalPrice){
         if (totalPrice == null) {
-            log.debug("fundingService: totalPrice null임" + totalPrice);
+            log.info("fundingService: totalPrice null임" + totalPrice);
             totalPrice = BigDecimal.ZERO;
         }
         return amount.add(totalPrice);

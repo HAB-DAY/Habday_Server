@@ -69,7 +69,7 @@ public class PayController{
 //        memberId.orElseThrow(
 //                () -> new CustomException(NO_MEMBER_ID)
 //        );
-        log.debug("예약 취소 시작");
+        log.info("예약 취소 시작");
         UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto);
         return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
     }
@@ -96,7 +96,7 @@ public class PayController{
         CancelData cancelData = new CancelData("merchant_uid", false, cancelPayRequestDto.getCancel_request_amount());
         cancelData.setChecksum(cancelableAmount);
         cancelData.setReason(cancelPayRequestDto.getReason());
-        log.debug("cancel 완료 직전임");
+        log.info("cancel 완료 직전임");
         return iamportClient.cancelPaymentByImpUid(cancelData);
     }
 

@@ -38,7 +38,7 @@ public class FundingController extends Common {
     private final HostedList hostedList;
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
     public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
-        log.debug("participateFunding error");
+        log.info("participateFunding error");
         ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));
@@ -47,7 +47,7 @@ public class FundingController extends Common {
 
     @PostMapping(value = {"/confirm", "confirm/{memberId}"})
     public ResponseEntity<CommonResponse> confirm(@RequestPart(value = "img") MultipartFile img, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
-        log.debug("request: "+  request.getMessage());
+        log.info("request: "+  request.getMessage());
         fundingService.confirm(img, request, memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));

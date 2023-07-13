@@ -61,11 +61,11 @@ public class FundingService extends Common {
 
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
-        log.debug("schedule date: " + scheduleDate);
+        log.info("schedule date: " + scheduleDate);
         //아이앰포트에 스케쥴 걸기
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
-        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+        log.info("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
         if (scheduleResult.getCode() !=0 ) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
@@ -140,7 +140,7 @@ public class FundingService extends Common {
     public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId){
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        log.debug("request: 2"+  request.getMessage());
+        log.info("request: 2"+  request.getMessage());
         try {
             String fundingItemImgUrl = s3Uploader.upload(img, "images");
         } catch (IOException e) {

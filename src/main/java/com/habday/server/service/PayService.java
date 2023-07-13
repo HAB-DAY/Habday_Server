@@ -50,7 +50,7 @@ public class PayService extends Common {
 
         String customer_uid = uidCreation.createCustomerUid(memberId);
         IamportResponse<BillingCustomer> iamportResponse = iamportService.getBillingKeyFromIamport(billingKeyRequest, customer_uid);
-        log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
+        log.info("iamportResponse: " + new Gson().toJson(iamportResponse));
 
         if(iamportResponse.getCode() != 0){
             throw new CustomExceptionWithMessage(GET_BILLING_KEY_FAIL, iamportResponse.getMessage());
@@ -70,12 +70,12 @@ public class PayService extends Common {
     }
 
     public DeleteBillingKeyResponseDto deleteBillingKey(Long paymentId){
-        log.debug("paymentId: " + paymentId);
+        log.info("paymentId: " + paymentId);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomException(NO_PAYMENT_EXIST));
         IamportResponse<BillingCustomer> iamportResponse = iamportService.deleteBillingKeyFromIamport(payment.getBillingKey(),
                 "사용자의 요청으로 인한 카드 삭제", "extra none");
-        log.debug("iamportResponse: " + new Gson().toJson(iamportResponse));
+        log.info("iamportResponse: " + new Gson().toJson(iamportResponse));
         if(iamportResponse.getCode() != 0){
             throw new CustomExceptionWithMessage(DELETING_BILLING_KEY_FAIL_INTERNAL_ERROR, iamportResponse.getMessage());
         }
