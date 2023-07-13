@@ -55,6 +55,6 @@ public class FundingCloseController extends Common {
     @GetMapping("/test2")
     public void test2(){
         IamportResponse<Payment> response= iamportService.paymentByImpUid("imps_007416502943");
-        log.debug("response: " + new Gson().toJson(response));
+        log.info("response: " + new Gson().toJson(response));
     }
 }

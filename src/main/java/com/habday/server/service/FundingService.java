@@ -4,11 +4,14 @@ import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
+import com.habday.server.classes.implemented.ParticipatedList;
+import com.habday.server.config.S3Uploader;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.payment.Payment;
+import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetListResponseDto;
@@ -25,6 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.mail.Multipart;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.*;
@@ -38,6 +45,8 @@ public class FundingService extends Common {
     private final UIDCreation uidCreation;
     private final Calculation calculation;
     private final IamportService iamportService;
+    private final S3Uploader s3Uploader;
+
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -52,11 +61,11 @@ public class FundingService extends Common {
 
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
-        log.debug("schedule date: " + scheduleDate);
+        log.info("schedule date: " + scheduleDate);
         //아이앰포트에 스케쥴 걸기
         IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
-        log.debug("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+        log.info("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
         if (scheduleResult.getCode() !=0 ) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
@@ -110,8 +119,32 @@ public class FundingService extends Common {
         return new GetListResponseDto(hostingLists, hasNext(lastIdOfList));
     }
 
+    public GetListResponseDto getParticipateList(Long memberId, Long pointId){
+        List <ParticipatedList.ParticipatedListInterface> participatedList;
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        if(pointId == null)
+            participatedList = fundingMemberRepository.getPagingListFirst(member, PageRequest.of(0, 10));
+        else
+            participatedList = fundingMemberRepository.getPagingListAfter(pointId, member, PageRequest.of(0, 10));
+
+        Long lastIdOfList = participatedList.isEmpty() ? null : participatedList.get(participatedList.size() -1).getFundingMemberId();
+        return new GetListResponseDto(participatedList, hasNext(lastIdOfList));
+    }
+
     private Boolean hasNext(Long id){
         if(id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId){
+
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        log.info("request: 2"+  request.getMessage());
+        try {
+            String fundingItemImgUrl = s3Uploader.upload(img, "images");
+        } catch (IOException e) {
+            throw new CustomException(FAIL_UPLOADING_IMG);
+        }
     }
 }

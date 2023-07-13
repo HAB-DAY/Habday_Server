@@ -97,7 +97,7 @@ public class IamportService extends Common {
     public IamportResponse<ScheduleList> showSchedulesFromIamport(ShowSchedulesRequestDto requestDto){
         Long schedule_from = calculation.getUnixTimeStamp(requestDto.getS_year(), requestDto.getS_month(), requestDto.getS_date());
         Long schedule_to = calculation.getUnixTimeStamp(requestDto.getE_year(), requestDto.getE_month(), requestDto.getE_date());
-        log.debug("IamportService.showSchedules: " + schedule_from + " "  + schedule_to);
+        log.info("IamportService.showSchedules: " + schedule_from + " "  + schedule_to);
         GetScheduleData getScheduleData = new GetScheduleData(schedule_from.intValue(), schedule_to.intValue(), requestDto.getSchedule_status(), requestDto.getPage(), 8);
         try {
             return iamportClient.getPaymentSchedule(getScheduleData);

@@ -62,7 +62,7 @@ public class FundingCloseService extends Common {
         log.info("schedule 시작");
         List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
         overdatedFundings.forEach(fundingItem -> {
-            log.debug("오늘 마감 fundingItem: " + fundingItem.getId());
+            log.info("오늘 마감 fundingItem: " + fundingItem.getId());
             checkFundingGoalPercent(fundingItem);
         });
         log.info("schedule 끝");
@@ -122,29 +122,29 @@ public class FundingCloseService extends Common {
         if (now.compareTo(fundingItem.getFinishDate()) == 0){
             checkFundingGoalPercent(fundingItem);
         } else if(now.compareTo(fundingItem.getFinishDate()) < 0){
-            log.debug("종료 이전");
+            log.info("종료 이전");
             throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
         }else{
-            log.debug("종료 이후");
+            log.info("종료 이후");
             throw new CustomException(ALREADY_FINISHED_FUNDING);
         }
     }
 
     public String[] getReceiverList(FundingItem fundingItem){
         List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
-        log.debug("mailList: "  + new Gson().toJson(mailList));
+        log.info("mailList: "  + new Gson().toJson(mailList));
         return mailList.toArray(new String[mailList.size()]);
     }
 
     public void unschedulePayment(Long id){
-        log.debug("unschedulePayment: start");
+        log.info("unschedulePayment: start");
         NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
         Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
         try {
             Response<UnscheduleResponseDto> response = call.execute();//각각의 요청에 대해서만 익셉션이 생길 테니까 익셉션이 이 함수까지는 안오겠지,,?
-            log.debug("unschedulePayment response: " + new Gson().toJson(response.body()));
+            log.info("unschedulePayment response: " + new Gson().toJson(response.body()));
         } catch (IOException e) {
-            log.debug("unschedule Paymentretrofit 오류: " + e);
+            log.info("unschedule Paymentretrofit 오류: " + e);
             //throw new CustomException(FAIL_WHILE_UNSCHEDULING);
         }
     }
@@ -167,25 +167,25 @@ public class FundingCloseService extends Common {
         BigDecimal amount = fundingMember.getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
-        log.debug("response: " + new Gson().toJson(response));
+        log.info("response: " + new Gson().toJson(response));
 
         if (!ipLists.contains(clientIp)){
             fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
-            log.debug("callbackSchedule() ip 주소 안맞음");
+            log.info("callbackSchedule() ip 주소 안맞음");
             return;
             //throw new CustomException(UNAUTHORIZED_IP);
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
-        log.debug("callbackSchedule(): member-amount : " + amount);
-        log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
-        log.debug("callbackSchedule() 결제 금액 안맞음 isEqual" + amount.equals(response.getResponse().getAmount()));
-        log.debug("callbackSchedule() 결제 금액 안맞음 compareTo" + amount.compareTo(response.getResponse().getAmount()));
+        log.info("callbackSchedule(): member-amount : " + amount);
+        log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+        log.info("callbackSchedule() 결제 금액 안맞음 isEqual" + amount.equals(response.getResponse().getAmount()));
+        log.info("callbackSchedule() 결제 금액 안맞음 compareTo" + amount.compareTo(response.getResponse().getAmount()));
 
 //        if(!amount.equals(response.getResponse().getAmount())){
 //            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-//            log.debug("callbackSchedule(): member-amount : " + amount);
-//            log.debug("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+//            log.info("callbackSchedule(): member-amount : " + amount);
+//            log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
 //            return;
 //            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
 //        }
@@ -193,7 +193,7 @@ public class FundingCloseService extends Common {
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
             fundingMember.updateWebhookSuccess(paid);
-            log.debug("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
+            log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             // TODO 결제 성공 메일 보내기
 
             EmailMessage emailMessage = EmailMessage.builder()
@@ -206,7 +206,7 @@ public class FundingCloseService extends Common {
             emailService.sendEmail(emailMessage);
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
-            log.debug("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
+            log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             // TODO 수동 결제 링크 보내기
             EmailMessage emailMessage = EmailMessage.builder()
                     .to(receiver)

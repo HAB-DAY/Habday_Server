@@ -44,7 +44,8 @@ public enum ExceptionCode {
 
     FAIL_WHILE_UNSCHEDULING(INTERNAL_SERVER_ERROR, "펀딩 실패로 인한 예약 결제 취소 중 알 수 없는 에러가 발생했습니다."),
 
-    FAIL_SENDING_MAIL(INTERNAL_SERVER_ERROR, "메일 전송에 실패했습니다.");
+    FAIL_SENDING_MAIL(INTERNAL_SERVER_ERROR, "메일 전송에 실패했습니다."),
+    FAIL_UPLOADING_IMG(INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다.");
 
 
     private final HttpStatus status;
