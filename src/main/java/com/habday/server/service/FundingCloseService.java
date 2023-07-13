@@ -182,13 +182,13 @@ public class FundingCloseService extends Common {
         log.info("callbackSchedule() 결제 금액 안맞음 isEqual" + amount.equals(response.getResponse().getAmount()));
         log.info("callbackSchedule() 결제 금액 안맞음 compareTo" + amount.compareTo(response.getResponse().getAmount()));
 
-//        if(!amount.equals(response.getResponse().getAmount())){
-//            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
-//            log.info("callbackSchedule(): member-amount : " + amount);
-//            log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
-//            return;
-//            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
-//        }
+        if(amount.compareTo(response.getResponse().getAmount()) !=0){
+            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
+            log.info("callbackSchedule(): member-amount : " + amount);
+            log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
+            return;
+            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
+        }
         String[] receiver = {fundingMember.getMember().getEmail()};
 
         if(callbackRequestDto.getStatus() == paid.getMsg()){
