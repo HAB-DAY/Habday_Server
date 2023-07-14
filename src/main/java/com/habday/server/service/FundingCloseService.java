@@ -191,7 +191,9 @@ public class FundingCloseService extends Common {
         }
         String[] receiver = {fundingMember.getMember().getEmail()};
 
-        if(callbackRequestDto.getStatus() == paid.getMsg()){
+        log.info("callbackRequestDto.getStatus(): " + new Gson().toJson(callbackRequestDto));
+        log.info("callback 조건문 " + paid.getMsg() + ", " + callbackRequestDto.getStatus() + ", ");
+        if(callbackRequestDto.getStatus().equals(paid.getMsg())){
             fundingMember.updateWebhookSuccess(paid);
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             // TODO 결제 성공 메일 보내기
