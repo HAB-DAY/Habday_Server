@@ -21,16 +21,17 @@ public class ParticipatedList implements ListInterface {
 
     public interface ParticipatedListInterface{
         Long getFundingMemberId(); //FundingMember
-        String getFundingName(); //FundingItem
-        String getCreatorName(); //Member
         BigDecimal getFundingAmount(); //FundingMember
-        String getFundingItemImg();
-        //LocalDate getStartDate(); //FundingItem
-        //LocalDate getFinishDate(); //FundingItem
-        FundingState getFundingStatus(); //FundingItem
         LocalDate getFundingDate(); //FundingMember
         ScheduledPayState getPayment_status(); //FundingMember
         String getMerchantId(); //FundingMember
+        Long getFundingItemId(); //FundingItem
+        String getFundingName(); //FundingItem
+        //LocalDate getStartDate(); //FundingItem
+        //LocalDate getFinishDate(); //FundingItem
+        String getFundingItemImg(); //FundingItem
+        FundingState getFundingStatus(); //FundingItem
+        String getCreatorName(); //Member
     }
 
     @Override

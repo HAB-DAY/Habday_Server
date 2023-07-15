@@ -26,10 +26,10 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
     where m.member_id = 멤버id and m.funding_item_id = 펀딩아이템id
     */
 
-    @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.member = :member order by fm.id desc")
+    @Query("select fm.id as fundingMemberId, i.id as fundingItemId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.member = :member order by fm.id desc")
     List<ParticipatedListInterface> getPagingListFirst(Member member, Pageable page);
 
-    @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member order by fm.id desc")
+    @Query("select fm.id as fundingMemberId, i.id as fundingItemId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member order by fm.id desc")
     List<ParticipatedListInterface> getPagingListAfter(Long id, Member member, Pageable page);
 
     /*
