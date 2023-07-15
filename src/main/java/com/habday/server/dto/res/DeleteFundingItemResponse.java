@@ -2,8 +2,10 @@ package com.habday.server.dto.res;
 
 import com.habday.server.constants.code.SuccessCode;
 import com.habday.server.dto.BaseResponse;
+import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 
+@Getter
 public class DeleteFundingItemResponse extends BaseResponse {
     private DeleteFundingItemResponse(Boolean success, String msg) {
         super(success, msg);
