@@ -11,6 +11,7 @@ import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.payment.Payment;
+import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
@@ -26,6 +27,7 @@ import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,7 +50,6 @@ public class FundingService extends Common {
     private final S3Uploader s3Uploader;
 
 
-
     @Transactional//예외 발생 시 롤백해줌
     public ParticipateFundingResponseDto participateFunding(ParticipateFundingRequest fundingRequestDto, Long memberId) {
         String merchantUid = uidCreation.createMerchantUid(fundingRequestDto.getFundingItemId(), memberId);
@@ -63,16 +64,16 @@ public class FundingService extends Common {
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
         log.info("schedule date: " + scheduleDate);
         //아이앰포트에 스케쥴 걸기
-        IamportResponse<List<Schedule>> scheduleResult =  iamportService.noneAuthPaySchedule(
+        IamportResponse<List<Schedule>> scheduleResult = iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.info("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
-        if (scheduleResult.getCode() !=0 ) {
+        if (scheduleResult.getCode() != 0) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
 
         //펀딩 참여 정보 저장
         fundingMemberRepository.save(FundingMember.of(fundingRequestDto, ScheduledPayState.ready, merchantUid, selectedPayment.getBillingKey()
-                ,fundingItem, member));
+                , fundingItem, member));
 
         BigDecimal totalPrice = calculation.calTotalPrice(fundingRequestDto.getAmount(), fundingItem.getTotalPrice());
         int percentage = calculation.calFundingPercentage(totalPrice, fundingItem.getGoalPrice());
@@ -83,7 +84,7 @@ public class FundingService extends Common {
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
     }
 
-    public ShowFundingContentResponseDto showFundingContent(Long fundingItemId){
+    public ShowFundingContentResponseDto showFundingContent(Long fundingItemId) {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         Member member = fundingItem.getMember();
@@ -104,14 +105,14 @@ public class FundingService extends Common {
      * }
      * */
 
-    public <T> GetListResponseDto getList(ListInterface listInterface, Long memberId, String status, Long pointId){
+    public <T> GetListResponseDto getList(ListInterface listInterface, Long memberId, String status, Long pointId) {
         List<T> hostingLists;
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
-        if (status == "PROGRESS"){
+        if (status == "PROGRESS") {
             hostingLists = listInterface.getProgressList(member, pointId, PageRequest.of(0, 10));
-        }else{
+        } else {
             hostingLists = listInterface.getFinishedList(member, pointId, PageRequest.of(0, 10));
         }
 
@@ -119,28 +120,28 @@ public class FundingService extends Common {
         return new GetListResponseDto(hostingLists, hasNext(lastIdOfList));
     }
 
-    public GetListResponseDto getParticipateList(Long memberId, Long pointId){
-        List <ParticipatedList.ParticipatedListInterface> participatedList;
+    public GetListResponseDto getParticipateList(Long memberId, Long pointId) {
+        List<ParticipatedList.ParticipatedListInterface> participatedList;
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        if(pointId == null)
+        if (pointId == null)
             participatedList = fundingMemberRepository.getPagingListFirst(member, PageRequest.of(0, 10));
         else
             participatedList = fundingMemberRepository.getPagingListAfter(pointId, member, PageRequest.of(0, 10));
 
-        Long lastIdOfList = participatedList.isEmpty() ? null : participatedList.get(participatedList.size() -1).getFundingMemberId();
+        Long lastIdOfList = participatedList.isEmpty() ? null : participatedList.get(participatedList.size() - 1).getFundingMemberId();
         return new GetListResponseDto(participatedList, hasNext(lastIdOfList));
     }
 
-    private Boolean hasNext(Long id){
-        if(id == null) return false;
+    private Boolean hasNext(Long id) {
+        if (id == null) return false;
         return fundingItemRepository.existsByIdLessThan(id);
     }
 
-    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId){
+    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId) {
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        log.info("request: 2"+  request.getMessage());
+        log.info("request: 2" + request.getMessage());
         try {
             String fundingItemImgUrl = s3Uploader.upload(img, "images");
         } catch (IOException e) {

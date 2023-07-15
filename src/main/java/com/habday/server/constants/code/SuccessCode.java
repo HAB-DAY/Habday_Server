@@ -15,6 +15,7 @@ public enum SuccessCode {
     PARTICIPATE_FUNDING_SUCCESS(OK,"펀딩 참여 완료"),
     VERIFY_MEMBER_PROFILE_SUCCESS(OK, "사용자 프로필 수정을 성공했습니다"),
     CREATE_FUNDING_ITEM_SUCCESS(OK, "펀딩 생성에 성공했습니다."),
+    DELETE_FUNDING_ITEM_SUCCESS(OK, "펀딩 삭제에 성공했습니다."),
     PAY_UNSCHEDULING_SUCCESS(OK, "펀딩 예약 결제 취소에 성공했습니다."),
     SHOW_FUNDING_CONTENT_SUCCESS(OK, "펀딩 아이템 정보 조회에 성공했습니다."),
     GET_FUNDING_LIST_SUCCESS(OK, "참여한 펀딩 정보 조회에 성공했습니다."),

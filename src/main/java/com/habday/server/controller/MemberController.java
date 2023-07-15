@@ -6,7 +6,7 @@ import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.MemberProfileRequestDto;
-import com.habday.server.dto.MemberProfileResponse;
+import com.habday.server.dto.res.MemberProfileResponse;
 import com.habday.server.dto.req.CreateFundingItemRequestDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.MemberService;

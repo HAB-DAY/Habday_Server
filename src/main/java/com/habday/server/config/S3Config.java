@@ -4,7 +4,9 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Region;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,14 +22,24 @@ public class S3Config { //application/properties 파일에 작성한 값들을 �
     @Value("${cloud.aws.region.static}")
     private String region;
 
-    @Bean
+
+    /*@Bean
     public AmazonS3 amazonS3Client() {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
         return AmazonS3ClientBuilder
                 .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .build();
+    }*/
+
+    @Bean
+    public AmazonS3Client amazonS3Client() {
+        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        return (AmazonS3Client) AmazonS3ClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .build();
     }
 
