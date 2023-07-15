@@ -1,6 +1,7 @@
 package com.habday.server.dto.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
@@ -43,7 +44,7 @@ public class CreateFundingItemRequestDto {
                 .goalPrice(goalPrice)
                 .startDate(startDate)
                 .finishDate(finishDate)
-                .status(PROGRESS)
+                .status(FundingState.PROGRESS)
                 .member(member)
                 .build();
     }

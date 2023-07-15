@@ -38,7 +38,7 @@ public class MemberController extends Common {
 
     @PostMapping("/create/fundingItem/{memberId}")
     public ResponseEntity<CommonResponse> createFundingItem(@PathVariable("memberId") Long memberId, @RequestPart(value="fundingItemImg") MultipartFile fundingItemImg, @RequestPart(value="dto") CreateFundingItemRequestDto request) throws IOException {
-        System.out.println("fundingItemImg^^" + fundingItemImg.toString());
+        //System.out.println("fundingItemImg^^" + fundingItemImg.toString());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
