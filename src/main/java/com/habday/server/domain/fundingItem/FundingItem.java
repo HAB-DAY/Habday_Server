@@ -84,4 +84,10 @@ public class FundingItem {
         this.status = status;
         return this;
     }
+    public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
+        this.fundingItemImg = fundingItemImg;
+        this.fundingName = fundingName;
+        this.fundDetail = fundDetail;
+        return this;
+    }
 }

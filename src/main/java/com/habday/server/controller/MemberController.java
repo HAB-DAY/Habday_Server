@@ -2,6 +2,7 @@ package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.constants.code.ExceptionCode;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.CommonResponse;
@@ -42,12 +43,14 @@ public class MemberController extends Common {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
+        if(fundingItemImg.isEmpty()) {
+            throw new CustomException(ExceptionCode.NO_FUNDING_IMG);
+        }
         String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
 
         FundingItem fundingItem = fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
         String responseDto = "http://13.124.209.40:8080/funding/showFundingContent?itemId=" + fundingItem.getId();
         return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
-        //return CreateFundingItemResponseDto.newResponse(CREATE_FUNDING_ITEM_SUCCESS);
     }
 
 

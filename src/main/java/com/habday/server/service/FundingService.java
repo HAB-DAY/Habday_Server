@@ -11,7 +11,6 @@ import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.payment.Payment;
-import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
@@ -147,6 +146,18 @@ public class FundingService extends Common {
         } catch (IOException e) {
             throw new CustomException(FAIL_UPLOADING_IMG);
         }
+    }
+
+    @Transactional
+    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail) throws IOException {
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+        String updateFundingItemImgUrl = (fundingItemImg.isEmpty()) ? fundingItem.getFundingItemImg() : s3Uploader.upload(fundingItemImg, "images");
+        String updateFundingName = (fundingItemName == null) ? fundingItem.getFundingName() : fundingItemName;
+        String updateFundDetail = (fundingItemDetail == null) ? fundingItem.getFundDetail() : fundingItemDetail;
+
+        fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
     }
 
     public void deleteFundingItem(Long fundingItemId) {

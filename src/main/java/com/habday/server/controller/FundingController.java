@@ -6,6 +6,7 @@ import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.DeleteFundingItemResponse;
+import com.habday.server.dto.res.UpdateFundingItemResponse;
 import com.habday.server.dto.res.fund.*;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.Optional;
 
 import static com.habday.server.constants.code.ExceptionCode.*;
@@ -31,6 +33,7 @@ public class FundingController extends Common {
     private final FundingService fundingService;
     //private final ParticipatedList participatedList;
     private final HostedList hostedList;
+
     @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
     public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
         log.info("participateFunding error");
@@ -92,6 +95,11 @@ public class FundingController extends Common {
 //    }
 
     // 펀딩 수정
+    @PutMapping("/update/{fundingItemId}")
+    public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
+        fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
+        return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
+    }
 
     // 펀딩 식제
     @GetMapping("/delete/{fundingItemId}")

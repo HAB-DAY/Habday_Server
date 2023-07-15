@@ -32,9 +32,6 @@ public class S3Uploader {
 
     // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
-        if(multipartFile.isEmpty()) {
-            throw new CustomException(ExceptionCode.NO_FUNDING_IMG);
-        }
          File uploadFile = convert(multipartFile)
                 .orElseThrow(() -> new IllegalArgumentException("MultipartFile -> File 전환 실패"));
         return upload(uploadFile, dirName, multipartFile.getOriginalFilename());
