@@ -9,6 +9,7 @@ import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
+import com.habday.server.dto.res.DeleteFundingItemResponse;
 import com.habday.server.dto.res.fund.*;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
@@ -101,8 +102,9 @@ public class FundingController extends Common {
 
     // 펀딩 식제
     /*@DeleteMapping("/delete/fundingItem/{fundingItemId}")
-    public ResponseEntity<CommonResponse> deleteFundingItem(@PathVariable("fundingItemId") Long fundingItemId) {
+    public ResponseEntity<DeleteFundingItemResponse> deleteFundingItem(@PathVariable("fundingItemId") Long fundingItemId) {
         FundingItem fundingItem = fundingItemRepository.deleteById(fundingItemId);
-        return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS);
+
+        return DeleteFundingItemResponse.newResponse(DELETE_FUNDING_ITEM_SUCCESS);
     }*/
 }
