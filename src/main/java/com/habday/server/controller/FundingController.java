@@ -4,6 +4,7 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
@@ -96,4 +97,12 @@ public class FundingController extends Common {
 //        return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
 //    }
 
+    // 펀딩 수정
+
+    // 펀딩 식제
+    /*@DeleteMapping("/delete/fundingItem/{fundingItemId}")
+    public ResponseEntity<CommonResponse> deleteFundingItem(@PathVariable("fundingItemId") Long fundingItemId) {
+        FundingItem fundingItem = fundingItemRepository.deleteById(fundingItemId);
+        return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS);
+    }*/
 }
