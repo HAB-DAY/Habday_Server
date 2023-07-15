@@ -148,4 +148,9 @@ public class FundingService extends Common {
             throw new CustomException(FAIL_UPLOADING_IMG);
         }
     }
+
+    public void deleteFundingItem(Long fundingItemId) {
+        fundingItemRepository.delete(fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID)));
+    }
 }
