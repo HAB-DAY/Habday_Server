@@ -6,6 +6,7 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -59,6 +60,9 @@ public class FundingService extends Common {
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        //이미 성공 처리된 펀딩일 경우
+        if(fundingItem.getStatus().equals(FundingState.SUCCESS))
+            return ParticipateFundingResponseDto.of(-7, "이미 성공한 펀딩에는 참여할 수 없습니다.");
 
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
@@ -80,7 +84,6 @@ public class FundingService extends Common {
 
         //펀딩 아이템 누적 금액 update
         fundingItem.updatePricePercentage(totalPrice, percentage);
-
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
     }
 
