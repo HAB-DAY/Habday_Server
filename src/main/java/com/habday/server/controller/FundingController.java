@@ -53,6 +53,13 @@ public class FundingController extends Common {
         return CommonResponse.toResponse(FUNDING_CONFIRMATION_SUCCESS, null);
     }
 
+    @GetMapping(value = {"/showConfirmation", "/showConfirmation/{confirmationId}"})
+    public ResponseEntity<CommonResponse> showConfirmation(@PathVariable Optional<Long> confirmationId){
+        ShowConfirmationResponseDto response = fundingService.showConfirmation(confirmationId.orElseThrow(() ->
+                new CustomException(NO_CONFIRMATION_EXIST)));
+        return CommonResponse.toResponse(SHOW_FUNDING_CONFIRM_SUCCESS, response);
+    }
+
     @GetMapping("/showFundingContent")
     public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId){
         ShowFundingContentResponseDto responseDto = fundingService.showFundingContent(itemId);

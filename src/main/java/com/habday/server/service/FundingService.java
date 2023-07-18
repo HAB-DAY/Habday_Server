@@ -20,6 +20,7 @@ import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
 import com.habday.server.dto.res.fund.GetListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
+import com.habday.server.dto.res.fund.ShowConfirmationResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto.FundingParticipantList;
 import com.habday.server.exception.CustomException;
@@ -97,8 +98,9 @@ public class FundingService extends Common {
         Member member = fundingItem.getMember();
         if (member == null)
             throw new CustomException(NO_MEMBER_ID_SAVED);
-
-        return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem));
+        Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
+        return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem),
+                confirmation == null ? null : confirmation.getId());
     }
 
     public List<FundingParticipantList> getParticipantList(FundingItem fundingItem) {
@@ -194,6 +196,11 @@ public class FundingService extends Common {
         emailFormats.sendFundingConfirmEmail(fundingItem);
         //펀딩 인증 여부 update
         fundingItem.updateIsConfirm();
+    }
+
+    public ShowConfirmationResponseDto showConfirmation(Long confirmationId){
+        Confirmation confirmation = confirmationRepository.findById(confirmationId).orElseThrow(() -> new CustomException(NO_CONFIRMATION_EXIST));
+        return new ShowConfirmationResponseDto(confirmation);
     }
 
     @Transactional
