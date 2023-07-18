@@ -88,9 +88,9 @@ public class FundingItem {
         return this;
     }
 
-    public FundingItem updateIsConfirm(){
+    public void updateIsConfirm() {
         this.isConfirm = true;
-
+    }
     public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
