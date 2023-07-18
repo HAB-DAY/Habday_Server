@@ -6,8 +6,7 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
-import com.habday.server.config.email.EmailMessage;
-import com.habday.server.config.email.EmailService;
+import com.habday.server.config.email.EmailFormats;
 import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
@@ -54,7 +53,7 @@ public class FundingService extends Common {
     private final Calculation calculation;
     private final IamportService iamportService;
     private final S3Uploader s3Uploader;
-    private final EmailService emailService;
+    private final EmailFormats emailFormats;
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -193,13 +192,7 @@ public class FundingService extends Common {
                         .member(member)
                 .build());
         //이메일 보내기
-        EmailMessage emailMessage = EmailMessage.builder()
-                .to(emailService.getReceiverList(fundingItem))
-                .subject("HABDAY" + "펀딩 인증 알림" )
-                .message("'" + fundingItem.getFundingName()+"'에 대한 선물하신 금액의 사용처가 생일자에 의해 인증되었습니다.  \n" +
-                        "펀딩 인증은 " + "주소 " + "에서 볼 수 있습니다.")
-                .build();
-        emailService.sendEmail(emailMessage);
+        emailFormats.sendFundingConfirmEmail(fundingItem);
         //펀딩 인증 여부 update
         fundingItem.updateIsConfirm();
     }
