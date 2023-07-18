@@ -3,8 +3,7 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
-import com.habday.server.config.email.EmailMessage;
-import com.habday.server.config.email.EmailService;
+import com.habday.server.config.email.EmailFormats;
 import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.state.FundingState;
@@ -44,7 +43,7 @@ public class FundingCloseService extends Common {
     private final IamportService iamportService;
     private final RestInterface restService;
     private final Calculation calculation;
-    private final EmailService emailService;
+    private final EmailFormats emailFormats;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -80,13 +79,7 @@ public class FundingCloseService extends Common {
             fundingItem.updateFundingState(FundingState.SUCCESS);
             log.info("최소 목표퍼센트 이상 달성함");
 
-            EmailMessage emailMessage = EmailMessage.builder()
-                    .to(getReceiverList(fundingItem))
-                    .subject("HABDAY" + "펀딩 성공 알림" )
-                    .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
-                            "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
-                    .build();
-            emailService.sendEmail(emailMessage);
+            emailFormats.sendFundingSuccessEmail(fundingItem);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.info("최소 목표퍼센트 이상 달성 실패");
             fundingItem.updateFundingState(FundingState.FAIL);//update안됨
@@ -95,15 +88,7 @@ public class FundingCloseService extends Common {
             fundingMemberId.forEach(id -> {
                 //예약결제 취소
                 unschedulePayment(id);
-                //TODO response로 펀딩 실패 메일 보내기
-
-                EmailMessage emailMessage = EmailMessage.builder()
-                        .to(getReceiverList(fundingItem))
-                        .subject("HABDAY" + "펀딩 실패 알림" )
-                        .message("'" + fundingItem.getFundingName()+"' 펀딩이 실패했습니다. \n" +
-                                "실패한 펀딩은 결제처리가 되지 않습니다.")
-                        .build();
-                emailService.sendEmail(emailMessage);
+                emailFormats.sendFundingFailEmail(fundingItem);
             });
             //throw new CustomException(FAIL_FINISH_FUNDING);
         }
@@ -128,12 +113,6 @@ public class FundingCloseService extends Common {
             log.info("종료 이후");
             throw new CustomException(ALREADY_FINISHED_FUNDING);
         }
-    }
-
-    public String[] getReceiverList(FundingItem fundingItem){
-        List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
-        log.info("mailList: "  + new Gson().toJson(mailList));
-        return mailList.toArray(new String[mailList.size()]);
     }
 
     public void unschedulePayment(Long id){
@@ -196,29 +175,12 @@ public class FundingCloseService extends Common {
         if(callbackRequestDto.getStatus().equals(paid.getMsg())){
             fundingMember.updateWebhookSuccess(paid);
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
-            // TODO 결제 성공 메일 보내기
-
-            EmailMessage emailMessage = EmailMessage.builder()
-                    .to(receiver)
-                    .subject("HABDAY" + "결제 성공 알림" )
-                    .message("'" + fundingItem.getFundingName()+"' 결제가 성공했습니다. \n" +
-                            "총 결제 금액은 : " + amount + "입니다.\n" +
-                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
-                    .build();
-            emailService.sendEmail(emailMessage);
+            emailFormats.sendPaymentSuccessEmail(fundingItem, receiver, amount);
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
             log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             // TODO 수동 결제 링크 보내기
-            EmailMessage emailMessage = EmailMessage.builder()
-                    .to(receiver)
-                    .subject("HABDAY" + "결제 실패 알림" )
-                    .message("'" + fundingItem.getFundingName()+"' 결제가 실패했습니다. \n" +
-                            "결제 실패 이유는 " + "입니다. \n" +
-                            "다시 결제: " + " \n" +
-                            "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
-                    .build();
-            emailService.sendEmail(emailMessage);
+            emailFormats.sendPaymentFailEmail(fundingItem, receiver);
         }
     }
 

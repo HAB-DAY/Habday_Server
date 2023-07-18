@@ -6,7 +6,11 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.config.email.EmailFormats;
+import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
+import com.habday.server.domain.confirmation.Confirmation;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
@@ -34,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.mail.Multipart;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -47,6 +52,7 @@ public class FundingService extends Common {
     private final Calculation calculation;
     private final IamportService iamportService;
     private final S3Uploader s3Uploader;
+    private final EmailFormats emailFormats;
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -58,6 +64,9 @@ public class FundingService extends Common {
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        //이미 성공 처리된 펀딩일 경우
+        if(fundingItem.getStatus().equals(FundingState.SUCCESS))
+            return ParticipateFundingResponseDto.of(-7, "이미 성공한 펀딩에는 참여할 수 없습니다.");
 
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
@@ -79,7 +88,6 @@ public class FundingService extends Common {
 
         //펀딩 아이템 누적 금액 update
         fundingItem.updatePricePercentage(totalPrice, percentage);
-
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
     }
 
@@ -137,15 +145,55 @@ public class FundingService extends Common {
         return fundingItemRepository.existsByIdLessThan(id);
     }
 
-    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId) {
+    @Transactional
+    public void confirm(MultipartFile img, ConfirmationRequest request, Long fundingItemId, Long memberId) {
+        String fundingItemImgUrl;
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
+                () -> new CustomException(NO_FUNDING_ITEM_ID)
+        );
+        if (fundingItem.getIsConfirm()){
+            throw new CustomException(FUNDING_ALREADY_CONFIRMED);
+        }
 
+        if (!fundingItem.getStatus().equals(FundingState.SUCCESS)){
+            log.info("confirm(): 아이템의 status가 success가 아님" + fundingItem.getStatus());
+            throw new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
+        }
+
+        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) > 0){//now < finishDate
+            log.info("confirm(): 아직 진행중인 펀딩임." + fundingItem.getFinishDate());
+            throw new CustomException(FUNDING_CONFIRM_NOT_YET);
+        }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
+
+        //펀딩 기간 2주 안인지 확인
+        LocalDate finishedDate = fundingItem.getFinishDate();
+        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
+
+        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//afterTwoWeek >= LocalDate.now()이면 인증 가능
+            log.info("confirm(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + finishedDate);
+            throw new CustomException(FUNDING_CONFIRM_EXCEEDED);
+        }
+        log.info("confirm(): 펀딩 인증 2주 이내 " + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + " " + finishedDate);
+
+        //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        log.info("request: 2" + request.getMessage());
+        log.info("confirm(): request: 2" + request.getMessage());
         try {
-            String fundingItemImgUrl = s3Uploader.upload(img, "images");
+            fundingItemImgUrl = s3Uploader.upload(img, "images");
         } catch (IOException e) {
             throw new CustomException(FAIL_UPLOADING_IMG);
         }
+        //db 저장
+        confirmationRepository.save(Confirmation.builder()
+                        .confirmationImg(fundingItemImgUrl)
+                        .request(request)
+                        .fundingItem(fundingItem)
+                        .member(member)
+                .build());
+        //이메일 보내기
+        emailFormats.sendFundingConfirmEmail(fundingItem);
+        //펀딩 인증 여부 update
+        fundingItem.updateIsConfirm();
     }
 
     @Transactional

@@ -38,4 +38,11 @@ public class Calculation {
         calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 30분 후에 결제
         return new Date(calendar.getTimeInMillis());
     }
+
+//    public Date addDate(Date baseDate, int addedUnit, int addedTime){
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTime(baseDate);
+//        calendar.add(addedUnit, addedTime);
+//        return new Date(calendar.getTimeInMillis());
+//    }
 }

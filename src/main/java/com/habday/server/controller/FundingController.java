@@ -44,9 +44,10 @@ public class FundingController extends Common {
     }
 
     @PostMapping(value = {"/confirm", "confirm/{memberId}"})
-    public ResponseEntity<CommonResponse> confirm(@RequestPart(value = "img") MultipartFile img, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
-        log.info("request: "+  request.getMessage());
-        fundingService.confirm(img, request, memberId.orElseThrow(
+    public ResponseEntity<CommonResponse> confirm(@RequestPart(value = "img") MultipartFile img,
+        @Valid @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId,
+        @RequestParam @NotNull(message = "펀딩 아이템 아이디는 필수 입니다.") Long fundingItemId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
+        fundingService.confirm(img, request, fundingItemId,memberId.orElseThrow(
                 () -> new CustomException(NO_MEMBER_ID)
         ));
         return CommonResponse.toResponse(FUNDING_CONFIRMATION_SUCCESS, null);
