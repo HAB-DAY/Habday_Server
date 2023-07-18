@@ -24,6 +24,11 @@ public class EmailService extends Common {
     private final JavaMailSender javaMailSender;
 
     public Boolean sendEmail(EmailMessage emailMessage){
+        if (emailMessage.getTo() == null){
+            log.info("이메일을 보낼 참여자가 없음");
+            return false;
+        }
+
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");

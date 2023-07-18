@@ -46,7 +46,9 @@ public enum ExceptionCode {
 
     FAIL_SENDING_MAIL(INTERNAL_SERVER_ERROR, "메일 전송에 실패했습니다."),
     FAIL_UPLOADING_IMG(INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다."),
-    FUNDING_CONFIRM_EXCEEDED(INTERNAL_SERVER_ERROR, "펀딩 인증 기간이 지났습니다.");
+    FUNDING_CONFIRM_EXCEEDED(INTERNAL_SERVER_ERROR, "펀딩 인증 기간이 지났습니다."),
+    FUNDING_CONFIRM_NOT_NEEDED(INTERNAL_SERVER_ERROR, "실패한 펀딩이거나 펀딩 실패한 경우 펀딩 인증이 필요하지 않습니다."),
+    FUNDING_CONFIRM_NOT_YET(INTERNAL_SERVER_ERROR, "완료되지 않은 펀딩은 인증을 진행할 수 없습니다.");
 
 
     private final HttpStatus status;

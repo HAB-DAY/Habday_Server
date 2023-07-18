@@ -150,23 +150,33 @@ public class FundingService extends Common {
     @Transactional
     public void confirm(MultipartFile img, ConfirmationRequest request, Long fundingItemId, Long memberId) {
         String fundingItemImgUrl;
-        //펀딩 기간 2주 안인지 확인
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
 
+        if (!fundingItem.getStatus().equals(FundingState.SUCCESS)){
+            log.info("confirm(): 아이템의 status가 success가 아님" + fundingItem.getStatus());
+            new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
+        }
+
+        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) > 0){
+            log.info("confirm(): 아직 진행중인 펀딩임." + fundingItem.getFinishDate());
+            new CustomException(FUNDING_CONFIRM_NOT_YET);
+        }
+
+        //펀딩 기간 2주 안인지 확인
         LocalDate finishedDate = fundingItem.getFinishDate();
         LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
 
         if (finishedDate.compareTo(afterTwoWeek) > 0){
-            log.info("펀딩 인증 2주 지남");
+            log.info("confirm(): 펀딩 인증 2주 지남");
             new CustomException(FUNDING_CONFIRM_EXCEEDED);
         }
-        log.info("펀딩 인증 2주 이내");
+        log.info("confirm(): 펀딩 인증 2주 이내");
 
         //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        log.info("request: 2" + request.getMessage());
+        log.info("confirm(): request: 2" + request.getMessage());
         try {
             fundingItemImgUrl = s3Uploader.upload(img, "images");
         } catch (IOException e) {
