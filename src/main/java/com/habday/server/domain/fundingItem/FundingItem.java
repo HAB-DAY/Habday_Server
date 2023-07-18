@@ -90,6 +90,11 @@ public class FundingItem {
 
     public FundingItem updateIsConfirm(){
         this.isConfirm = true;
+
+    public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
+        this.fundingItemImg = fundingItemImg;
+        this.fundingName = fundingName;
+        this.fundDetail = fundDetail;
         return this;
     }
 }
