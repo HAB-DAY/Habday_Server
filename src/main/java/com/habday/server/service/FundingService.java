@@ -6,8 +6,12 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.config.email.EmailMessage;
+import com.habday.server.config.email.EmailService;
+import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
+import com.habday.server.domain.confirmation.Confirmation;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
@@ -36,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.mail.Multipart;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -49,6 +54,7 @@ public class FundingService extends Common {
     private final Calculation calculation;
     private final IamportService iamportService;
     private final S3Uploader s3Uploader;
+    private final EmailService emailService;
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -141,14 +147,48 @@ public class FundingService extends Common {
         return fundingItemRepository.existsByIdLessThan(id);
     }
 
-    public void confirm(MultipartFile img, ConfirmationRequest request, Long memberId) {
+    @Transactional
+    public void confirm(MultipartFile img, ConfirmationRequest request, Long fundingItemId, Long memberId) {
+        String fundingItemImgUrl;
+        //펀딩 기간 2주 안인지 확인
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
+                () -> new CustomException(NO_FUNDING_ITEM_ID)
+        );
 
+        LocalDate finishedDate = fundingItem.getFinishDate();
+        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
+
+        if (finishedDate.compareTo(afterTwoWeek) > 0){
+            log.info("펀딩 인증 2주 지남");
+            new CustomException(FUNDING_CONFIRM_EXCEEDED);
+        }
+        log.info("펀딩 인증 2주 이내");
+
+        //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
         log.info("request: 2" + request.getMessage());
         try {
-            String fundingItemImgUrl = s3Uploader.upload(img, "images");
+            fundingItemImgUrl = s3Uploader.upload(img, "images");
         } catch (IOException e) {
             throw new CustomException(FAIL_UPLOADING_IMG);
         }
+        //db 저장
+        confirmationRepository.save(Confirmation.builder()
+                        .confirmationImg(fundingItemImgUrl)
+                        .request(request)
+                        .date(LocalDate.now())
+                        .fundingItem(fundingItem)
+                        .member(member)
+                .build());
+        //이메일 보내기
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(emailService.getReceiverList(fundingItem))
+                .subject("HABDAY" + "펀딩 인증 알림" )
+                .message("'" + fundingItem.getFundingName()+"'에 대한 선물하신 금액의 사용처가 생일자에 의해 인증되었습니다.  \n" +
+                        "펀딩 인증은 " + "에서 볼 수 있습니다.")
+                .build();
+        emailService.sendEmail(emailMessage);
+        //펀딩 인증 여부 update
+        fundingItem.updateIsConfirm();
     }
 }

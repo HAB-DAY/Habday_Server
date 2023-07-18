@@ -81,7 +81,7 @@ public class FundingCloseService extends Common {
             log.info("최소 목표퍼센트 이상 달성함");
 
             EmailMessage emailMessage = EmailMessage.builder()
-                    .to(getReceiverList(fundingItem))
+                    .to(emailService.getReceiverList(fundingItem))
                     .subject("HABDAY" + "펀딩 성공 알림" )
                     .message("'" + fundingItem.getFundingName()+"' 펀딩이 성공했습니다. \n" +
                             "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
@@ -98,7 +98,7 @@ public class FundingCloseService extends Common {
                 //TODO response로 펀딩 실패 메일 보내기
 
                 EmailMessage emailMessage = EmailMessage.builder()
-                        .to(getReceiverList(fundingItem))
+                        .to(emailService.getReceiverList(fundingItem))
                         .subject("HABDAY" + "펀딩 실패 알림" )
                         .message("'" + fundingItem.getFundingName()+"' 펀딩이 실패했습니다. \n" +
                                 "실패한 펀딩은 결제처리가 되지 않습니다.")
@@ -128,12 +128,6 @@ public class FundingCloseService extends Common {
             log.info("종료 이후");
             throw new CustomException(ALREADY_FINISHED_FUNDING);
         }
-    }
-
-    public String[] getReceiverList(FundingItem fundingItem){
-        List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
-        log.info("mailList: "  + new Gson().toJson(mailList));
-        return mailList.toArray(new String[mailList.size()]);
     }
 
     public void unschedulePayment(Long id){

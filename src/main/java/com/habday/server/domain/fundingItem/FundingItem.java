@@ -53,6 +53,9 @@ public class FundingItem {
     @Column
     private int percentage;//totalPrice/goalPrice하면 돼서 필요 없을수도
 
+    @ColumnDefault("false")
+    private Boolean isConfirm;
+
     @Column
     @Enumerated(value = EnumType.STRING)
     private FundingState status;
@@ -82,6 +85,11 @@ public class FundingItem {
     }
     public FundingItem updateFundingState(FundingState status){
         this.status = status;
+        return this;
+    }
+
+    public FundingItem updateIsConfirm(){
+        this.isConfirm = true;
         return this;
     }
 }

@@ -2,6 +2,8 @@ package com.habday.server.domain.confirmation;
 
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
+import com.habday.server.dto.req.fund.ConfirmationRequest;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +18,9 @@ public class Confirmation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "confirmationId")
     private Long id;
+
+    @Column
+    private String title;
 
     @Column
     private String confirmationImg;
@@ -33,5 +38,15 @@ public class Confirmation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberId")
     private Member member;
+
+    @Builder
+    public Confirmation(String confirmationImg, ConfirmationRequest request, LocalDate date, FundingItem fundingItem, Member member){
+        this.confirmationImg = confirmationImg;
+        this.title = request.getTitle();
+        this.message = request.getMessage();
+        this.date = date;
+        this.fundingItem = fundingItem;
+        this.member = member;
+    }
 
 }
