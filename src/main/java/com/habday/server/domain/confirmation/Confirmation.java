@@ -1,5 +1,6 @@
 package com.habday.server.domain.confirmation;
 
+import com.habday.server.domain.BaseTimeEntity;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Confirmation {
+public class Confirmation extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "confirmationId")
@@ -28,9 +29,6 @@ public class Confirmation {
     @Column
     private String message;
 
-    @Column
-    private LocalDate date;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fundingItemId")
     private FundingItem fundingItem;
@@ -40,11 +38,10 @@ public class Confirmation {
     private Member member;
 
     @Builder
-    public Confirmation(String confirmationImg, ConfirmationRequest request, LocalDate date, FundingItem fundingItem, Member member){
+    public Confirmation(String confirmationImg, ConfirmationRequest request, FundingItem fundingItem, Member member){
         this.confirmationImg = confirmationImg;
         this.title = request.getTitle();
         this.message = request.getMessage();
-        this.date = date;
         this.fundingItem = fundingItem;
         this.member = member;
     }
