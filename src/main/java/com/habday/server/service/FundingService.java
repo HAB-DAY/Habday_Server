@@ -153,26 +153,29 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
+        if (fundingItem.getIsConfirm()){
+            throw new CustomException(FUNDING_ALREADY_CONFIRMED);
+        }
 
         if (!fundingItem.getStatus().equals(FundingState.SUCCESS)){
             log.info("confirm(): 아이템의 status가 success가 아님" + fundingItem.getStatus());
-            new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
+            throw new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
         }
 
-        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) > 0){
+        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) > 0){//now < finishDate
             log.info("confirm(): 아직 진행중인 펀딩임." + fundingItem.getFinishDate());
-            new CustomException(FUNDING_CONFIRM_NOT_YET);
-        }
+            throw new CustomException(FUNDING_CONFIRM_NOT_YET);
+        }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
 
         //펀딩 기간 2주 안인지 확인
         LocalDate finishedDate = fundingItem.getFinishDate();
         LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
 
-        if (finishedDate.compareTo(afterTwoWeek) > 0){
-            log.info("confirm(): 펀딩 인증 2주 지남");
-            new CustomException(FUNDING_CONFIRM_EXCEEDED);
+        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//afterTwoWeek >= LocalDate.now()이면 인증 가능
+            log.info("confirm(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + finishedDate);
+            throw new CustomException(FUNDING_CONFIRM_EXCEEDED);
         }
-        log.info("confirm(): 펀딩 인증 2주 이내");
+        log.info("confirm(): 펀딩 인증 2주 이내 " + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + " " + finishedDate);
 
         //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
@@ -186,7 +189,6 @@ public class FundingService extends Common {
         confirmationRepository.save(Confirmation.builder()
                         .confirmationImg(fundingItemImgUrl)
                         .request(request)
-                        .date(LocalDate.now())
                         .fundingItem(fundingItem)
                         .member(member)
                 .build());
@@ -195,7 +197,7 @@ public class FundingService extends Common {
                 .to(emailService.getReceiverList(fundingItem))
                 .subject("HABDAY" + "펀딩 인증 알림" )
                 .message("'" + fundingItem.getFundingName()+"'에 대한 선물하신 금액의 사용처가 생일자에 의해 인증되었습니다.  \n" +
-                        "펀딩 인증은 " + "에서 볼 수 있습니다.")
+                        "펀딩 인증은 " + "주소 " + "에서 볼 수 있습니다.")
                 .build();
         emailService.sendEmail(emailMessage);
         //펀딩 인증 여부 update
