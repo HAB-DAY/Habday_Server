@@ -29,7 +29,7 @@ public class FundingCloseController extends Common {
 
     @GetMapping("/checkSuccess/{fundingItemId}")
     public void checkFundingResult(@PathVariable Long fundingItemId) {
-        fundingCloseService.checkFundingFinishDate(fundingItemId);
+        //fundingCloseService.checkFundingFinishDate(fundingItemId);
     }
 
     /** 웹훅 예약결제 컬백 **/
@@ -38,7 +38,7 @@ public class FundingCloseController extends Common {
         fundingCloseService.callbackSchedule(callbackRequestDto, request);
     }
 
-    @GetMapping("/test")
+    @GetMapping("/mailingTest")
     public void test(){
         //String email = fundingMember.getMember().getEmail();
         String[] receiveList = {"yeonj630@gmail.com"};
@@ -52,9 +52,9 @@ public class FundingCloseController extends Common {
     }
 
 
-    @GetMapping("/test2")
-    public void test2(){
-        IamportResponse<Payment> response= iamportService.paymentByImpUid("imps_007416502943");
-        log.info("response: " + new Gson().toJson(response));
-    }
+//    @GetMapping("/test2")
+//    public void test2(){
+//        IamportResponse<Payment> response= iamportService.paymentByImpUid("imps_007416502943");
+//        log.info("response: " + new Gson().toJson(response));
+//    }
 }

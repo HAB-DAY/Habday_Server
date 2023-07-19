@@ -54,6 +54,7 @@ public class FundingService extends Common {
     private final IamportService iamportService;
     private final S3Uploader s3Uploader;
     private final EmailFormats emailFormats;
+    private final PayService payService;
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -215,8 +216,29 @@ public class FundingService extends Common {
         fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
     }
 
+
+    @Transactional
     public void deleteFundingItem(Long fundingItemId) {
-        fundingItemRepository.delete(fundingItemRepository.findById(fundingItemId)
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID)));
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+        if(LocalDate.now().compareTo(fundingItem.getFinishDate())>=0){
+            throw new CustomException(DELETE_FUNDING_UNAVAILABLE);
+        }
+        fundingItemRepository.delete(fundingItem);
+        payService.unscheduleAll(fundingItem);
+        emailFormats.sendFundingCanceledEmail(fundingItem);
+
+        //연관된 컬럼 null처리
+        List<FundingMember> fundingMembers = fundingMemberRepository.getFundingMemberMatchesFundingItem(fundingItem);
+        if (!fundingMembers.isEmpty()){
+            fundingMembers.forEach((fundingMember)->{//fundingItem을 삭제해도 관련된 데이터 남겨둘거임.
+                fundingMember.updateFundingItemNull();
+            });
+        }
+
+        Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
+        if (confirmation != null)
+            confirmation.updateFundingItemNull();
     }
 }

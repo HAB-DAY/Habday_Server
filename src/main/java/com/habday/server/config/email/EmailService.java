@@ -24,7 +24,8 @@ public class EmailService extends Common {
     private final JavaMailSender javaMailSender;
 
     public Boolean sendEmail(EmailMessage emailMessage){
-        if (emailMessage.getTo() == null){
+        log.info("emailList: " + emailMessage.getTo());
+        if (emailMessage.getTo() == null || emailMessage.getTo().length == 0){
             log.info("이메일을 보낼 참여자가 없음");
             return false;
         }
@@ -45,7 +46,7 @@ public class EmailService extends Common {
         }
     }
 
-    public String[] getReceiverList(FundingItem fundingItem){
+    public String[] getParticipantEmail(FundingItem fundingItem){
         List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
         log.info("mailList: "  + new Gson().toJson(mailList));
         return mailList.toArray(new String[mailList.size()]);

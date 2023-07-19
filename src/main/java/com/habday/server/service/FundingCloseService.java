@@ -41,9 +41,9 @@ import static com.habday.server.constants.state.ScheduledPayState.paid;
 @Service
 public class FundingCloseService extends Common {
     private final IamportService iamportService;
-    private final RestInterface restService;
     private final Calculation calculation;
     private final EmailFormats emailFormats;
+    private final PayService payService;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -78,55 +78,39 @@ public class FundingCloseService extends Common {
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
             fundingItem.updateFundingState(FundingState.SUCCESS);
             log.info("최소 목표퍼센트 이상 달성함");
-
             emailFormats.sendFundingSuccessEmail(fundingItem);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.info("최소 목표퍼센트 이상 달성 실패");
             fundingItem.updateFundingState(FundingState.FAIL);//update안됨
-            //펀딩 참여자 가져오기
-            List<Long> fundingMemberId = fundingMemberRepository.getFundingItemIdMatchesFundingItem(fundingItem);
-            fundingMemberId.forEach(id -> {
-                //예약결제 취소
-                unschedulePayment(id);
-                emailFormats.sendFundingFailEmail(fundingItem);
-            });
+            //예약 취소
+            payService.unscheduleAll(fundingItem);
+            emailFormats.sendFundingFailEmail(fundingItem);//이전에는 한 명 한 명마다 이메일 보냄
             //throw new CustomException(FAIL_FINISH_FUNDING);
         }
 
         //fundingItemRepository.save(fundingItem);
     }
 
+    /*현재 사용하지 않아 주석처리 해놓음*/
     // 펀딩 기간 만료 후, 펀딩 목표 퍼센트 달성 했는지 여부 확인 로직
-    public void checkFundingFinishDate(Long fundingItemId){
-        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+//    public void checkFundingFinishDate(Long fundingItemId){
+//        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+//                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+//
+//        LocalDate now = LocalDate.now(); //현재 날짜 구하기
+//        System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
+//
+//        if (now.compareTo(fundingItem.getFinishDate()) == 0){
+//            checkFundingGoalPercent(fundingItem);
+//        } else if(now.compareTo(fundingItem.getFinishDate()) < 0){
+//            log.info("종료 이전");
+//            throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
+//        }else{
+//            log.info("종료 이후");
+//            throw new CustomException(ALREADY_FINISHED_FUNDING);
+//        }
+//    }
 
-        LocalDate now = LocalDate.now(); //현재 날짜 구하기
-        System.out.println("now^^ " + now.isEqual(fundingItem.getFinishDate()));
-
-        if (now.compareTo(fundingItem.getFinishDate()) == 0){
-            checkFundingGoalPercent(fundingItem);
-        } else if(now.compareTo(fundingItem.getFinishDate()) < 0){
-            log.info("종료 이전");
-            throw new CustomException(NOT_FINISH_FUNDING); // 펀딩이 아직 종료되지 않음
-        }else{
-            log.info("종료 이후");
-            throw new CustomException(ALREADY_FINISHED_FUNDING);
-        }
-    }
-
-    public void unschedulePayment(Long id){
-        log.info("unschedulePayment: start");
-        NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
-        Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
-        try {
-            Response<UnscheduleResponseDto> response = call.execute();//각각의 요청에 대해서만 익셉션이 생길 테니까 익셉션이 이 함수까지는 안오겠지,,?
-            log.info("unschedulePayment response: " + new Gson().toJson(response.body()));
-        } catch (IOException e) {
-            log.info("unschedule Paymentretrofit 오류: " + e);
-            //throw new CustomException(FAIL_WHILE_UNSCHEDULING);
-        }
-    }
 
     /*
         <웹훅>

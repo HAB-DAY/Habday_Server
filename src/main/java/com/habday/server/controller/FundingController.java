@@ -110,7 +110,7 @@ public class FundingController extends Common {
     }
 
     // 펀딩 식제
-    @GetMapping("/delete/{fundingItemId}")
+    @DeleteMapping ("/delete/{fundingItemId}")
     public ResponseEntity<DeleteFundingItemResponse> deleteFundingItem(@PathVariable("fundingItemId") Long fundingItemId) {
         fundingService.deleteFundingItem(fundingItemId);
         return DeleteFundingItemResponse.newResponse(DELETE_FUNDING_ITEM_SUCCESS);
