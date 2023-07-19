@@ -46,9 +46,9 @@ public class SecurityConfig {
                 .and()
 
                 .authorizeRequests() //인증, 권한 api 설정
-                .antMatchers("/api/v1/user/**").hasAuthority("USER")
-                .antMatchers("/api/v1/manager/**").hasAuthority("MANAGER")
-                .antMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
+                .antMatchers("/funding").hasAuthority("USER")
+                //.antMatchers("/api/v1/manager/**").hasAuthority("MANAGER")
+                //.antMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                 .anyRequest().permitAll()
 
                 .and()
@@ -62,7 +62,6 @@ public class SecurityConfig {
         @Override
         public void configure(HttpSecurity http)  {
             AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-
             http
                     .addFilter(config.corsFilter()) //스프링 시큐리티 필터내에 cors 관련 필터가 있음!! 그래서 제공해주는 필터 객체를 생성후 HttpSecurity에 등록!
                     .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtService)) //AuthenticationManger가 있어야 된다.(파라미터로)

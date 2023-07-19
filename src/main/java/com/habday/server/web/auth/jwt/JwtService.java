@@ -74,13 +74,23 @@ public class JwtService {
      * access 토큰 validate
      */
     public String validAccessToken(String accessToken) {
+        System.out.println("validAccessToken 들어옴");
 
         try {
-            DecodedJWT verify = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(accessToken);
+            System.out.println("AccessToken decode 시작^^");
+
+            DecodedJWT decodedJWT = JWT.decode(accessToken);
+            System.out.println("decodedJWT : " + decodedJWT.getClaims().toString());
+            System.out.println("decodedJWT nickname만! : " + decodedJWT.getClaim("nickname").asString());
+            return decodedJWT.getClaim("nickname").asString();
+
+            /*DecodedJWT verify = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(accessToken);
+            System.out.println("AccessToken decode verify^^ : " + verify);
 
             if(!verify.getExpiresAt().before(new Date())) {
-                return verify.getClaim("nickname").asString();
-            }
+                System.out.println("validAccessToken : " + verify.getClaim("userid").asString());
+                //return verify.getClaim("userid").asString();
+            }*/
 
         }catch (Exception e) {
             /**
@@ -88,7 +98,7 @@ public class JwtService {
              */
             return null;
         }
-        return null;
+        //return null;
     }
 
     /**
