@@ -18,6 +18,9 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
     @Query("select fm.id from FundingMember fm where fm.fundingItem = :fundingItem")
     List<Long> getFundingItemIdMatchesFundingItem(FundingItem fundingItem);
 
+    @Query("select fm from FundingMember fm where fm.fundingItem = :fundingItem")
+    List<FundingMember> getFundingMemberMatchesFundingItem(FundingItem fundingItem);
+
     @Query("select m.email from FundingMember fm join fm.member m where fm.fundingItem = :fundingItem")
     List<String> getMailList(FundingItem fundingItem);
     //List<FundingMember> findByFundingItem(FundingItem fundingItem);

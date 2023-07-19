@@ -2,6 +2,7 @@ package com.habday.server.domain.confirmation;
 
 import com.habday.server.domain.BaseTimeEntity;
 import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import lombok.Builder;
@@ -44,6 +45,12 @@ public class Confirmation extends BaseTimeEntity {
         this.message = request.getMessage();
         this.fundingItem = fundingItem;
         this.member = member;
+    }
+
+
+    public Confirmation updateFundingItemNull(){
+        this.fundingItem = null;
+        return this;
     }
 
 }

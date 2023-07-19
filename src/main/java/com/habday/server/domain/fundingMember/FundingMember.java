@@ -123,4 +123,8 @@ public class FundingMember{
         return this;
     }
 
+    public FundingMember updateFundingItemNull(){
+        this.fundingItem = null;
+        return this;
+    }
 }

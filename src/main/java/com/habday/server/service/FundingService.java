@@ -216,12 +216,28 @@ public class FundingService extends Common {
         fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
     }
 
+
     @Transactional
     public void deleteFundingItem(Long fundingItemId) {
+        //외래키로 묶어놓지 말았어야 하네
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+
         fundingItemRepository.delete(fundingItem);
         payService.unscheduleAll(fundingItem);
-        emailFormats.sendFundingCanceledEmail(fundingItem);//이전에는 한 명 한 명마다 이메일 보냄
+        emailFormats.sendFundingCanceledEmail(fundingItem);
+
+        //연관된 컬럼 null처리
+        List<FundingMember> fundingMembers = fundingMemberRepository.getFundingMemberMatchesFundingItem(fundingItem);
+        if (!fundingMembers.isEmpty()){
+            fundingMembers.forEach((fundingMember)->{//fundingItem을 삭제해도 관련된 데이터 남겨둘거임.
+                fundingMember.updateFundingItemNull();
+            });
+        }
+
+        Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
+        if (confirmation != null)
+            confirmation.updateFundingItemNull();
     }
 }
