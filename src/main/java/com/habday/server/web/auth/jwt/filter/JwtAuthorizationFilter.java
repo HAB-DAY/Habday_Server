@@ -58,7 +58,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
          * 정상적인 access 토큰 사용자
          */
         if(userId !=null) {
-            Member member = memberRepository.findByName(userId);
+            Member member = memberRepository.findByNickName(userId);
 
             // 인증은 토큰 검증시 끝.
             // 인증을 하기 위해서가 아닌 스프링 시큐리티가 수행해주는 권한 처리를 위해

@@ -17,22 +17,22 @@ public class JwtProviderService {
     /**
      * accessToken, refreshToken 생성
      */
-    public JwtToken createJwtToken(Long id, String userId) {
+    public JwtToken createJwtToken(Long id, String nickname) {
 
         //Access token 생성
         String accessToken = JWT.create()
-                .withSubject(userId)
+                .withSubject(nickname)
                 .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.AccessToken_TIME))
                 .withClaim("id", id)
-                .withClaim("userid", userId)
+                .withClaim("nickname", nickname)
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
         //Refresh token 생성
         String refreshToken = JWT.create()
-                .withSubject(userId)
+                .withSubject(nickname)
                 .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.RefreshToken_TIME))
                 .withClaim("id", id)
-                .withClaim("userid", userId)
+                .withClaim("nickname", nickname)
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
         return JwtToken.builder()
@@ -44,13 +44,13 @@ public class JwtProviderService {
     /**
      * access token 생성
      */
-    public String createAccessToken(Long id , String userId) {
+    public String createAccessToken(Long id , String nickname) {
 
         String accessToken = JWT.create()
-                .withSubject(userId)
+                .withSubject(nickname)
                 .withExpiresAt(new Date(System.currentTimeMillis() + JwtProperties.AccessToken_TIME))
                 .withClaim("id", id)
-                .withClaim("userid", userId)
+                .withClaim("nickname", nickname)
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET));
 
         return accessToken;
@@ -71,7 +71,7 @@ public class JwtProviderService {
 
             //refresh 토큰의 만료시간이 지나지 않아 access 토큰만 새로 생성
             if(!verify.getExpiresAt().before(new Date())) {
-                String accessToken = createAccessToken(verify.getClaim("id").asLong(), verify.getClaim("userid").asString());
+                String accessToken = createAccessToken(verify.getClaim("id").asLong(), verify.getClaim("nickname").asString());
                 return accessToken;
             }
         }catch (Exception e) {

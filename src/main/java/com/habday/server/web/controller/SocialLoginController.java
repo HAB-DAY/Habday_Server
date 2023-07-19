@@ -27,10 +27,13 @@ public class SocialLoginController {
     public Map<String, String> NaverLogin(@RequestParam("code") String code) {
 
         NaverToken oauthToken = naverService.getAccessToken(code);
+        System.out.println("oauthToken : " + oauthToken); // accessToken, refreshToken 생성
 
         Member saveMember = naverService.saveMember(oauthToken.getAccess_token());
+        System.out.println("saveMember : " + saveMember);
 
-        JwtToken jwtToken = jwtService.joinJwtToken(saveMember.getName());
+        JwtToken jwtToken = jwtService.joinJwtToken(saveMember.getNickName());
+        System.out.println("jwtToken : " + jwtToken);
 
         return jwtService.successLoginResponse(jwtToken);
     }

@@ -32,14 +32,14 @@ public class JwtService {
     @Transactional
     public JwtToken joinJwtToken(String userId) {
 
-        Member member = memberRepository.findByName(userId);
+        Member member = memberRepository.findByNickName(userId);
         RefreshToken userRefreshToken = member.getJwtRefreshToken();
 
         //처음 서비스를 이용하는 사용자(refresh 토큰이 없는 사용자)
-        if(userRefreshToken ==null) {
+        if(userRefreshToken == null) {
 
             //access, refresh 토큰 생성
-            JwtToken jwtToken = jwtProviderService.createJwtToken(member.getId(), member.getName());
+            JwtToken jwtToken = jwtProviderService.createJwtToken(member.getId(), member.getNickName());
 
             //refreshToken 생성
             RefreshToken refreshToken = new RefreshToken(jwtToken.getRefreshToken());
@@ -60,7 +60,7 @@ public class JwtService {
             }
             else { //refresh 토큰 기간만료
                 //새로운 access, refresh 토큰 생성
-                JwtToken newJwtToken = jwtProviderService.createJwtToken(member.getId(), member.getName());
+                JwtToken newJwtToken = jwtProviderService.createJwtToken(member.getId(), member.getNickName());
 
                 member.SetRefreshToken(newJwtToken.getRefreshToken());
                 return newJwtToken;
@@ -79,7 +79,7 @@ public class JwtService {
             DecodedJWT verify = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(accessToken);
 
             if(!verify.getExpiresAt().before(new Date())) {
-                return verify.getClaim("userid").asString();
+                return verify.getClaim("nickname").asString();
             }
 
         }catch (Exception e) {
@@ -97,7 +97,7 @@ public class JwtService {
     @Transactional
     public JwtToken validRefreshToken(String userid, String refreshToken) {
 
-        Member findUser = memberRepository.findByName(userid);
+        Member findUser = memberRepository.findByNickName(userid);
 
         //전달받은 refresh 토큰과 DB의 refresh 토큰이 일치하는지 확인
         RefreshToken findRefreshToken = sameCheckRefreshToken(findUser, refreshToken);

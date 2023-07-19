@@ -26,7 +26,7 @@ public class NaverService {
 
     private final String client_id = "UAusWFQ9IPtJbSu2FD8R";
     private final String client_secret = "LjS2Cr6Edg";
-    private final String redirect_uri = "http://localhost:9000/login/oauth2/code/naver";
+    private final String redirect_uri = "http://localhost:8080/login/oauth2/code/naver";
     private final String accessTokenUri = "https://nid.naver.com/oauth2.0/token";
     private final String UserInfoUri = "https://openapi.naver.com/v1/nid/me";
 
@@ -98,21 +98,23 @@ public class NaverService {
     }
 
     /**
-     * 카카오 로그인 사용자 강제 회원가입
+     * 네이버 로그인 사용자 강제 회원가입
      */
     @Transactional
     public Member saveMember(String access_token) {
         NaverProfile profile = findProfile(access_token); //사용자 정보 받아오기
-        Member member = memberRepository.findByName(profile.response.getId());
+        Member member = memberRepository.findByNickName(profile.response.getId());
+        System.out.println("profile.response.getId() : " + profile.response.getId());
 
         //처음이용자 강제 회원가입
-        if(member ==null) {
+        if(member == null) {
             member = Member.builder()
                     .name(profile.response.name)
                     .password(null) //필요없으니 일단 아무거도 안넣음. 원하는데로 넣으면 됌
+                    .nickName(profile.response.id)
                     .profileImg(profile.response.profile_image)
                     .email(profile.response.email)
-                    .roles("USER")
+                    .roles("USER") //회원임을 확인함
                     .createTime(LocalDateTime.now())
                     .provider("Naver")
                     .build();
