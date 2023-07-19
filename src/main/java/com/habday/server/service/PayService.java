@@ -111,6 +111,10 @@ public class PayService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId())
                 .orElseThrow(()-> new CustomException(NO_FUNDING_ITEM_ID));
         BigDecimal cancelableAmount = fundingMember.getAmount().subtract(fundingMember.getCancelAmount());
+        if (LocalDate.now().compareTo(fundingItem.getFinishDate())>0){
+            log.info("펀딩 취소 가능 날짜가 지남");
+            throw new CustomException(DELETE_PARTICIPATE_UNAVAILABLE);
+        }
 
         if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
             log.info("noneAuthPayUnschedule: 이미 환불 완료");

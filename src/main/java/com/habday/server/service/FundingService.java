@@ -222,7 +222,9 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
 
-
+        if(LocalDate.now().compareTo(fundingItem.getFinishDate())>=0){
+            throw new CustomException(DELETE_FUNDING_UNAVAILABLE);
+        }
         fundingItemRepository.delete(fundingItem);
         payService.unscheduleAll(fundingItem);
         emailFormats.sendFundingCanceledEmail(fundingItem);
