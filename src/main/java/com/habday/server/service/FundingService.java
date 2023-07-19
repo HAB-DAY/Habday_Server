@@ -219,7 +219,6 @@ public class FundingService extends Common {
 
     @Transactional
     public void deleteFundingItem(Long fundingItemId) {
-        //외래키로 묶어놓지 말았어야 하네
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
 

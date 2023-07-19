@@ -39,6 +39,10 @@ public class Calculation {
         return new Date(calendar.getTimeInMillis());
     }
 
+    public Long getCurrentUnixTime(){
+        return System.currentTimeMillis() / 1000;
+    }
+
 //    public Date addDate(Date baseDate, int addedUnit, int addedTime){
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.setTime(baseDate);
