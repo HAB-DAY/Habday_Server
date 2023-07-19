@@ -54,6 +54,7 @@ public class FundingService extends Common {
     private final IamportService iamportService;
     private final S3Uploader s3Uploader;
     private final EmailFormats emailFormats;
+    private final PayService payService;
 
 
     @Transactional//예외 발생 시 롤백해줌
@@ -215,8 +216,12 @@ public class FundingService extends Common {
         fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
     }
 
+    @Transactional
     public void deleteFundingItem(Long fundingItemId) {
-        fundingItemRepository.delete(fundingItemRepository.findById(fundingItemId)
-                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID)));
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
+                .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        fundingItemRepository.delete(fundingItem);
+        payService.unscheduleAll(fundingItem);
+        emailFormats.sendFundingCanceledEmail(fundingItem);//이전에는 한 명 한 명마다 이메일 보냄
     }
 }

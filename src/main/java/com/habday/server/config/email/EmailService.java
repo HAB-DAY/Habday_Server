@@ -45,7 +45,7 @@ public class EmailService extends Common {
         }
     }
 
-    public String[] getReceiverList(FundingItem fundingItem){
+    public String[] getParticipantEmail(FundingItem fundingItem){
         List<String> mailList = fundingMemberRepository.getMailList(fundingItem);
         log.info("mailList: "  + new Gson().toJson(mailList));
         return mailList.toArray(new String[mailList.size()]);

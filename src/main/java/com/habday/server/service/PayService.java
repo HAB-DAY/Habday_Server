@@ -3,6 +3,7 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
+import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
@@ -25,7 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -39,6 +43,7 @@ import static com.habday.server.constants.state.ScheduledPayState.*;
 public class PayService extends Common {
     private final IamportService iamportService;
     private final UIDCreation uidCreation;
+    private final RestInterface restService;
 
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequestDto billingKeyRequest, Long memberId){
@@ -126,6 +131,24 @@ public class PayService extends Common {
                 .cancelDate(cancelDate)
                 .amount(fundingMember.getCancelAmount())
                 .build();
+    }
+
+    public void unscheduleAll(FundingItem fundingItem){
+        List<Long> fundingMemberId = fundingMemberRepository.getFundingItemIdMatchesFundingItem(fundingItem);
+        fundingMemberId.forEach(id -> {
+            log.info("unschedulePayment: start");
+            NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
+            Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
+            try {
+                Response<UnscheduleResponseDto> response = call.execute();//각각의 요청에 대해서만 익셉션이 생길 테니까 익셉션이 이 함수까지는 안오겠지,,?
+                log.info("unschedulePayment response: " + new Gson().toJson(response.body()));
+            } catch (IOException e) {
+                log.info("unschedule Paymentretrofit 오류: " + e);  //throw new CustomException(FAIL_WHILE_UNSCHEDULING);
+
+            } catch(RuntimeException e){
+                log.info("unschedule Payment 서비스 내 오류: " + e);
+            }
+        });
     }
 
     public IamportResponse<ScheduleList> showSchedules(ShowSchedulesRequestDto showSchedulesRequestDto){
