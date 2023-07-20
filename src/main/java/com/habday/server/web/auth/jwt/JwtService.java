@@ -138,6 +138,11 @@ public class JwtService {
         return null;
     }
 
+    public Long getMemberIdFromJwt(String accessToken) {
+        Long memberId = memberRepository.findByNickName(validAccessToken(accessToken)).getId();
+        return memberId;
+    }
+
 
 
     /**

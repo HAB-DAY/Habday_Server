@@ -9,6 +9,7 @@ import com.habday.server.domain.fundingMember.FundingMemberRepository;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.PaymentRepository;
 import com.habday.server.service.IamportService;
+import com.habday.server.web.auth.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,4 +33,7 @@ public class Common {
 
     @Autowired
     public ConfirmationRepository confirmationRepository;
+
+    @Autowired
+    public JwtService jwtService;
 }

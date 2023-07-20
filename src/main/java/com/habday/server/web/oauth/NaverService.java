@@ -3,6 +3,7 @@ package com.habday.server.web.oauth;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.web.auth.jwt.JwtService;
+import com.habday.server.web.auth.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

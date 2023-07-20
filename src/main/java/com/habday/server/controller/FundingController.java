@@ -2,6 +2,7 @@ package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
+import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
@@ -12,6 +13,7 @@ import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,13 +57,16 @@ public class FundingController extends Common {
 
     @GetMapping(value = {"/showConfirmation", "/showConfirmation/{confirmationId}"})
     public ResponseEntity<CommonResponse> showConfirmation(@PathVariable Optional<Long> confirmationId){
+
         ShowConfirmationResponseDto response = fundingService.showConfirmation(confirmationId.orElseThrow(() ->
                 new CustomException(NO_CONFIRMATION_EXIST)));
         return CommonResponse.toResponse(SHOW_FUNDING_CONFIRM_SUCCESS, response);
     }
 
     @GetMapping("/showFundingContent")
-    public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId){
+    //public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId){
+    public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId, @RequestHeader("") String accessToken) {
+
         ShowFundingContentResponseDto responseDto = fundingService.showFundingContent(itemId);
         return CommonResponse.toResponse(SHOW_FUNDING_CONTENT_SUCCESS, responseDto);
     }

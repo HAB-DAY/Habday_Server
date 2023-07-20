@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .and()
 
                 .authorizeRequests() //인증, 권한 api 설정
-                .antMatchers("/funding").hasAuthority("USER")
+                .antMatchers("/funding/**").hasAuthority("USER")
                 //.antMatchers("/api/v1/manager/**").hasAuthority("MANAGER")
                 //.antMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                 .anyRequest().permitAll()
