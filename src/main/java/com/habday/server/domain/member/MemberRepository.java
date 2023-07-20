@@ -1,6 +1,7 @@
 package com.habday.server.domain.member;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -11,5 +12,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Member findByEmail(String email);
     Optional<Member> findByNickName(String nickName);
 
+    @Query("select m from Member m where m.nickName = :nickName")
+    Member findByNickNameNoOptional(String nickName);
 
 }

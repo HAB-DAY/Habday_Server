@@ -107,10 +107,8 @@ public class NaverService {
     @Transactional
     public Member saveMember(String access_token) {
         NaverProfile profile = findProfile(access_token); //사용자 정보 받아오기
-        Member member = memberRepository.findByNickName(profile.response.getId()).orElseThrow(
-                () -> new CustomException(NO_MEMBER_ID)
-        );
-        System.out.println("profile.response.getId() : " + profile.response.getId());
+        Member member = memberRepository.findByNickNameNoOptional(profile.response.getId());
+        //System.out.println("profile.response.getId() : " + profile.response.getId());
 
         //처음이용자 강제 회원가입
         if(member == null) {
