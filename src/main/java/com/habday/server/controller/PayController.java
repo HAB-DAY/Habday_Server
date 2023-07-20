@@ -36,7 +36,7 @@ public class PayController extends Common {
     private final PayService payService;
 
     /** 아이앰포트 rest api로 빌링키 획득하기(카드 등록) **/
-    @PostMapping(value = {"/noneauthpay/getBillingKey/"})
+    @PostMapping(value = {"/noneauthpay/getBillingKey"})
     public @ResponseBody ResponseEntity<CommonResponse> getBillingKey(@RequestHeader("") String accessToken, @Valid @RequestBody NoneAuthPayBillingKeyRequestDto billingKeyRequest){
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         GetBillingKeyResponseDto responseDto = payService.getBillingKey(billingKeyRequest, memberId);
