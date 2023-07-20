@@ -31,15 +31,16 @@ public class MemberController extends Common {
     private S3Uploader s3Uploader;
 
 
-    @PutMapping("/save/memberProfile/{memberId}")
-    public ResponseEntity<MemberProfileResponse> saveMemberProfile(@PathVariable("memberId") Long memberId, @RequestBody MemberProfileRequestDto request) {
+    @PutMapping("/save/memberProfile")
+    public ResponseEntity<MemberProfileResponse> saveMemberProfile(@RequestHeader("") String accessToken, @RequestBody MemberProfileRequestDto request) {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         memberService.updateMemberProfile(memberId, request);
         return MemberProfileResponse.newResponse(VERIFY_MEMBER_PROFILE_SUCCESS);
     }
 
-    @PostMapping("/create/fundingItem/{memberId}")
-    public ResponseEntity<CommonResponse> createFundingItem(@PathVariable("memberId") Long memberId, @RequestPart(value="fundingItemImg") MultipartFile fundingItemImg, @RequestPart(value="dto") CreateFundingItemRequestDto request) throws IOException {
-        //System.out.println("fundingItemImg^^" + fundingItemImg.toString());
+    @PostMapping("/create/fundingItem")
+    public ResponseEntity<CommonResponse> createFundingItem(@RequestHeader("") String accessToken, @RequestPart(value="fundingItemImg") MultipartFile fundingItemImg, @RequestPart(value="dto") CreateFundingItemRequestDto request) throws IOException {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
@@ -52,7 +53,4 @@ public class MemberController extends Common {
         String responseDto = "http://13.124.209.40:8080/funding/showFundingContent?itemId=" + fundingItem.getId();
         return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
     }
-
-
-
 }

@@ -7,7 +7,6 @@ import com.habday.server.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 @Service
