@@ -4,10 +4,10 @@ import com.habday.server.classes.Common;
 import com.habday.server.domain.member.Member;
 import com.habday.server.dto.MemberProfileRequestDto;
 import com.habday.server.exception.CustomException;
+import com.habday.server.domain.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 @Service

@@ -52,7 +52,4 @@ public class MemberController extends Common {
         String responseDto = "http://13.124.209.40:8080/funding/showFundingContent?itemId=" + fundingItem.getId();
         return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
     }
-
-
-
 }
