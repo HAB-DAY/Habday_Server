@@ -1,5 +1,6 @@
 package com.habday.server.constants;
 
+import com.habday.server.constants.code.ExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
