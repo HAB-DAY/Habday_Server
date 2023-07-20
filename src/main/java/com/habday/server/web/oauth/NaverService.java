@@ -2,6 +2,7 @@ package com.habday.server.web.oauth;
 
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
+import com.habday.server.exception.CustomException;
 import com.habday.server.web.auth.jwt.JwtService;
 import com.habday.server.web.auth.jwt.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
+
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 @Service
 @RequiredArgsConstructor
@@ -104,7 +107,9 @@ public class NaverService {
     @Transactional
     public Member saveMember(String access_token) {
         NaverProfile profile = findProfile(access_token); //사용자 정보 받아오기
-        Member member = memberRepository.findByNickName(profile.response.getId());
+        Member member = memberRepository.findByNickName(profile.response.getId()).orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        );
         System.out.println("profile.response.getId() : " + profile.response.getId());
 
         //처음이용자 강제 회원가입

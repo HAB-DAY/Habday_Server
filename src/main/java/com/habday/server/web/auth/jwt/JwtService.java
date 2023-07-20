@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.member.RefreshToken;
+import com.habday.server.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 /**
  * 실제 JWT 토큰과 관련된 서비스
@@ -32,7 +35,9 @@ public class JwtService {
     @Transactional
     public JwtToken joinJwtToken(String userId) {
 
-        Member member = memberRepository.findByNickName(userId);
+        Member member = memberRepository.findByNickName(userId).orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        );
         RefreshToken userRefreshToken = member.getJwtRefreshToken();
 
         //처음 서비스를 이용하는 사용자(refresh 토큰이 없는 사용자)
@@ -107,7 +112,9 @@ public class JwtService {
     @Transactional
     public JwtToken validRefreshToken(String userid, String refreshToken) {
 
-        Member findUser = memberRepository.findByNickName(userid);
+        Member findUser = memberRepository.findByNickName(userid).orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        );
 
         //전달받은 refresh 토큰과 DB의 refresh 토큰이 일치하는지 확인
         RefreshToken findRefreshToken = sameCheckRefreshToken(findUser, refreshToken);
@@ -138,9 +145,12 @@ public class JwtService {
         return null;
     }
 
-    public Long getMemberIdFromJwt(String accessToken) {
-        Long memberId = memberRepository.findByNickName(validAccessToken(accessToken)).getId();
-        return memberId;
+    public Long getMemberIdFromJwt(String accessToken) throws IllegalStateException{
+        Member member = memberRepository.findByNickName(validAccessToken(accessToken)).orElseThrow(
+                () -> new CustomException(NO_MEMBER_ID)
+        );
+
+        return member.getId();
     }
 
 

@@ -3,6 +3,7 @@ package com.habday.server.web.auth.jwt.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
+import com.habday.server.exception.CustomException;
 import com.habday.server.web.auth.jwt.JwtProperties;
 import com.habday.server.web.auth.jwt.JwtService;
 import com.habday.server.web.auth.jwt.PrincipalDetails;
@@ -18,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+
+import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
@@ -60,7 +63,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
          * 정상적인 access 토큰 사용자
          */
         if(userId !=null) {
-            Member member = memberRepository.findByNickName(userId);
+            Member member = memberRepository.findByNickName(userId).orElseThrow(
+                    () -> new CustomException(NO_MEMBER_ID)
+            );
 
             // 인증은 토큰 검증시 끝.
             // 인증을 하기 위해서가 아닌 스프링 시큐리티가 수행해주는 권한 처리를 위해

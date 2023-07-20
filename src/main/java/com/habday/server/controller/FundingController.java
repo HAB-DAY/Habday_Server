@@ -36,22 +36,19 @@ public class FundingController extends Common {
     //private final ParticipatedList participatedList;
     private final HostedList hostedList;
 
-    @PostMapping(value = {"/participateFunding", "/participateFunding/{memberId}"})
-    public ResponseEntity<CommonResponse> participateFunding(@Valid @RequestBody ParticipateFundingRequest fundingRequestDto, @PathVariable Optional<Long> memberId){
+    @PostMapping(value = {"/participateFunding"})
+    public ResponseEntity<CommonResponse> participateFunding(@RequestHeader("") String accessToken, @Valid @RequestBody ParticipateFundingRequest fundingRequestDto){
         log.info("participateFunding error");
-        ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,memberId.orElseThrow(
-                () -> new CustomException(NO_MEMBER_ID)
-        ));
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
+        ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,memberId);
         return CommonResponse.toResponse(PARTICIPATE_FUNDING_SUCCESS, responseDto);
     }
 
-    @PostMapping(value = {"/confirm", "confirm/{memberId}"})
-    public ResponseEntity<CommonResponse> confirm(@RequestPart(value = "img") MultipartFile img,
-        @Valid @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId,
-        @RequestParam @NotNull(message = "펀딩 아이템 아이디는 필수 입니다.") Long fundingItemId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
-        fundingService.confirm(img, request, fundingItemId,memberId.orElseThrow(
-                () -> new CustomException(NO_MEMBER_ID)
-        ));
+    @PostMapping(value = {"/confirm"})
+    public ResponseEntity<CommonResponse> confirm(@RequestHeader("") String accessToken, @RequestPart(value = "img") MultipartFile img,
+        @Valid @RequestPart(value = "dto") ConfirmationRequest request, @RequestParam @NotNull(message = "펀딩 아이템 아이디는 필수 입니다.") Long fundingItemId){ //, @RequestPart(value = "dto") ConfirmationRequest request, @PathVariable Optional<Long> memberId
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
+        fundingService.confirm(img, request, fundingItemId,memberId);
         return CommonResponse.toResponse(FUNDING_CONFIRMATION_SUCCESS, null);
     }
 
@@ -72,23 +69,25 @@ public class FundingController extends Common {
     }
 
     @GetMapping("/itemList/hosted/progress")
-    public ResponseEntity<CommonResponse> getHostingList_progress(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+    public ResponseEntity<CommonResponse> getHostingList_progress(@RequestHeader("") String accessToken,
            Long lastItemId){
-
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         GetListResponseDto responseDto = fundingService.getList(hostedList, memberId, "PROGRESS", lastItemId);
         return CommonResponse.toResponse(GET_HOSTING_LIST_SUCCESS, responseDto);
     }
 
     @GetMapping("/itemList/hosted/finished")
-    public ResponseEntity<CommonResponse> getHostingList_finished(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+    public ResponseEntity<CommonResponse> getHostingList_finished(@RequestHeader("") String accessToken,
            Long lastItemId){
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         GetListResponseDto responseDto = fundingService.getList(hostedList, memberId, "FINISHED", lastItemId);
         return CommonResponse.toResponse(GET_HOSTING_LIST_SUCCESS, responseDto);
     }
 
     @GetMapping("/itemList/participated")
-    public ResponseEntity<CommonResponse> getParticipatedList(@RequestParam @NotNull(message = "memberId를 입력해주세요.") Long memberId,
+    public ResponseEntity<CommonResponse> getParticipatedList(@RequestHeader("") String accessToken,
            Long lastItemId){
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         GetListResponseDto responseDto = fundingService.getParticipateList(memberId,lastItemId);
         return CommonResponse.toResponse(GET_FUNDING_LIST_SUCCESS, responseDto);
     }
@@ -109,14 +108,16 @@ public class FundingController extends Common {
 
     // 펀딩 수정
     @PutMapping("/update/{fundingItemId}")
-    public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
+    public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
         return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
     }
 
     // 펀딩 식제
     @DeleteMapping ("/delete/{fundingItemId}")
-    public ResponseEntity<DeleteFundingItemResponse> deleteFundingItem(@PathVariable("fundingItemId") Long fundingItemId) {
+    public ResponseEntity<DeleteFundingItemResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         fundingService.deleteFundingItem(fundingItemId);
         return DeleteFundingItemResponse.newResponse(DELETE_FUNDING_ITEM_SUCCESS);
     }
