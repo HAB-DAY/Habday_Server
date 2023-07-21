@@ -66,4 +66,6 @@ public interface FundingMemberRepository extends JpaRepository<FundingMember, Lo
      * */
     @Query("select fm.id as fundingMemberId, i.fundingName as fundingName, m.name as creatorName, fm.amount as fundingAmount, i.fundingItemImg as fundingItemImg,  i.status as fundingStatus, fm.fundingDate as fundingDate, fm.payment_status as payment_status, fm.merchantId as merchantId from FundingMember fm join fm.fundingItem i join fm.member m where fm.id < :id and fm.member = :member and i.status <> :status order by fm.id desc")
     List<ParticipatedListInterface> getPagingListAfter_Finished(Long id, Member member, FundingState status, Pageable page);
+
+    Boolean existsByIdLessThan(Long id);
 }

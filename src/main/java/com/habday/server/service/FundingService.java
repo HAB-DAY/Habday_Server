@@ -145,11 +145,18 @@ public class FundingService extends Common {
             participatedList = fundingMemberRepository.getPagingListAfter(pointId, member, PageRequest.of(0, 10));
 
         Long lastIdOfList = participatedList.isEmpty() ? null : participatedList.get(participatedList.size() - 1).getFundingMemberId();
-        return new GetListResponseDto(participatedList, hasNext(lastIdOfList));
+        return new GetListResponseDto(participatedList, hasNext_p(lastIdOfList));
     }
 
     private Boolean hasNext(Long id) {
         if (id == null) return false;
+        log.info("hasNext: " + id + " " + fundingItemRepository.existsByIdLessThan(id));
+        return fundingItemRepository.existsByIdLessThan(id);
+    }
+
+    private Boolean hasNext_p(Long id) {
+        if (id == null) return false;
+        log.info("hasNext: " + id + " " + fundingMemberRepository.existsByIdLessThan(id));
         return fundingItemRepository.existsByIdLessThan(id);
     }
 

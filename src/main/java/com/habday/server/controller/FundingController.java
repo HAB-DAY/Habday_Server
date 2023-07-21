@@ -70,8 +70,7 @@ public class FundingController extends Common {
 
     @GetMapping("/showFundingContent")
     //public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId){
-    public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId, @RequestHeader("") String accessToken) {
-
+    public ResponseEntity<CommonResponse> showFundingContent(@RequestParam @NotNull(message = "펀딩 상태를 입력해주세요.") Long itemId) {
         ShowFundingContentResponseDto responseDto = fundingService.showFundingContent(itemId);
         return CommonResponse.toResponse(SHOW_FUNDING_CONTENT_SUCCESS, responseDto);
     }
