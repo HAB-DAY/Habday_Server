@@ -63,9 +63,9 @@ public class IamportService extends Common {
         ScheduleEntry scheduleEntry= new ScheduleEntry(
                 scheduleRequestDto.getMerchant_uid(), scheduleRequestDto.getSchedule_at(), scheduleRequestDto.getAmount());
         scheduleEntry.setName(scheduleRequestDto.getName());
-        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
-        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
-        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
+//        scheduleEntry.setBuyerName(scheduleRequestDto.getBuyer_name());
+//        scheduleEntry.setBuyerTel(scheduleRequestDto.getBuyer_tel());
+//        scheduleEntry.setBuyerEmail(scheduleRequestDto.getBuyer_email());
 
         ScheduleData scheduleData = new ScheduleData(scheduleRequestDto.getCustomer_uid());
         scheduleData.addSchedule(scheduleEntry);
