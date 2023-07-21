@@ -43,6 +43,12 @@ public class FundingController extends Common {
         ParticipateFundingResponseDto responseDto = fundingService.participateFunding(fundingRequestDto,memberId);
         return CommonResponse.toResponse(PARTICIPATE_FUNDING_SUCCESS, responseDto);
     }
+    /*
+    * 결제 시
+    * paymentId:2 - memberId1이랑 매핑됨 (사용자는 자신의 빌링키를 알면 안됨)
+    * 다른 사용자가 1번으로 결제하지 못하게
+    * - accessToken에서 가져온 memberId와 paymentId의 memberId가 일치하는지
+    * */
 
     @PostMapping(value = {"/confirm"})
     public ResponseEntity<CommonResponse> confirm(@RequestHeader("") String accessToken, @RequestPart(value = "img") MultipartFile img,

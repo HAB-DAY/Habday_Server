@@ -70,6 +70,9 @@ public class FundingService extends Common {
         if(fundingItem.getStatus().equals(FundingState.SUCCESS))
             return ParticipateFundingResponseDto.of(-7, "이미 성공한 펀딩에는 참여할 수 없습니다.");
 
+        if(selectedPayment.getMember().getId() != memberId)
+            throw new CustomException(PAYMENT_VALIDATION_FAIL);
+
         Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
         log.info("schedule date: " + scheduleDate);
