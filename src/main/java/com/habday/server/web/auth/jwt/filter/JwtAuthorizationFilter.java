@@ -53,11 +53,11 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             return; //여기서 마무리 지어준다.
         }
 
-        System.out.println("jwtHeader:" + jwtHeader);
+        //System.out.println("jwtHeader:" + jwtHeader);
         String token = request.getHeader(JwtProperties.HEADER_STRING);
-        System.out.println("token:" + token);
+        //System.out.println("token:" + token);
         String userId = jwtService.validAccessToken(token);
-        System.out.println("userId:" + userId); //null 값 나옴
+        //System.out.println("userId:" + userId); //null 값 나옴
 
         /**
          * 정상적인 access 토큰 사용자

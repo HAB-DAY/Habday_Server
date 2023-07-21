@@ -29,7 +29,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 // 유저관련 (소셜로그인)
-                .antMatchers("/login/oauth2/code/naver", "/api/oauth/token/naver");
+                .antMatchers("/login/oauth2/code/naver", "/api/oauth/token/naver", "/funding/showFundingContent/**", "/funding/showConfirmation/**", "/verifyIamport/noneauthpay/unschedule/**");
 
     }
 
@@ -65,8 +65,8 @@ public class SecurityConfig {
             http
                     .addFilter(config.corsFilter()) //스프링 시큐리티 필터내에 cors 관련 필터가 있음!! 그래서 제공해주는 필터 객체를 생성후 HttpSecurity에 등록!
                     .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtService)) //AuthenticationManger가 있어야 된다.(파라미터로)
-                    .addFilter(new JwtAuthorizationFilter(authenticationManager, memberRepository, jwtService));
-
+                    .addFilter(new JwtAuthorizationFilter(authenticationManager, memberRepository, jwtService))
+                    ;//.requestMatchers().antMatchers();
         }
     }
 }
