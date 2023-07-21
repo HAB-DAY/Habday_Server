@@ -79,14 +79,14 @@ public class JwtService {
      * access 토큰 validate
      */
     public String validAccessToken(String accessToken) {
-        System.out.println("validAccessToken 들어옴");
+        //System.out.println("validAccessToken 들어옴");
 
         try {
-            System.out.println("AccessToken decode 시작^^");
+            //System.out.println("AccessToken decode 시작^^");
 
             DecodedJWT decodedJWT = JWT.decode(accessToken);
-            System.out.println("decodedJWT : " + decodedJWT.getClaims().toString());
-            System.out.println("decodedJWT nickname만! : " + decodedJWT.getClaim("nickname").asString());
+            //System.out.println("decodedJWT : " + decodedJWT.getClaims().toString());
+            //System.out.println("decodedJWT nickname만! : " + decodedJWT.getClaim("nickname").asString());
             return decodedJWT.getClaim("nickname").asString();
 
             /*DecodedJWT verify = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(accessToken);
