@@ -53,7 +53,8 @@ public enum ExceptionCode {
     NO_CONFIRMATION_EXIST(INTERNAL_SERVER_ERROR,"존재하지 않는 인증 번호 입니다."),
     DELETE_FUNDING_UNAVAILABLE(INTERNAL_SERVER_ERROR, "마감한 펀딩에 대해서는 펀딩 삭제가 불가합니다."),
     DELETE_PARTICIPATE_UNAVAILABLE(INTERNAL_SERVER_ERROR,"마감한 펀딩에 대해서는 참여 취소가 불가합니다."),
-    PAYMENT_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "결제 수단이 사용자 정보와 일치하지 않습니다.");
+    PAYMENT_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "결제 수단이 사용자 정보와 일치하지 않습니다."),
+    FUNDING_MEMBER_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "펀딩 참여 내역이 사용자 정보와 일치하지 않습니다.");
 
 
     private final HttpStatus status;

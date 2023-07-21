@@ -111,6 +111,7 @@ public class PayService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId())
                 .orElseThrow(()-> new CustomException(NO_FUNDING_ITEM_ID));
         BigDecimal cancelableAmount = fundingMember.getAmount().subtract(fundingMember.getCancelAmount());
+
         if (LocalDate.now().compareTo(fundingItem.getFinishDate())>0){
             log.info("펀딩 취소 가능 날짜가 지남");
             throw new CustomException(DELETE_PARTICIPATE_UNAVAILABLE);
@@ -120,8 +121,10 @@ public class PayService extends Common {
             log.info("noneAuthPayUnschedule: 이미 환불 완료");
             throw new CustomException(ALREADY_CANCELED);
         }
+
         IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchantId());
         log.info("noneAuthPayUnschedule: 5" + new Gson().toJson(iamportResponse));
+
         if(iamportResponse.getCode() != 0){
             log.info("noneAuthPayUnschedule: 아이앰포트 응답 오류");
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_INTERNAL_ERROR, iamportResponse.getMessage());

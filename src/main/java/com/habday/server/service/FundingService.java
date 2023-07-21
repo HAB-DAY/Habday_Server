@@ -18,11 +18,13 @@ import com.habday.server.domain.payment.Payment;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.req.iamport.NoneAuthPayScheduleRequestDto;
+import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.fund.GetListResponseDto;
 import com.habday.server.dto.res.fund.ParticipateFundingResponseDto;
 import com.habday.server.dto.res.fund.ShowConfirmationResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto;
 import com.habday.server.dto.res.fund.ShowFundingContentResponseDto.FundingParticipantList;
+import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.exception.CustomExceptionWithMessage;
 import com.habday.server.interfaces.ListInterface;
@@ -73,13 +75,13 @@ public class FundingService extends Common {
         if(selectedPayment.getMember().getId() != memberId)
             throw new CustomException(PAYMENT_VALIDATION_FAIL);
 
-        Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
+        Date scheduleDate = calculation.calPayDate(fundingItem.getFinishDate());//30분 더하기
         log.info("schedule date: " + scheduleDate);
         //아이앰포트에 스케쥴 걸기
         IamportResponse<List<Schedule>> scheduleResult = iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.info("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+
         if (scheduleResult.getCode() != 0) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
@@ -243,5 +245,13 @@ public class FundingService extends Common {
         Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
         if (confirmation != null)
             confirmation.updateFundingItemNull();
+    }
+
+    public UnscheduleResponseDto cancel(Long memberId, NoneAuthPayUnscheduleRequestDto request){
+        FundingMember fundingMember = fundingMemberRepository.findById(request.getFundingMemberId()).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        if(memberId != fundingMember.getMember().getId())
+            throw new CustomException(FUNDING_MEMBER_VALIDATION_FAIL);
+        return payService.noneAuthPayUnschedule(request);
+
     }
 }
