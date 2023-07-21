@@ -6,9 +6,11 @@ import com.habday.server.domain.member.Member;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
+import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.DeleteFundingItemResponse;
 import com.habday.server.dto.res.UpdateFundingItemResponse;
 import com.habday.server.dto.res.fund.*;
+import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
 import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
@@ -114,17 +116,24 @@ public class FundingController extends Common {
 
     // 펀딩 수정
     @PutMapping("/update/{fundingItemId}")
-    public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
+    public ResponseEntity<CommonResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
-        return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
+        return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
     }
 
     // 펀딩 식제
     @DeleteMapping ("/delete/{fundingItemId}")
-    public ResponseEntity<DeleteFundingItemResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
+    public ResponseEntity<CommonResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         fundingService.deleteFundingItem(fundingItemId);
-        return DeleteFundingItemResponse.newResponse(DELETE_FUNDING_ITEM_SUCCESS);
+        return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS, null);
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<CommonResponse> cancel(@RequestHeader("") String accessToken, @Valid @RequestBody NoneAuthPayUnscheduleRequestDto request){
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);//혹시 이상한 사람이 memberId만 가져와서 결제 취소할까봐
+        UnscheduleResponseDto responseDto = fundingService.cancel(memberId, request);
+        return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, responseDto);
     }
 }
