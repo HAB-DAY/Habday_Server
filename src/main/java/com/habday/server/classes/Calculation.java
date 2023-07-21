@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -29,12 +31,13 @@ public class Calculation {
     }
 
     public int calFundingPercentage(BigDecimal totalPrice, BigDecimal goalPrice){
-        return totalPrice.divide(goalPrice, 2, BigDecimal.ROUND_CEILING).multiply(BigDecimal.valueOf(100)).intValue();
+        return totalPrice.divide(goalPrice, 2, BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(100)).intValue();
     }
 
-    public Date calPayDate(Date date){
+    public Date calPayDate(LocalDate localDate){
+        Date toDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(toDate);
         calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 30분 후에 결제
         return new Date(calendar.getTimeInMillis());
     }

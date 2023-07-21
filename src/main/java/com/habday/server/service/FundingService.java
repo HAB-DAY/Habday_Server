@@ -73,13 +73,13 @@ public class FundingService extends Common {
         if(selectedPayment.getMember().getId() != memberId)
             throw new CustomException(PAYMENT_VALIDATION_FAIL);
 
-        Date finishDateToDate = Date.from(fundingItem.getFinishDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date scheduleDate = calculation.calPayDate(finishDateToDate);//30분 더하기
+        Date scheduleDate = calculation.calPayDate(fundingItem.getFinishDate());//30분 더하기
         log.info("schedule date: " + scheduleDate);
         //아이앰포트에 스케쥴 걸기
         IamportResponse<List<Schedule>> scheduleResult = iamportService.noneAuthPaySchedule(
                 NoneAuthPayScheduleRequestDto.of(fundingRequestDto, selectedPayment.getBillingKey(), merchantUid, scheduleDate));
         log.info("FundingService.participateFunding(): " + new Gson().toJson(scheduleResult));
+
         if (scheduleResult.getCode() != 0) {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_FAIL, scheduleResult.getMessage());
         }
