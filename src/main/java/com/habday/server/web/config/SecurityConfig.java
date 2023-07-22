@@ -21,7 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CorConfig config;
+    //private final CorConfig config;
     private final MemberRepository memberRepository;
     private final JwtService jwtService;
 
@@ -63,7 +63,7 @@ public class SecurityConfig {
         public void configure(HttpSecurity http)  {
             AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
             http
-                    .addFilter(config.corsFilter()) //스프링 시큐리티 필터내에 cors 관련 필터가 있음!! 그래서 제공해주는 필터 객체를 생성후 HttpSecurity에 등록!
+                    //.addFilter(config.corsFilter()) //스프링 시큐리티 필터내에 cors 관련 필터가 있음!! 그래서 제공해주는 필터 객체를 생성후 HttpSecurity에 등록!
                     .addFilter(new JwtAuthenticationFilter(authenticationManager, jwtService)) //AuthenticationManger가 있어야 된다.(파라미터로)
                     .addFilter(new JwtAuthorizationFilter(authenticationManager, memberRepository, jwtService))
                     ;//.requestMatchers().antMatchers();
