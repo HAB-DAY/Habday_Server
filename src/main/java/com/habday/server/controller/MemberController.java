@@ -25,6 +25,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class MemberController extends Common {
     private final MemberService memberService;
     @Autowired
