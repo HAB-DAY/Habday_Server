@@ -255,7 +255,7 @@ public class FundingService extends Common {
     }
 
     public UnscheduleResponseDto cancel(Long memberId, NoneAuthPayUnscheduleRequestDto request){
-        FundingMember fundingMember = fundingMemberRepository.findById(request.getFundingMemberId()).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+        FundingMember fundingMember = fundingMemberRepository.findById(request.getFundingMemberId()).orElseThrow(() -> new CustomException(NO_FUNDING_MEMBER_ID));
         if(memberId != fundingMember.getMember().getId())
             throw new CustomException(FUNDING_MEMBER_VALIDATION_FAIL);
         return payService.noneAuthPayUnschedule(request);

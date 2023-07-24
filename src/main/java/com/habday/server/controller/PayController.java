@@ -84,21 +84,21 @@ public class PayController extends Common {
 
 
     /** 결제 취소 **/
-    @PostMapping("/cancel")
-    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayRequestDto cancelPayRequestDto) throws IamportResponseException, IOException {
-        //상품번호로 db 검색해서 (imp_uid, amount, cancel_amount) 가져오기
-        BigDecimal amount = new BigDecimal(101); //
-        BigDecimal cancel_amount = BigDecimal.ZERO;
-        BigDecimal cancelableAmount = amount.subtract(cancel_amount);//db에서 가져온 결제정보 - 이전에 취소 처리 된 적 있는 경우
-
-        if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
-            return new IamportResponse<>();
-        }
-        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayRequestDto.getCancel_request_amount());
-        cancelData.setChecksum(cancelableAmount);
-        cancelData.setReason(cancelPayRequestDto.getReason());
-        log.info("cancel 완료 직전임");
-        return iamportClient.cancelPaymentByImpUid(cancelData);
-    }
+//    @PostMapping("/cancel")
+//    public @ResponseBody IamportResponse<Payment> cancelItem(@RequestBody CancelPayRequestDto cancelPayRequestDto) throws IamportResponseException, IOException {
+//        //상품번호로 db 검색해서 (imp_uid, amount, cancel_amount) 가져오기
+//        BigDecimal amount = new BigDecimal(101); //
+//        BigDecimal cancel_amount = BigDecimal.ZERO;
+//        BigDecimal cancelableAmount = amount.subtract(cancel_amount);//db에서 가져온 결제정보 - 이전에 취소 처리 된 적 있는 경우
+//
+//        if (cancelableAmount.compareTo(BigDecimal.ZERO) == 0) {//이미 환불 완료됨
+//            return new IamportResponse<>();
+//        }
+//        CancelData cancelData = new CancelData("merchant_uid", false, cancelPayRequestDto.getCancel_request_amount());
+//        cancelData.setChecksum(cancelableAmount);
+//        cancelData.setReason(cancelPayRequestDto.getReason());
+//        log.info("cancel 완료 직전임");
+//        return iamportClient.cancelPaymentByImpUid(cancelData);
+//    }
 
 }
