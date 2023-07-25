@@ -8,6 +8,7 @@ import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
@@ -44,6 +45,7 @@ public class FundingCloseService extends Common {
     private final Calculation calculation;
     private final EmailFormats emailFormats;
     private final PayService payService;
+    private final FundingItemRepository fundingItemRepository;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
