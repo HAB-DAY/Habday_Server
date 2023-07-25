@@ -2,6 +2,7 @@ package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
@@ -38,6 +39,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class FundingController extends Common {
 
+    private final FundingItemRepository fundingItemRepository;
     private final MemberRepository memberRepository;
     private final FundingService fundingService;
     //private final ParticipatedList participatedList;
