@@ -3,6 +3,7 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
 import com.habday.server.domain.member.Member;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
@@ -15,6 +16,7 @@ import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,8 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @RequestMapping("/funding")
 @CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class FundingController extends Common {
+
+    private final MemberRepository memberRepository;
     private final FundingService fundingService;
     //private final ParticipatedList participatedList;
     private final HostedList hostedList;

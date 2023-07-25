@@ -1,6 +1,7 @@
 package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.iamport.*;
