@@ -5,6 +5,7 @@ import com.habday.server.config.S3Uploader;
 import com.habday.server.constants.code.ExceptionCode;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.MemberProfileRequestDto;
 import com.habday.server.dto.res.MemberProfileResponse;
@@ -27,6 +28,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class MemberController extends Common {
+    private final MemberRepository memberRepository;
     private final MemberService memberService;
     @Autowired
     private S3Uploader s3Uploader;
