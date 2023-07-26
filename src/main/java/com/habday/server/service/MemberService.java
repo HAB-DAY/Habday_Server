@@ -3,7 +3,7 @@ package com.habday.server.service;
 import com.habday.server.classes.Common;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
-import com.habday.server.dto.MemberProfileRequestDto;
+import com.habday.server.dto.req.MemberProfileRequestDto;
 import com.habday.server.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,6 @@ public class MemberService extends Common {
     public void updateMemberProfile(Long memberId, MemberProfileRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
-        member.update(requestDto.getNickName(), requestDto.getBirthday(), requestDto.getProfileContent(), requestDto.getAccount(), requestDto.getAccountName());
+        member.update(requestDto.getBirthday(), requestDto.getAccount(), requestDto.getAccountName());
     }
 }

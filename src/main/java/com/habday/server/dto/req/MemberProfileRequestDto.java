@@ -1,18 +1,14 @@
-package com.habday.server.dto;
+package com.habday.server.dto.req;
 
-import com.habday.server.domain.member.Member;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 public class MemberProfileRequestDto {
-    private String nickName;
     private String birthday;
-    private String profileContent;
-    private String account;
-    private String accountName;
+    private String accountName; // banckName
+    private String account; //accountNumber
 
     /*
     public MemberProfileRequestDto(String nickName, String birthday, String profileContent, String account, String accountName) {
