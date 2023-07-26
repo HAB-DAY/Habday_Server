@@ -36,7 +36,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/funding")
-@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
+//@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class FundingController extends Common {
 
     private final FundingItemRepository fundingItemRepository;
