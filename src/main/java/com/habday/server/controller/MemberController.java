@@ -8,7 +8,7 @@ import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.CommonResponse;
-import com.habday.server.dto.MemberProfileRequestDto;
+import com.habday.server.dto.req.MemberProfileRequestDto;
 import com.habday.server.dto.res.MemberProfileResponse;
 import com.habday.server.dto.req.CreateFundingItemRequestDto;
 import com.habday.server.exception.CustomException;
