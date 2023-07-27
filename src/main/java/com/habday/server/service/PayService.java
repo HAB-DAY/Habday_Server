@@ -3,7 +3,6 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
-import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -45,7 +44,6 @@ import static com.habday.server.constants.state.ScheduledPayState.*;
 public class PayService extends Common {
     private final IamportService iamportService;
     private final UIDCreation uidCreation;
-    private final RestInterface restService;
     private final MemberRepository memberRepository;
     private final FundingItemRepository fundingItemRepository;
 
@@ -127,7 +125,7 @@ public class PayService extends Common {
         }
 
         IamportResponse<List<Schedule>> iamportResponse = iamportService.unscheduleFromIamport(fundingMember.getPaymentId(), fundingMember.getMerchantId());
-        log.info("noneAuthPayUnschedule: 5" + new Gson().toJson(iamportResponse));
+        log.info("noneAuthPayUnschedule iamportResponse: " + new Gson().toJson(iamportResponse));
 
         if(iamportResponse.getCode() != 0){
             log.info("noneAuthPayUnschedule: 아이앰포트 응답 오류");
@@ -149,13 +147,9 @@ public class PayService extends Common {
         fundingMemberId.forEach(id -> {
             log.info("unschedulePayment: start");
             NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
-            Call<UnscheduleResponseDto> call = restService.unscheduleApi(request);//예약결제 취소 후 fundingMember status cancel로 업데이트
             try {
-                Response<UnscheduleResponseDto> response = call.execute();//각각의 요청에 대해서만 익셉션이 생길 테니까 익셉션이 이 함수까지는 안오겠지,,?
-                log.info("unschedulePayment response: " + new Gson().toJson(response.body()));
-            } catch (IOException e) {
-                log.info("unschedule Paymentretrofit 오류: " + e);  //throw new CustomException(FAIL_WHILE_UNSCHEDULING);
-
+                UnscheduleResponseDto respone = noneAuthPayUnschedule(request);
+                log.info("unschedulePayment response: " + new Gson().toJson(respone));
             } catch(RuntimeException e){
                 log.info("unschedule Payment 서비스 내 오류: " + e);
             }

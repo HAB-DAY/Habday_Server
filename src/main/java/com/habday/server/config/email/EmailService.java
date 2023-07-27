@@ -24,7 +24,7 @@ public class EmailService extends Common {
     private final JavaMailSender javaMailSender;
 
     public Boolean sendEmail(EmailMessage emailMessage){
-        log.info("emailList: " + emailMessage.getTo());
+        log.info("emailList: " + new Gson().toJson(emailMessage.getTo()));
         if (emailMessage.getTo() == null || emailMessage.getTo().length == 0){
             log.info("이메일을 보낼 참여자가 없음");
             return false;
