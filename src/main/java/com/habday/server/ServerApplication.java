@@ -23,7 +23,7 @@ public class ServerApplication extends SpringBootServletInitializer {
 		return application.sources(ServerApplication.class);
 	}
 
-	/*@Bean
+	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
@@ -31,7 +31,7 @@ public class ServerApplication extends SpringBootServletInitializer {
 				registry.addMapping("/**").allowedOrigins("http://localhost:3000");
 			}
 		};
-	}*/
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(ServerApplication.class, args);

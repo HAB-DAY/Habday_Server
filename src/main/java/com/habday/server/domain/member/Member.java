@@ -75,13 +75,6 @@ public class Member {
         this.provider = provider;
     }
 
-    public Member update(String name, String email, String profileImg) {
-        this.name = name;
-        this.email = email;
-        this.profileImg = profileImg;
-
-        return this;
-    }
     /**
      *  refresh 생성자, setter
      */
@@ -102,10 +95,8 @@ public class Member {
         return new ArrayList<>();
     }
 
-    public Member update(String nickName, String birthday, String profileContent, String account, String accountName) {
-        this.nickName = nickName;
+    public Member update(String birthday, String account, String accountName) {
         this.birthday = birthday;
-        this.profileContent = profileContent;
         this.account = account;
         this.accountName = accountName;
 

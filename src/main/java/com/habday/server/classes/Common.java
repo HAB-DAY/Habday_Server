@@ -24,10 +24,7 @@ import java.util.List;
 public class Common {
     @Autowired
     public FundingMemberRepository fundingMemberRepository;
-    @Autowired
-    public FundingItemRepository fundingItemRepository;
-    @Autowired
-    public MemberRepository memberRepository;
+
     @Autowired
     public PaymentRepository paymentRepository;
 

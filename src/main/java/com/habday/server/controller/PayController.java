@@ -1,6 +1,7 @@
 package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.req.iamport.*;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.res.iamport.*;
@@ -29,7 +30,7 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/verifyIamport")
-@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
+//@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class PayController extends Common {
     // 생성자를 통해 REST API 와 REST API secret 입력
     private final IamportClient iamportClient =

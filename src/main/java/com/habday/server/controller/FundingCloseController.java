@@ -22,7 +22,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/fundingClose")
-@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
+//@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class FundingCloseController extends Common {
     private final FundingCloseService fundingCloseService;
     private final EmailService emailService;

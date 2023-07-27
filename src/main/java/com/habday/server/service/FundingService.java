@@ -12,8 +12,10 @@ import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.confirmation.Confirmation;
 import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
@@ -57,6 +59,8 @@ public class FundingService extends Common {
     private final S3Uploader s3Uploader;
     private final EmailFormats emailFormats;
     private final PayService payService;
+    private final MemberRepository memberRepository;
+    private final FundingItemRepository fundingItemRepository;
 
 
     @Transactional//예외 발생 시 롤백해줌

@@ -2,7 +2,9 @@ package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
 import com.habday.server.classes.implemented.HostedList;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.dto.req.fund.ConfirmationRequest;
 import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
@@ -15,6 +17,7 @@ import com.habday.server.exception.CustomException;
 import com.habday.server.service.FundingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +36,11 @@ import static com.habday.server.constants.code.SuccessCode.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/funding")
-@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
+//@CrossOrigin(origins = "http://localhost:3000") // 컨트롤러에서 설정
 public class FundingController extends Common {
+
+    private final FundingItemRepository fundingItemRepository;
+    private final MemberRepository memberRepository;
     private final FundingService fundingService;
     //private final ParticipatedList participatedList;
     private final HostedList hostedList;
@@ -116,10 +122,11 @@ public class FundingController extends Common {
 
     // 펀딩 수정
     @PutMapping("/update/{fundingItemId}")
-    public ResponseEntity<CommonResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
+    public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable(value = "fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
-        return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
+        return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
+        //return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
     }
 
     // 펀딩 식제

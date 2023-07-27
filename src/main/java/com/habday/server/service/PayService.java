@@ -5,8 +5,10 @@ import com.habday.server.classes.Common;
 import com.habday.server.classes.UIDCreation;
 import com.habday.server.config.retrofit.RestInterface;
 import com.habday.server.domain.fundingItem.FundingItem;
+import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.domain.member.Member;
+import com.habday.server.domain.member.MemberRepository;
 import com.habday.server.domain.payment.Payment;
 import com.habday.server.dto.req.iamport.NoneAuthPayBillingKeyRequestDto;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
@@ -44,6 +46,8 @@ public class PayService extends Common {
     private final IamportService iamportService;
     private final UIDCreation uidCreation;
     private final RestInterface restService;
+    private final MemberRepository memberRepository;
+    private final FundingItemRepository fundingItemRepository;
 
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequestDto billingKeyRequest, Long memberId){
