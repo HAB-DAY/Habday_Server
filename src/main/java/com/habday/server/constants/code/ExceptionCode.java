@@ -10,6 +10,7 @@ import static org.springframework.http.HttpStatus.*;
 @AllArgsConstructor
 public enum ExceptionCode {
     NO_MEMBER_ID(BAD_REQUEST, "존재하지 않는 사용자 정보입니다."),
+    MEMBER_SUSPENDED(UNAUTHORIZED, "정지된 계정은 펀딩 생성을 진행할 수 없습니다."),
 
     //빌링키 발급
     GET_BILLING_KEY_FAIL(BAD_REQUEST, "빌링키 발급 실패."),

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface FundingItemRepository extends JpaRepository<FundingItem, Long> {
-    List<FundingItem> findByIsConfirmAndStatus(FundingConfirmState isConfirm, FundingState status);
+    List<FundingItem> findByIsConfirmAndStatusAndFinishDateLessThan(FundingConfirmState isConfirm, FundingState status, LocalDate finishDate);
     //status = PROGRESS
     List<HostedListDto> findByStatusAndMemberOrderByIdDesc(FundingState status, Member member, Pageable page);
     List<HostedListDto> findByIdLessThanAndStatusAndMemberOrderByIdDesc(Long id, FundingState status, Member member, Pageable page);

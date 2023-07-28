@@ -94,6 +94,9 @@ public class FundingItem {
     public void updateIsConfirmTrue() {
         this.isConfirm = FundingConfirmState.TRUE;
     }
+    public void updateIsConfirmDone() {
+        this.isConfirm = FundingConfirmState.DONE;
+    }
     public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
