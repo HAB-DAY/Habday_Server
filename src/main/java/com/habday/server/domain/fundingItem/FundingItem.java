@@ -2,6 +2,7 @@ package com.habday.server.domain.fundingItem;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.member.Member;
 import lombok.Builder;
@@ -53,8 +54,10 @@ public class FundingItem {
     @Column
     private int percentage;//totalPrice/goalPrice하면 돼서 필요 없을수도
 
-    @ColumnDefault("false")
-    private Boolean isConfirm;
+    /*DONE 추가: 이미 만료 처리가 완료된 것은 걸러내기 위해서*/
+    @ColumnDefault(value = "'FALSE'")
+    @Enumerated(value = EnumType.STRING)
+    private FundingConfirmState isConfirm;
 
     @Column
     @Enumerated(value = EnumType.STRING)
@@ -88,8 +91,8 @@ public class FundingItem {
         return this;
     }
 
-    public void updateIsConfirm() {
-        this.isConfirm = true;
+    public void updateIsConfirmTrue() {
+        this.isConfirm = FundingConfirmState.TRUE;
     }
     public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
         this.fundingItemImg = fundingItemImg;

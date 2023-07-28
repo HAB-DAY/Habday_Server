@@ -1,6 +1,7 @@
 package com.habday.server.domain.fundingItem;
 
 import com.habday.server.classes.implemented.HostedList.HostedListDto;
+import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.member.Member;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface FundingItemRepository extends JpaRepository<FundingItem, Long> {
-    List<FundingItem> findByIsConfirmAndStatus(Boolean isConfirm, FundingState status);
+    List<FundingItem> findByIsConfirmAndStatus(FundingConfirmState isConfirm, FundingState status);
     //status = PROGRESS
     List<HostedListDto> findByStatusAndMemberOrderByIdDesc(FundingState status, Member member, Pageable page);
     List<HostedListDto> findByIdLessThanAndStatusAndMemberOrderByIdDesc(Long id, FundingState status, Member member, Pageable page);

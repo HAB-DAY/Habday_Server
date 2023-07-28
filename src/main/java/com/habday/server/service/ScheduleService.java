@@ -3,6 +3,7 @@ package com.habday.server.service;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
@@ -35,7 +36,7 @@ public class ScheduleService extends Common {
     @Transactional
     @Scheduled(cron = memberStateCron)//매일 밤 12시
     public void checkMemberState(){
-        List<FundingItem> fundingItems = fundingItemRepository.findByIsConfirmAndStatus(false, FundingState.SUCCESS);
+        List<FundingItem> fundingItems = fundingItemRepository.findByIsConfirmAndStatus(FundingConfirmState.FALSE, FundingState.SUCCESS);
 
         fundingItems.forEach((item -> {
             if (calculation.isAfterTwoWeek(item)){//afterTwoWeek >= LocalDate.now()이면 pass

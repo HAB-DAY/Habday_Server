@@ -8,6 +8,7 @@ import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
 import com.habday.server.config.email.EmailFormats;
 import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.confirmation.Confirmation;
@@ -170,7 +171,7 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
-        if (fundingItem.getIsConfirm()){
+        if (fundingItem.getIsConfirm().equals(FundingConfirmState.TRUE)){
             throw new CustomException(FUNDING_ALREADY_CONFIRMED);
         }
 
@@ -208,7 +209,7 @@ public class FundingService extends Common {
         //이메일 보내기
         emailFormats.sendFundingConfirmEmail(fundingItem);
         //펀딩 인증 여부 update
-        fundingItem.updateIsConfirm();
+        fundingItem.updateIsConfirmTrue();
     }
 
     public ShowConfirmationResponseDto showConfirmation(Long confirmationId){
