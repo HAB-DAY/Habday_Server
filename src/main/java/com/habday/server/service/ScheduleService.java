@@ -2,13 +2,11 @@ package com.habday.server.service;
 
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
-import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.member.Member;
 import com.habday.server.domain.member.MemberRepository;
-import com.habday.server.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +18,6 @@ import java.util.List;
 
 import static com.habday.server.constants.CmnConst.memberStateCron;
 import static com.habday.server.constants.CmnConst.scheduleCron;
-import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +25,19 @@ import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 public class ScheduleService extends Common {
     private final MemberRepository memberRepository;
     private final Calculation calculation;
+    private final FundingCloseService closeService;
+
+    @Transactional
+    @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
+    public void checkFundingState() {
+        log.info("schedule 시작");
+        List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
+        overdatedFundings.forEach(fundingItem -> {
+            log.info("오늘 마감 fundingItem: " + fundingItem.getId());
+            closeService.checkFundingSuccess(fundingItem);
+        });
+        log.info("schedule 끝");
+    }
 
     /* 휴면 계정 확인
      * 1. 뭔가 배치를 돌면서 휴면 계정인지 체크
