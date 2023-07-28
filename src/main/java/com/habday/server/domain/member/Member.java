@@ -103,4 +103,9 @@ public class Member {
         return this;
     }
 
+    public Member updateStatusSuspended(){
+        this.status = MemberState.SUSPENDED;
+        return this;
+    }
+
 }

@@ -32,5 +32,8 @@ public class Common {
     public ConfirmationRepository confirmationRepository;
 
     @Autowired
+    public FundingItemRepository fundingItemRepository;
+
+    @Autowired
     public JwtService jwtService;
 }

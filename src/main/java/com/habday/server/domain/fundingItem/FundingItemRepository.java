@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface FundingItemRepository extends JpaRepository<FundingItem, Long> {
+    List<FundingItem> findByIsConfirmAndStatus(Boolean isConfirm, FundingState status);
     //status = PROGRESS
     List<HostedListDto> findByStatusAndMemberOrderByIdDesc(FundingState status, Member member, Pageable page);
     List<HostedListDto> findByIdLessThanAndStatusAndMemberOrderByIdDesc(Long id, FundingState status, Member member, Pageable page);
