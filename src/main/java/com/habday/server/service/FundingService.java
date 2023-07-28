@@ -184,15 +184,11 @@ public class FundingService extends Common {
             throw new CustomException(FUNDING_CONFIRM_NOT_YET);
         }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
 
-        //펀딩 기간 2주 안인지 확인
-        LocalDate finishedDate = fundingItem.getFinishDate();
-        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
-
-        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//afterTwoWeek >= LocalDate.now()이면 인증 가능
-            log.info("confirm(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + finishedDate);
+        if (calculation.isAfterTwoWeek(fundingItem)){//afterTwoWeek >= LocalDate.now()이면 인증 가능
+            log.info("confirm(): 펀딩 인증 2주 지남");
             throw new CustomException(FUNDING_CONFIRM_EXCEEDED);
         }
-        log.info("confirm(): 펀딩 인증 2주 이내 " + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + " " + finishedDate);
+        log.info("confirm(): 펀딩 인증 2주 이내 ");
 
         //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));

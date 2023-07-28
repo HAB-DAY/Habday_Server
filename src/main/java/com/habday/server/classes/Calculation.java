@@ -56,10 +56,10 @@ public class Calculation {
         LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
 
         if (afterTwoWeek.compareTo(LocalDate.now()) < 0){
-            log.info("checkMemberState: 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
+            log.info("isAfterTwoWeek(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
             return true;
         }else {
-            log.info("checkMemberState: 펀딩 인증 2주 이내" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek  + "," + finishedDate);
+            log.info("isAfterTwoWeek(): 펀딩 인증 2주 이내" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek  + "," + finishedDate);
             return false;
         }
     }
