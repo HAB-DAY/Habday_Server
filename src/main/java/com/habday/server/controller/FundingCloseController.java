@@ -8,6 +8,7 @@ import com.habday.server.constants.CmnConst;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
 import com.habday.server.service.FundingCloseService;
 import com.habday.server.service.IamportService;
+import com.habday.server.service.ScheduleService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
@@ -25,7 +26,7 @@ import java.io.IOException;
 public class FundingCloseController extends Common {
     private final FundingCloseService fundingCloseService;
     private final EmailService emailService;
-    private final IamportService iamportService;
+    private final ScheduleService scheduleService;
 
     @GetMapping("/checkSuccess/{fundingItemId}")
     public void checkFundingResult(@PathVariable Long fundingItemId) {
@@ -49,6 +50,11 @@ public class FundingCloseController extends Common {
                         "00시 " + CmnConst.paymentDelayMin + "분에 결제 처리될 예정입니다.")
                 .build();
         emailService.sendEmail(emailMessage);
+    }
+
+    @GetMapping("/memberStateTest")
+    public void memberStateTest(){
+        scheduleService.checkMemberState();
     }
 
 

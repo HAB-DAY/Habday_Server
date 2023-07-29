@@ -3,6 +3,7 @@ package com.habday.server.controller;
 import com.habday.server.classes.Common;
 import com.habday.server.config.S3Uploader;
 import com.habday.server.constants.code.ExceptionCode;
+import com.habday.server.constants.state.MemberState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.member.Member;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import static com.habday.server.constants.code.ExceptionCode.MEMBER_SUSPENDED;
 import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 import static com.habday.server.constants.code.SuccessCode.*;
 
@@ -51,6 +53,10 @@ public class MemberController extends Common {
         if(fundingItemImg.isEmpty()) {
             throw new CustomException(ExceptionCode.NO_FUNDING_IMG);
         }
+
+        if(member.getStatus().equals(MemberState.SUSPENDED))
+            throw new CustomException(MEMBER_SUSPENDED);
+
         String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
 
         FundingItem fundingItem = fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));

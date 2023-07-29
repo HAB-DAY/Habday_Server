@@ -8,6 +8,7 @@ import com.habday.server.classes.implemented.ParticipatedList;
 import com.habday.server.config.S3Uploader;
 import com.habday.server.config.email.EmailFormats;
 import com.habday.server.constants.CmnConst;
+import com.habday.server.constants.state.FundingConfirmState;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.constants.state.ScheduledPayState;
 import com.habday.server.domain.confirmation.Confirmation;
@@ -172,7 +173,7 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
-        if (fundingItem.getIsConfirm()){
+        if (fundingItem.getIsConfirm().equals(FundingConfirmState.TRUE)){
             throw new CustomException(FUNDING_ALREADY_CONFIRMED);
         }
 
@@ -186,15 +187,11 @@ public class FundingService extends Common {
             throw new CustomException(FUNDING_CONFIRM_NOT_YET);
         }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
 
-        //펀딩 기간 2주 안인지 확인
-        LocalDate finishedDate = fundingItem.getFinishDate();
-        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
-
-        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//afterTwoWeek >= LocalDate.now()이면 인증 가능
-            log.info("confirm(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + finishedDate);
+        if (calculation.isAfterTwoWeek(fundingItem)){//afterTwoWeek >= LocalDate.now()이면 인증 가능
+            log.info("confirm(): 펀딩 인증 2주 지남");
             throw new CustomException(FUNDING_CONFIRM_EXCEEDED);
         }
-        log.info("confirm(): 펀딩 인증 2주 이내 " + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + " " + finishedDate);
+        log.info("confirm(): 펀딩 인증 2주 이내 ");
 
         //S3 저장
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(NO_MEMBER_ID));
@@ -214,7 +211,7 @@ public class FundingService extends Common {
         //이메일 보내기
         emailFormats.sendFundingConfirmEmail(fundingItem);
         //펀딩 인증 여부 update
-        fundingItem.updateIsConfirm();
+        fundingItem.updateIsConfirmTrue();
     }
 
     public ShowConfirmationResponseDto showConfirmation(Long confirmationId){

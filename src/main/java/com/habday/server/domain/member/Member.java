@@ -4,6 +4,8 @@ import com.habday.server.constants.state.MemberState;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +49,7 @@ public class Member {
 
     private LocalDateTime createTime;
     //@Column(nullable = false)
-    @Column()
+    @ColumnDefault(value="'AVAILABLE'")
     @Enumerated(value = EnumType.STRING)
     private MemberState status;
 
@@ -100,6 +102,11 @@ public class Member {
         this.account = account;
         this.accountName = accountName;
 
+        return this;
+    }
+
+    public Member updateStatusSuspended(){
+        this.status = MemberState.SUSPENDED;
         return this;
     }
 

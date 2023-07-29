@@ -1,37 +1,24 @@
 package com.habday.server.service;
 
 import com.google.gson.Gson;
-import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
 import com.habday.server.config.email.EmailFormats;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
-import com.habday.server.domain.fundingItem.FundingItemRepository;
 import com.habday.server.domain.fundingMember.FundingMember;
 import com.habday.server.dto.req.iamport.CallbackScheduleRequestDto;
-import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
-import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
-import com.habday.server.exception.CustomException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.habday.server.constants.CmnConst.scheduleCron;
-import static com.habday.server.constants.code.ExceptionCode.*;
 import static com.habday.server.constants.state.ScheduledPayState.fail;
 import static com.habday.server.constants.state.ScheduledPayState.paid;
 
@@ -40,10 +27,8 @@ import static com.habday.server.constants.state.ScheduledPayState.paid;
 @Service
 public class FundingCloseService extends Common {
     private final IamportService iamportService;
-    private final Calculation calculation;
     private final EmailFormats emailFormats;
     private final PayService payService;
-    private final FundingItemRepository fundingItemRepository;
 
     /*
      * 1. FundingItem status == PROGRESS 중 오늘 날짜랑 같은게 있는지 확인하기(fundingService.checkFundingFinishDate()
@@ -56,18 +41,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
-    public void checkFundingState() {
-        log.info("schedule 시작");
-        List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
-        overdatedFundings.forEach(fundingItem -> {
-            log.info("오늘 마감 fundingItem: " + fundingItem.getId());
-            checkFundingGoalPercent(fundingItem);
-        });
-        log.info("schedule 끝");
-    }
-    @Transactional
-    public void checkFundingGoalPercent(FundingItem fundingItem) {
+    public void checkFundingSuccess(FundingItem fundingItem) {
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
@@ -80,14 +54,10 @@ public class FundingCloseService extends Common {
             emailFormats.sendFundingSuccessEmail(fundingItem);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.info("최소 목표퍼센트 이상 달성 실패");
-            fundingItem.updateFundingState(FundingState.FAIL);//update안됨
-            //예약 취소
+            fundingItem.updateFundingState(FundingState.FAIL);
             payService.unscheduleAll(fundingItem);
-            emailFormats.sendFundingFailEmail(fundingItem);//이전에는 한 명 한 명마다 이메일 보냄
-            //throw new CustomException(FAIL_FINISH_FUNDING);
+            emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
         }
-
-        //fundingItemRepository.save(fundingItem);
     }
 
 
@@ -100,6 +70,7 @@ public class FundingCloseService extends Common {
      * */
     @Transactional
     public void callbackSchedule(CallbackScheduleRequestDto callbackRequestDto, HttpServletRequest request){
+        log.info("callbackSchedule: " + new Gson().toJson(callbackRequestDto));
         String clientIp = getIp(request);
         String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
         List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
@@ -114,27 +85,18 @@ public class FundingCloseService extends Common {
         if (!ipLists.contains(clientIp)){
             fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
             log.info("callbackSchedule() ip 주소 안맞음");
-            return;
-            //throw new CustomException(UNAUTHORIZED_IP);
+            return;//throw new CustomException(UNAUTHORIZED_IP);
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
-
-        log.info("callbackSchedule(): member-amount : " + amount);
-        log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
-        log.info("callbackSchedule() 결제 금액 안맞음 isEqual" + amount.equals(response.getResponse().getAmount()));
-        log.info("callbackSchedule() 결제 금액 안맞음 compareTo" + amount.compareTo(response.getResponse().getAmount()));
 
         if(amount.compareTo(response.getResponse().getAmount()) !=0){
             fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
             log.info("callbackSchedule(): member-amount : " + amount);
             log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
-            return;
-            //throw new CustomException(NO_CORRESPONDING_AMOUNT);
+            return;//throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
         String[] receiver = {fundingMember.getMember().getEmail()};
 
-        log.info("callbackRequestDto.getStatus(): " + new Gson().toJson(callbackRequestDto));
-        log.info("callback 조건문 " + paid.getMsg() + ", " + callbackRequestDto.getStatus() + ", ");
         if(callbackRequestDto.getStatus().equals(paid.getMsg())){
             fundingMember.updateWebhookSuccess(paid);
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
@@ -142,7 +104,6 @@ public class FundingCloseService extends Common {
         }else{
             fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
             log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
-            // TODO 수동 결제 링크 보내기
             emailFormats.sendPaymentFailEmail(fundingItem, receiver);
         }
     }
