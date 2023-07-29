@@ -23,9 +23,7 @@ public class CorConfig {
         config.addAllowedHeader("*"); //모든 header 응답허용
         //config.addExposedHeader("*");
         config.addAllowedMethod("*"); //모든 post,get,put 허용
-
         source.registerCorsConfiguration("/**", config);
-
         return new CorsFilter(source);
     }
 }
