@@ -35,16 +35,13 @@ import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.Multipart;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 
 import static com.habday.server.constants.code.ExceptionCode.*;
@@ -269,5 +266,28 @@ public class FundingService extends Common {
             throw new CustomException(FUNDING_MEMBER_VALIDATION_FAIL);
         return payService.noneAuthPayUnschedule(request);
 
+    }
+
+    public Long getBirthdayLeft(Member member) {
+        String[] birthList = member.getBirthday().split("-");
+
+        Integer birthMonth = Integer.parseInt(birthList[1]);
+        Integer birthDay = Integer.parseInt(birthList[2]);
+
+        Calendar curCal = Calendar.getInstance();
+        Calendar birthCal = Calendar.getInstance();
+        birthCal.set(curCal.get(Calendar.YEAR), birthMonth-1, birthDay,0,0,0);
+
+        Long birthTime = birthCal.getTime().getTime();
+        Long currTime = curCal.getTime().getTime();
+        long span = 0;
+
+        if(birthTime < currTime) { // 생일이 이미 지난 경우
+            birthCal.set(Calendar.YEAR, curCal.get(Calendar.YEAR)+1);
+            birthTime = birthCal.getTime().getTime();
+        }
+
+        span = birthTime - currTime;
+        return span/1000/60/60/24L;
     }
 }

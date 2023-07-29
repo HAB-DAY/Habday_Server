@@ -10,6 +10,7 @@ import com.habday.server.dto.req.fund.ParticipateFundingRequest;
 import com.habday.server.dto.CommonResponse;
 import com.habday.server.dto.req.iamport.NoneAuthPayUnscheduleRequestDto;
 import com.habday.server.dto.res.DeleteFundingItemResponse;
+import com.habday.server.dto.res.ShowFundingDdayResponseDto;
 import com.habday.server.dto.res.UpdateFundingItemResponse;
 import com.habday.server.dto.res.fund.*;
 import com.habday.server.dto.res.iamport.UnscheduleResponseDto;
@@ -141,5 +142,19 @@ public class FundingController extends Common {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);//혹시 이상한 사람이 memberId만 가져와서 결제 취소할까봐
         UnscheduleResponseDto responseDto = fundingService.cancel(memberId, request);
         return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, responseDto);
+    }
+
+    // 사용자 이름, 남은 생일 일수
+    @GetMapping("/showBirthdayLeftDay")
+    public ResponseEntity<CommonResponse> showFundingDday(@RequestHeader("") String accessToken) {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        Long leftday = fundingService.getBirthdayLeft(member);
+        ShowFundingDdayResponseDto responseDto = new ShowFundingDdayResponseDto(member.getName(), leftday);
+
+        return CommonResponse.toResponse(SHOW_NAME_BIRTHDAY_LEFT, responseDto);
+
     }
 }
