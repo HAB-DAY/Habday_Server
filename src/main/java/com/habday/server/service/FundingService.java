@@ -99,6 +99,11 @@ public class FundingService extends Common {
 
         //펀딩 아이템 누적 금액 update
         fundingItem.updatePricePercentage(totalPrice, percentage);
+
+        // 펀딩 금액 달성시, SUCCESS로 상태 변경
+        if(fundingItem.getTotalPrice() == fundingItem.getGoalPrice()) {
+            fundingItem.updateFundingState(FundingState.SUCCESS);
+        }
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());
     }
 
