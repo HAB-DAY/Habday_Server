@@ -23,7 +23,8 @@ public enum SuccessCode {
     GET_HOSTING_LIST_SUCCESS(OK, "주최한 펀딩 정보 조회에 성공했습니다."),
     DELETING_BILLING_KEY_SUCCESS(OK, "빌링키 삭제에 성공했습니다."),
     FUNDING_CONFIRMATION_SUCCESS(OK, "펀딩 인증 등록에 성공했습니다."),
-    SHOW_FUNDING_CONFIRM_SUCCESS(OK, "펀딩 인증 조회에 성공했습니다.");
+    SHOW_FUNDING_CONFIRM_SUCCESS(OK, "펀딩 인증 조회에 성공했습니다."),
+    SHOW_NAME_BIRTHDAY_LEFT(OK, "사용자 이름, 생일까지 남은 일자 조회에 성공했습니다.");
 
     private final HttpStatus status;
     private final String msg;
