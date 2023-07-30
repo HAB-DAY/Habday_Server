@@ -44,8 +44,6 @@ import static com.habday.server.constants.state.ScheduledPayState.*;
 public class PayService extends Common {
     private final IamportService iamportService;
     private final UIDCreation uidCreation;
-    private final MemberRepository memberRepository;
-    private final FundingItemRepository fundingItemRepository;
 
     @Transactional
     public GetBillingKeyResponseDto getBillingKey(NoneAuthPayBillingKeyRequestDto billingKeyRequest, Long memberId){

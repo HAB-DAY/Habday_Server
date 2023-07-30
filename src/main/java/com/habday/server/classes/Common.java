@@ -26,6 +26,9 @@ public class Common {
     public FundingMemberRepository fundingMemberRepository;
 
     @Autowired
+    public MemberRepository memberRepository;
+
+    @Autowired
     public PaymentRepository paymentRepository;
 
     @Autowired

@@ -29,8 +29,6 @@ import static com.habday.server.constants.CmnConst.scheduleCron;
 @RequiredArgsConstructor
 @Service
 public class ScheduleService extends Common {
-    private final MemberRepository memberRepository;
-    private final Calculation calculation;
     private final FundingCloseService closeService;
 
     @Transactional
@@ -63,12 +61,6 @@ public class ScheduleService extends Common {
             if(member != null && member.getStatus().equals(MemberState.AVAILABLE))
                 member.updateStatusSuspended();
             item.updateIsConfirmDone();//false로 있으면 조건문에 걸릴 수 있으니
-//            if (calculation.isAfterTwoWeek(item)){//afterTwoWeek >= LocalDate.now()이면 pass
-//                Member member = item.getMember();
-//                member.updateStatusSuspended();
-//                log.info("checkMemberState(): memberId: " + member.getId() + " itemId: " + item.getId() + " 기간 만료");
-//                item.updateIsConfirmDone();
-//            }
         }));
     }
 }
