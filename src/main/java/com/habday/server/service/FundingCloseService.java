@@ -3,6 +3,8 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.config.email.EmailFormats;
+import com.habday.server.constants.CustomException;
+import com.habday.server.constants.code.ExceptionCode;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -19,6 +21,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import static com.habday.server.constants.state.ScheduledPayState.fail;
 import static com.habday.server.constants.state.ScheduledPayState.paid;
 
@@ -75,34 +79,35 @@ public class FundingCloseService extends Common {
         String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
         List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
 
-        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
-        FundingItem fundingItem = fundingMember.getFundingItem();
-        BigDecimal amount = fundingMember.getAmount();
+        Optional<FundingMember> fundingMember = Optional.ofNullable(fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid()));
+        FundingItem fundingItem = fundingMember.orElseThrow(()->
+            new CustomException(ExceptionCode.NO_FUNDING_MEMBER_ID)).getFundingItem();
+        BigDecimal amount = fundingMember.get().getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
         log.info("response: " + new Gson().toJson(response));
 
         if (!ipLists.contains(clientIp)){
-            fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
+            fundingMember.get().updateWebhookFail(fail, "ip주소가 맞지 않음");
             log.info("callbackSchedule() ip 주소 안맞음");
             return;//throw new CustomException(UNAUTHORIZED_IP);
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
         if(amount.compareTo(response.getResponse().getAmount()) !=0){
-            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
+            fundingMember.get().updateWebhookFail(fail, "결제 금액이 맞지 않음");
             log.info("callbackSchedule(): member-amount : " + amount);
             log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
             return;//throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
-        String[] receiver = {fundingMember.getMember().getEmail()};
+        String[] receiver = {fundingMember.get().getMember().getEmail()};
 
         if(callbackRequestDto.getStatus().equals(paid.getMsg())){
-            fundingMember.updateWebhookSuccess(paid);
+            fundingMember.get().updateWebhookSuccess(paid);
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentSuccessEmail(fundingItem, receiver, amount);
         }else{
-            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
+            fundingMember.get().updateWebhookFail(fail, response.getResponse().getFailReason());
             log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentFailEmail(fundingItem, receiver);
         }

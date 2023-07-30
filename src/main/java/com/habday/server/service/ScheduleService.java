@@ -52,6 +52,7 @@ public class ScheduleService extends Common {
     @Transactional
     @Scheduled(cron = memberStateCron)//매일 밤 12시
     public void checkMemberState(){
+        log.info("member cron 돌아감");
         List<FundingItem> fundingItems = //now > finishDate + 14 == now - 14 > finishDate
                 fundingItemRepository.findByIsConfirmAndStatusAndFinishDateLessThan(FundingConfirmState.FALSE,
                         FundingState.SUCCESS, LocalDate.now().minusDays(CmnConst.confirmLimitDate));//데이터 많아지면 검색 범위를 지정해도 되지 않을까 너무 옛날꺼는 검색하지 않는다던지
