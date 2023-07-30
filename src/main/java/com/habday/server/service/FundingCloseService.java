@@ -53,12 +53,12 @@ public class FundingCloseService extends Common {
         log.info("itemId: " +fundingItem.getId() + " realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
 
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
-            fundingItem.updateFundingState(FundingState.SUCCESS);
+            fundingItem.updateFundingSuccess();
             log.info("최소 목표퍼센트 이상 달성함");
             emailFormats.sendFundingSuccessEmail(fundingItem);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.info("최소 목표퍼센트 이상 달성 실패");
-            fundingItem.updateFundingState(FundingState.FAIL);
+            fundingItem.updateFundingFail();
             payService.unscheduleAll(fundingItem);
             emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
         }
@@ -88,14 +88,14 @@ public class FundingCloseService extends Common {
         log.info("response: " + new Gson().toJson(response));
 
         if (!ipLists.contains(clientIp)){
-            fundingMember.get().updateWebhookFail(fail, "ip주소가 맞지 않음");
+            fundingMember.get().updateWebhookFail("ip주소가 맞지 않음");
             log.info("callbackSchedule() ip 주소 안맞음");
             return;//throw new CustomException(UNAUTHORIZED_IP);
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
         if(amount.compareTo(response.getResponse().getAmount()) !=0){
-            fundingMember.get().updateWebhookFail(fail, "결제 금액이 맞지 않음");
+            fundingMember.get().updateWebhookFail("결제 금액이 맞지 않음");
             log.info("callbackSchedule(): member-amount : " + amount);
             log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
             return;//throw new CustomException(NO_CORRESPONDING_AMOUNT);
@@ -103,11 +103,11 @@ public class FundingCloseService extends Common {
         String[] receiver = {fundingMember.get().getMember().getEmail()};
 
         if(callbackRequestDto.getStatus().equals(paid.getMsg())){
-            fundingMember.get().updateWebhookSuccess(paid);
+            fundingMember.get().updateWebhookSuccess();
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentSuccessEmail(fundingItem, receiver, amount);
         }else{
-            fundingMember.get().updateWebhookFail(fail, response.getResponse().getFailReason());
+            fundingMember.get().updateWebhookFail(response.getResponse().getFailReason());
             log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentFailEmail(fundingItem, receiver);
         }

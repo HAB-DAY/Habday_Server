@@ -104,22 +104,22 @@ public class FundingMember{
                 .build();
     }
 
-    public FundingMember updateCancel(BigDecimal cancelAmount, String reason, ScheduledPayState payment_status, LocalDate cancelDate){
+    public FundingMember updateCancel(BigDecimal cancelAmount, String reason, LocalDate cancelDate){
         this.cancelAmount = cancelAmount;
         this.reason = reason;
-        this.payment_status = payment_status;
+        this.payment_status = ScheduledPayState.cancel;
         this.cancelDate = cancelDate;
         return this;
     }
 
-    public FundingMember updateWebhookFail(ScheduledPayState payment_status, String fail_reason){
-        this.payment_status = payment_status;
+    public FundingMember updateWebhookFail(String fail_reason){
+        this.payment_status = ScheduledPayState.fail;
         this.fail_reason = fail_reason;
         return this;
     }
 
-    public FundingMember updateWebhookSuccess(ScheduledPayState payment_status){
-        this.payment_status = payment_status;
+    public FundingMember updateWebhookSuccess(){
+        this.payment_status = ScheduledPayState.paid;
         return this;
     }
 

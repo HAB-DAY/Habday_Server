@@ -132,7 +132,7 @@ public class PayService extends Common {
             throw new CustomExceptionWithMessage(PAY_SCHEDULING_INTERNAL_ERROR, iamportResponse.getMessage());
         }
         LocalDate cancelDate = LocalDate.now();
-        fundingMember.updateCancel(fundingMember.getAmount(), unscheduleRequestDto.getReason(), cancel, cancelDate);
+        fundingMember.updateCancel(fundingMember.getAmount(), unscheduleRequestDto.getReason(), cancelDate);
 
         return UnscheduleResponseDto.builder()
                 .merchant_uid(fundingMember.getMerchantId())
