@@ -45,7 +45,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    public void checkFundingSuccess(FundingItem fundingItem) {
+    public void checkFundingSuccess(FundingItem fundingItem) {//성공한 아이템이 들어오게
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
@@ -62,6 +62,20 @@ public class FundingCloseService extends Common {
             payService.unscheduleAll(fundingItem);
             emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
         }
+    }
+
+    @Transactional
+    public void fundingSuccess(FundingItem fundingItem){
+        log.info("최소 목표퍼센트 이상 달성함");
+        emailFormats.sendFundingSuccessEmail(fundingItem);
+    }
+
+    @Transactional
+    public void fundingFail(FundingItem fundingItem){
+        log.info("최소 목표퍼센트 이상 달성 실패");
+        fundingItem.updateFundingFail();
+        payService.unscheduleAll(fundingItem);
+        emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
     }
 
 

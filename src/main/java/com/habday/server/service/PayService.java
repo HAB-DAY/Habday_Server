@@ -147,7 +147,7 @@ public class PayService extends Common {
             NoneAuthPayUnscheduleRequestDto request = new NoneAuthPayUnscheduleRequestDto(id,  "목표 달성 실패로 인한 결제 취소");
             try {
                 UnscheduleResponseDto respone = noneAuthPayUnschedule(request);
-                log.info("unschedulePayment response: " + new Gson().toJson(respone));
+                //log.info("unschedulePayment response: " + new Gson().toJson(respone));
             } catch(RuntimeException e){
                 log.info("unschedule Payment 서비스 내 오류: " + e);
             }

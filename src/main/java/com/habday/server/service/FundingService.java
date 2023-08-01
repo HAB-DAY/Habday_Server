@@ -97,7 +97,7 @@ public class FundingService extends Common {
         fundingItem.updatePricePercentage(totalPrice, percentage);
 
         // 펀딩 금액 달성시, SUCCESS로 상태 변경
-        if(fundingItem.getTotalPrice() == fundingItem.getGoalPrice()) {
+        if(fundingItem.getTotalPrice().compareTo(fundingItem.getGoalPrice()) >=0) {
             fundingItem.updateFundingSuccess();
         }
         return ParticipateFundingResponseDto.of(scheduleResult.getCode(), scheduleResult.getMessage());

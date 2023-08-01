@@ -35,10 +35,17 @@ public class ScheduleService extends Common {
     @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
-        List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
-        overdatedFundings.forEach(fundingItem -> {
-            log.info("오늘 마감 fundingItem: " + fundingItem.getId());
-            closeService.checkFundingSuccess(fundingItem);
+        List<FundingItem> successFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.SUCCESS, LocalDate.now());
+        List<FundingItem> failFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
+
+        successFunding.forEach(fundingItem -> {
+            log.info("오늘 마감 성공 fundingItem: " + fundingItem.getId());
+            closeService.fundingSuccess(fundingItem);
+        });
+
+        failFunding.forEach(fundingItem -> {
+            log.info("오늘 마감 실패 fundingItem: " + fundingItem.getId());
+            closeService.fundingFail(fundingItem);
         });
         log.info("schedule 끝");
     }
