@@ -29,18 +29,23 @@ import static com.habday.server.constants.CmnConst.scheduleCron;
 @RequiredArgsConstructor
 @Service
 public class ScheduleService extends Common {
-    private final MemberRepository memberRepository;
-    private final Calculation calculation;
     private final FundingCloseService closeService;
 
     @Transactional
     @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
-        List<FundingItem> overdatedFundings =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
-        overdatedFundings.forEach(fundingItem -> {
-            log.info("오늘 마감 fundingItem: " + fundingItem.getId());
-            closeService.checkFundingSuccess(fundingItem);
+        List<FundingItem> successFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.SUCCESS, LocalDate.now());
+        List<FundingItem> failFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
+
+        successFunding.forEach(fundingItem -> {
+            log.info("오늘 마감 성공 fundingItem: " + fundingItem.getId());
+            closeService.fundingSuccess(fundingItem);
+        });
+
+        failFunding.forEach(fundingItem -> {
+            log.info("오늘 마감 실패 fundingItem: " + fundingItem.getId());
+            closeService.fundingFail(fundingItem);
         });
         log.info("schedule 끝");
     }
@@ -52,6 +57,7 @@ public class ScheduleService extends Common {
     @Transactional
     @Scheduled(cron = memberStateCron)//매일 밤 12시
     public void checkMemberState(){
+        log.info("member cron 돌아감");
         List<FundingItem> fundingItems = //now > finishDate + 14 == now - 14 > finishDate
                 fundingItemRepository.findByIsConfirmAndStatusAndFinishDateLessThan(FundingConfirmState.FALSE,
                         FundingState.SUCCESS, LocalDate.now().minusDays(CmnConst.confirmLimitDate));//데이터 많아지면 검색 범위를 지정해도 되지 않을까 너무 옛날꺼는 검색하지 않는다던지
@@ -62,12 +68,6 @@ public class ScheduleService extends Common {
             if(member != null && member.getStatus().equals(MemberState.AVAILABLE))
                 member.updateStatusSuspended();
             item.updateIsConfirmDone();//false로 있으면 조건문에 걸릴 수 있으니
-//            if (calculation.isAfterTwoWeek(item)){//afterTwoWeek >= LocalDate.now()이면 pass
-//                Member member = item.getMember();
-//                member.updateStatusSuspended();
-//                log.info("checkMemberState(): memberId: " + member.getId() + " itemId: " + item.getId() + " 기간 만료");
-//                item.updateIsConfirmDone();
-//            }
         }));
     }
 }

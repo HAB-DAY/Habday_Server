@@ -13,7 +13,6 @@ import static com.habday.server.constants.code.ExceptionCode.NO_MEMBER_ID;
 @Service
 @RequiredArgsConstructor
 public class MemberService extends Common {
-    private final MemberRepository memberRepository;
     @Transactional
     public void updateMemberProfile(Long memberId, MemberProfileRequestDto requestDto) {
         Member member = memberRepository.findById(memberId)

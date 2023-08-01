@@ -3,6 +3,8 @@ package com.habday.server.service;
 import com.google.gson.Gson;
 import com.habday.server.classes.Common;
 import com.habday.server.config.email.EmailFormats;
+import com.habday.server.constants.CustomException;
+import com.habday.server.constants.code.ExceptionCode;
 import com.habday.server.constants.state.FundingState;
 import com.habday.server.domain.fundingItem.FundingItem;
 import com.habday.server.domain.fundingMember.FundingMember;
@@ -19,6 +21,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+
 import static com.habday.server.constants.state.ScheduledPayState.fail;
 import static com.habday.server.constants.state.ScheduledPayState.paid;
 
@@ -41,7 +45,7 @@ public class FundingCloseService extends Common {
      *   - 펀딩 성공 메일 보내기
      * */
     @Transactional
-    public void checkFundingSuccess(FundingItem fundingItem) {
+    public void checkFundingSuccess(FundingItem fundingItem) {//성공한 아이템이 들어오게
         BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
         BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
 
@@ -49,15 +53,29 @@ public class FundingCloseService extends Common {
         log.info("itemId: " +fundingItem.getId() + " realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
 
         if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
-            fundingItem.updateFundingState(FundingState.SUCCESS);
+            fundingItem.updateFundingSuccess();
             log.info("최소 목표퍼센트 이상 달성함");
             emailFormats.sendFundingSuccessEmail(fundingItem);
         } else { // 펀딩 최소 목표 퍼센트에 달성 못함
             log.info("최소 목표퍼센트 이상 달성 실패");
-            fundingItem.updateFundingState(FundingState.FAIL);
+            fundingItem.updateFundingFail();
             payService.unscheduleAll(fundingItem);
             emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
         }
+    }
+
+    @Transactional
+    public void fundingSuccess(FundingItem fundingItem){
+        log.info("최소 목표퍼센트 이상 달성함");
+        emailFormats.sendFundingSuccessEmail(fundingItem);
+    }
+
+    @Transactional
+    public void fundingFail(FundingItem fundingItem){
+        log.info("최소 목표퍼센트 이상 달성 실패");
+        fundingItem.updateFundingFail();
+        payService.unscheduleAll(fundingItem);
+        emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
     }
 
 
@@ -75,34 +93,35 @@ public class FundingCloseService extends Common {
         String[] ips = {"52.78.100.19", "52.78.48.223", "52.78.5.241"};
         List<String> ipLists = new ArrayList<>(Arrays.asList(ips));
 
-        FundingMember fundingMember = fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid());
-        FundingItem fundingItem = fundingMember.getFundingItem();
-        BigDecimal amount = fundingMember.getAmount();
+        Optional<FundingMember> fundingMember = Optional.ofNullable(fundingMemberRepository.findByMerchantId(callbackRequestDto.getMerchant_uid()));
+        FundingItem fundingItem = fundingMember.orElseThrow(()->
+            new CustomException(ExceptionCode.NO_FUNDING_MEMBER_ID)).getFundingItem();
+        BigDecimal amount = fundingMember.get().getAmount();
 
         IamportResponse<Payment> response = iamportService.paymentByImpUid(callbackRequestDto.getImp_uid());
         log.info("response: " + new Gson().toJson(response));
 
         if (!ipLists.contains(clientIp)){
-            fundingMember.updateWebhookFail(fail, "ip주소가 맞지 않음");
+            fundingMember.get().updateWebhookFail("ip주소가 맞지 않음");
             log.info("callbackSchedule() ip 주소 안맞음");
             return;//throw new CustomException(UNAUTHORIZED_IP);
             //exception 날리면 트랜잭션이 롤백되어버려 영속성컨텍스트 flush 안됨
         }
 
         if(amount.compareTo(response.getResponse().getAmount()) !=0){
-            fundingMember.updateWebhookFail(fail, "결제 금액이 맞지 않음");
+            fundingMember.get().updateWebhookFail("결제 금액이 맞지 않음");
             log.info("callbackSchedule(): member-amount : " + amount);
             log.info("callbackSchedule() 결제 금액 안맞음 " + response.getResponse().getMerchantUid());
             return;//throw new CustomException(NO_CORRESPONDING_AMOUNT);
         }
-        String[] receiver = {fundingMember.getMember().getEmail()};
+        String[] receiver = {fundingMember.get().getMember().getEmail()};
 
         if(callbackRequestDto.getStatus().equals(paid.getMsg())){
-            fundingMember.updateWebhookSuccess(paid);
+            fundingMember.get().updateWebhookSuccess();
             log.info("callbackSchedule() paid로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentSuccessEmail(fundingItem, receiver, amount);
         }else{
-            fundingMember.updateWebhookFail(fail, response.getResponse().getFailReason());
+            fundingMember.get().updateWebhookFail(response.getResponse().getFailReason());
             log.info("callbackSchedule() fail로 update" + response.getResponse().getMerchantUid());
             emailFormats.sendPaymentFailEmail(fundingItem, receiver);
         }

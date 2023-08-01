@@ -86,8 +86,14 @@ public class FundingItem {
         this.percentage = percentage;
         return this;
     }
-    public FundingItem updateFundingState(FundingState status){
-        this.status = status;
+
+    public FundingItem updateFundingSuccess(){
+        this.status = FundingState.SUCCESS;
+        return this;
+    }
+
+    public FundingItem updateFundingFail(){
+        this.status = FundingState.FAIL;
         return this;
     }
 
