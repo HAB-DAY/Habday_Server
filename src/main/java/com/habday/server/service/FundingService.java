@@ -107,9 +107,9 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         Member member = Optional.ofNullable(fundingItem.getMember()).orElseThrow(()-> new CustomException(NO_MEMBER_ID_SAVED));
-        Optional<Confirmation> confirmation = Optional.ofNullable(confirmationRepository.findByFundingItem(fundingItem));
+        Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
         return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem),
-                confirmation.orElseGet(null).getId());
+                confirmation == null ? null : confirmation.getId());
     }
 
     public List<FundingParticipantList> getParticipantList(FundingItem fundingItem) {
