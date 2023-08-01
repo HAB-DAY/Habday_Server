@@ -210,9 +210,10 @@ public class FundingService extends Common {
         fundingItem.updateIsConfirmTrue();
     }
 
-    public ShowConfirmationResponseDto showConfirmation(Long confirmationId){
-        Confirmation confirmation = confirmationRepository.findById(confirmationId).orElseThrow(() -> new CustomException(NO_CONFIRMATION_EXIST));
-        return new ShowConfirmationResponseDto(confirmation);
+    public ShowConfirmationResponseDto showConfirmation(Long fundingItemId){
+        FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        Confirmation confirmation = Optional.ofNullable(confirmationRepository.findByFundingItem(fundingItem)).orElseThrow(() -> new CustomException(NO_CONFIRMATION_EXIST));
+        return new ShowConfirmationResponseDto(confirmation, fundingItem.getTotalPrice());
     }
 
     @Transactional
