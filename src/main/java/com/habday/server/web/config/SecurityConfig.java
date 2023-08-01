@@ -28,7 +28,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 // 유저관련 (소셜로그인)
-                .antMatchers("/login/oauth2/code/naver", "/api/oauth/token/naver", "/fundingClose/callback/schedule");
+                .antMatchers("/login/oauth2/code/naver", "/api/oauth/token/naver", "/fundingClose/callback/schedule", "/funding/showFundingContent");
 
     }
 
