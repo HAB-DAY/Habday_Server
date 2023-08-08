@@ -223,8 +223,9 @@ public class FundingService extends Common {
     public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail) throws IOException {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        ObjectMapper mapper = new ObjectMapper();
-        System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
+        System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
+        //ObjectMapper mapper = new ObjectMapper();
+        //System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
         System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
 
 
