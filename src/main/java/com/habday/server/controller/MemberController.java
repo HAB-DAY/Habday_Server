@@ -60,7 +60,7 @@ public class MemberController extends Common {
         String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
 
         FundingItem fundingItem = fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
-        String responseDto = "http://13.124.209.40:8080/funding/showFundingContent?itemId=" + fundingItem.getId();
+        String responseDto = "https://habday-web.vercel.app/landing/" + fundingItem.getId();
         return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
     }
 }
