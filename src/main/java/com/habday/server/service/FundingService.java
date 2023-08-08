@@ -1,5 +1,6 @@
 package com.habday.server.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.habday.server.classes.Calculation;
 import com.habday.server.classes.Common;
@@ -34,6 +35,7 @@ import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Schedule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -226,10 +228,17 @@ public class FundingService extends Common {
     public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail) throws IOException {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
+        System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
 
-        String updateFundingItemImgUrl = (fundingItemImg.isEmpty()) ? fundingItem.getFundingItemImg() : s3Uploader.upload(fundingItemImg, "images");
+
+        String updateFundingItemImgUrl = (fundingItemImg == null) ? fundingItem.getFundingItemImg() : s3Uploader.upload(fundingItemImg, "images");
+        System.out.println("updateFundingItem^^ updateFundingItemImgUrl" + updateFundingItemImgUrl);
         String updateFundingName = (fundingItemName == null) ? fundingItem.getFundingName() : fundingItemName;
+        System.out.println("updateFundingItem^^ updateFundingName" + updateFundingName);
         String updateFundDetail = (fundingItemDetail == null) ? fundingItem.getFundDetail() : fundingItemDetail;
+        System.out.println("updateFundingItem^^ updateFundDetail" + updateFundDetail);
 
         fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
     }
