@@ -27,6 +27,7 @@ public class ShowFundingContentResponseDto {
     private String hostName;
     private List<FundingParticipantList> fundingParticipantList;
     private Boolean isConfirmation;
+    private String showDetailUrl;
 
     //생성자에는 static을 사용할 수 없다.
     //of를 static으로 놓고 builder 패턴을 적용해 객체를 생성해서 반환하려 해도 결국은 생성자가 필요하다.
@@ -35,7 +36,7 @@ public class ShowFundingContentResponseDto {
     private ShowFundingContentResponseDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice,
                BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, int percentage,
                FundingState status, String hostName, List<FundingParticipantList> fundingParticipantList,
-                                          Boolean isConfirmation){
+                                          Boolean isConfirmation, String showDetailUrl){
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
@@ -49,9 +50,11 @@ public class ShowFundingContentResponseDto {
         this.hostName = hostName;
         this.fundingParticipantList = fundingParticipantList;
         this.isConfirmation = isConfirmation;
+        this.showDetailUrl = showDetailUrl;
     }
 
-    public static ShowFundingContentResponseDto of(FundingItem fundingItem, Member member, List<FundingParticipantList> fundingParticipantList, Boolean isConfirmation){
+
+    public static ShowFundingContentResponseDto of(FundingItem fundingItem, Member member, List<FundingParticipantList> fundingParticipantList, Boolean isConfirmation, String showDetailUrl){
         return ShowFundingContentResponseDto.builder()
                 .fundingItemImg(fundingItem.getFundingItemImg())
                 .fundingName(fundingItem.getFundingName())
@@ -66,6 +69,7 @@ public class ShowFundingContentResponseDto {
                 .hostName(member.getName())
                 .fundingParticipantList(fundingParticipantList)
                 .isConfirmation(isConfirmation)
+                .showDetailUrl(showDetailUrl)
                 .build();
     }
 

@@ -112,7 +112,7 @@ public class FundingService extends Common {
         Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
         //log.info("id: " + confirmation.getId());
         return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem),
-                confirmation == null ? false : true);
+                confirmation == null ? false : true, "https://habday-web.vercel.app/landing/"+fundingItem.getId());
     }
 
     public List<FundingParticipantList> getParticipantList(FundingItem fundingItem) {
