@@ -47,13 +47,15 @@ public class Calculation {
         Date toDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(toDate);
-        calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 30분 후에 결제
+        calendar.add(Calendar.DATE, CmnConst.paymentDelayDate);//펀딩 마감일이 생일 전날 -> 결제일은 생일날
+        calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 다음날 30분 후에 결제
         return new Date(calendar.getTimeInMillis());
     }
 
     public Boolean isAfterTwoWeek(FundingItem item){
         LocalDate finishedDate = item.getFinishDate();
-        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
+        LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);
+        LocalDate afterTwoWeek = payDate.plusDays(CmnConst.confirmLimitDate);
 
         if (afterTwoWeek.compareTo(LocalDate.now()) < 0){
             log.info("isAfterTwoWeek(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
