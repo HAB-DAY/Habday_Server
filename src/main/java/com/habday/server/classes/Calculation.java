@@ -53,11 +53,11 @@ public class Calculation {
     }
 
     public Boolean isAfterTwoWeek(FundingItem item){
-        LocalDate finishedDate = item.getFinishDate();
-        LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);
-        LocalDate afterTwoWeek = payDate.plusDays(CmnConst.confirmLimitDate);
-
-        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){
+        LocalDate finishedDate = item.getFinishDate();//14일(생일 15일)
+        LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);//15일
+        LocalDate afterTwoWeek = payDate.plusDays(CmnConst.confirmLimitDate);//29일
+        //15 16 17 18 19 20 21 22 23 24 25 26 27 28
+        if (afterTwoWeek.compareTo(LocalDate.now()) <= 0){//29 <= 오늘
             log.info("isAfterTwoWeek(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
             return true;
         }else {
