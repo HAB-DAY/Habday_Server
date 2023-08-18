@@ -77,6 +77,17 @@ public class Calculation {
         }
     }
 
+    public Boolean isBeforeFinishDate(LocalDate finishDate){
+        if (finishDate.compareTo(LocalDate.now()) >= 0){
+            log.info("isBeforeFinishDate: 마감일 당일 혹은 마감일 전");
+            return true;
+        }
+        else {
+            log.info("isBeforeFinishDate: 마감일 이후");
+            return false;
+        }
+    }
+
     public LocalDate calScheduleFinishDate(){
         return LocalDate.now().minusDays(CmnConst.paymentDelayDate);
     }

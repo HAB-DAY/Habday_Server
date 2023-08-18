@@ -181,7 +181,7 @@ public class FundingService extends Common {
             throw new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
         }
 
-        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) >= 0){//now <= finishDate
+        if (calculation.isBeforeFinishDate(fundingItem.getFinishDate())){//now <= finishDate
             log.info("confirm(): 아직 진행중인 펀딩임." + fundingItem.getFinishDate());
             throw new CustomException(FUNDING_CONFIRM_NOT_YET);
         }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
