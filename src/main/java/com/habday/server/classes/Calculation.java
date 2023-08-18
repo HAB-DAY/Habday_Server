@@ -52,12 +52,13 @@ public class Calculation {
         return new Date(calendar.getTimeInMillis());
     }
 
+    //펀딩 인증 & (memberState 변경: 이 함수 적용 안함)
     public Boolean isAfterTwoWeek(FundingItem item){
         LocalDate finishedDate = item.getFinishDate();//14일(생일 15일)
-        LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);//15일
-        LocalDate afterTwoWeek = payDate.plusDays(CmnConst.confirmLimitDate);//29일
+        //LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);//15일
+        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);//28일
         //15 16 17 18 19 20 21 22 23 24 25 26 27 28
-        if (afterTwoWeek.compareTo(LocalDate.now()) <= 0){//29 <= 오늘
+        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//28 < 29일(오늘)
             log.info("isAfterTwoWeek(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
             return true;
         }else {
@@ -66,10 +67,21 @@ public class Calculation {
         }
     }
 
-//    public Date addDate(Date baseDate, int addedUnit, int addedTime){
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTime(baseDate);
-//        calendar.add(addedUnit, addedTime);
-//        return new Date(calendar.getTimeInMillis());
-//    }
+    public Boolean isOverFinishDate(LocalDate finishDate){
+        if(LocalDate.now().compareTo(finishDate)>=0){
+            log.info("isFinishDate: 오늘 >= 마감일 입니다.");
+            return true;
+        }else{
+            log.info("isFinishDate: 마감일 전입니다.");
+            return false;
+        }
+    }
+
+    public LocalDate calScheduleFinishDate(){
+        return LocalDate.now().minusDays(CmnConst.paymentDelayDate);
+    }
+
+    public LocalDate calMemberStateFinishDate(){
+        return LocalDate.now().minusDays(CmnConst.confirmLimitDate);
+    }
 }

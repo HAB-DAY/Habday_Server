@@ -224,6 +224,10 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
+
+        if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 수정 x
+            throw new CustomException(UPDATE_FUNDING_UNAVAILABLE);
+        }
         //ObjectMapper mapper = new ObjectMapper();
         //System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
         System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
@@ -245,7 +249,7 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
 
-        if(LocalDate.now().compareTo(fundingItem.getFinishDate())>=0){//마감 당일에는 삭제 X
+        if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 삭제 X
             throw new CustomException(DELETE_FUNDING_UNAVAILABLE);
         }
         fundingItemRepository.delete(fundingItem);
