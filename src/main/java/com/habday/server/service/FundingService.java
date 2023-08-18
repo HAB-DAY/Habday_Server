@@ -181,7 +181,7 @@ public class FundingService extends Common {
             throw new CustomException(FUNDING_CONFIRM_NOT_NEEDED);
         }
 
-        if (fundingItem.getFinishDate().compareTo(LocalDate.now()) > 0){//now < finishDate
+        if (calculation.isBeforeFinishDate(fundingItem.getFinishDate())){//now <= finishDate
             log.info("confirm(): 아직 진행중인 펀딩임." + fundingItem.getFinishDate());
             throw new CustomException(FUNDING_CONFIRM_NOT_YET);
         }//fundingItemStatus는 SUCCESS이지만 아직 진행중인 경우
@@ -224,6 +224,10 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
+
+        if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 수정 x
+            throw new CustomException(UPDATE_FUNDING_UNAVAILABLE);
+        }
         //ObjectMapper mapper = new ObjectMapper();
         //System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
         System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
@@ -245,7 +249,7 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
 
-        if(LocalDate.now().compareTo(fundingItem.getFinishDate())>=0){
+        if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 삭제 X
             throw new CustomException(DELETE_FUNDING_UNAVAILABLE);
         }
         fundingItemRepository.delete(fundingItem);
