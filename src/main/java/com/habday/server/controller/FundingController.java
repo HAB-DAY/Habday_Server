@@ -131,7 +131,7 @@ public class FundingController extends Common {
         //return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
     }
 
-    // 펀딩 식제
+    // 펀딩 삭제
     @DeleteMapping ("/delete/{fundingItemId}")
     public ResponseEntity<CommonResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
@@ -139,6 +139,7 @@ public class FundingController extends Common {
         return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS, null);
     }
 
+    //펀딩 참여 취소
     @PostMapping("/cancel")
     public ResponseEntity<CommonResponse> cancel(@RequestHeader("") String accessToken, @Valid @RequestBody NoneAuthPayUnscheduleRequestDto request){
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);//혹시 이상한 사람이 memberId만 가져와서 결제 취소할까봐

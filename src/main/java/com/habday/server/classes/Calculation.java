@@ -67,8 +67,9 @@ public class Calculation {
         }
     }
 
+    //수정/삭제(finishDate 당일부터 불가하게)
     public Boolean isOverFinishDate(LocalDate finishDate){
-        if(LocalDate.now().compareTo(finishDate)>=0){
+        if(LocalDate.now().compareTo(finishDate)>=0){//finishDate 포함
             log.info("isFinishDate: 오늘 >= 마감일 입니다.");
             return true;
         }else{
@@ -76,7 +77,7 @@ public class Calculation {
             return false;
         }
     }
-
+    //인증시(finishDate이 지나야 인증)
     public Boolean isBeforeFinishDate(LocalDate finishDate){
         if (finishDate.compareTo(LocalDate.now()) >= 0){
             log.info("isBeforeFinishDate: 마감일 당일 혹은 마감일 전");
