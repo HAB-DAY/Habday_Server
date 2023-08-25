@@ -155,7 +155,7 @@ public class FundingController extends Common {
                 .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
 
         Long leftday = fundingService.getBirthdayLeft(member);
-        ShowFundingDdayResponseDto responseDto = new ShowFundingDdayResponseDto(member.getName(), leftday);
+        ShowFundingDdayResponseDto responseDto = new ShowFundingDdayResponseDto(member.getName(), leftday, member.getBirthday());
 
         return CommonResponse.toResponse(SHOW_NAME_BIRTHDAY_LEFT, responseDto);
 

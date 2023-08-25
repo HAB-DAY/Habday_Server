@@ -12,10 +12,12 @@ import java.time.LocalDate;
 public class ShowFundingDdayResponseDto {
     private String name;
     private Long leftday;
+    private String birthday;
 
     @Builder
-    public ShowFundingDdayResponseDto(String name, Long leftday){
+    public ShowFundingDdayResponseDto(String name, Long leftday, String birthday){
         this.name = name;
         this.leftday = leftday;
+        this.birthday = birthday;
     }
 }
