@@ -52,6 +52,7 @@ public enum ExceptionCode {
     FUNDING_CONFIRM_NOT_YET(INTERNAL_SERVER_ERROR, "완료되지 않은 펀딩은 인증을 진행할 수 없습니다."),
     FUNDING_ALREADY_CONFIRMED(INTERNAL_SERVER_ERROR, "이미 인증된 펀딩입니다."),
     NO_CONFIRMATION_EXIST(INTERNAL_SERVER_ERROR,"펀딩 인증이 존재하지 않습니다."),
+    VALIDATION_FAIL(FORBIDDEN, "작업에 허용되지 않은 사용자 입니다. 작성자 본인 이외에는 처리할 수 없습니다."),
     DELETE_FUNDING_UNAVAILABLE(INTERNAL_SERVER_ERROR, "마감 당일과 마감일 이후에는 펀딩 삭제가 불가합니다."),
     UPDATE_FUNDING_UNAVAILABLE(INTERNAL_SERVER_ERROR, "마감 당일 이후에 대해서는 펀딩 삭제가 불가합니다."),
     DELETE_PARTICIPATE_UNAVAILABLE(INTERNAL_SERVER_ERROR,"마감한 펀딩에 대해서는 참여 취소가 불가합니다."),
