@@ -45,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.habday.server.constants.code.ExceptionCode.*;
@@ -112,7 +113,15 @@ public class FundingService extends Common {
         Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
         //log.info("id: " + confirmation.getId());
         return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem),
-                confirmation == null ? false : true, "https://habday-web.vercel.app/landing/"+fundingItem.getId());
+                confirmation == null ? false : true, CmnConst.webAddress+fundingItem.getId()
+        , calLeftFinishDate(fundingItem.getFinishDate()), getBirthdayLeft(member));
+    }
+
+    public Long calLeftFinishDate(LocalDate finishDate){
+        Long difference = ChronoUnit.DAYS.between(LocalDate.now(), finishDate);
+        log.info("calLeftFinishDate finish: " + finishDate + " now: " + LocalDate.now());
+        log.info("calLeftFinishDate difference: " + difference);
+        return difference;
     }
 
     public List<FundingParticipantList> getParticipantList(FundingItem fundingItem) {
@@ -294,7 +303,7 @@ public class FundingService extends Common {
     }
 
     public Long getBirthdayLeft(Member member) {
-        String[] birthList = member.getBirthday().split("-");
+        String[] birthList =Optional.ofNullable(member.getBirthday()).orElseThrow(() -> new CustomException(NO_BIRTHDAY)).split("-");
 
         Integer birthMonth = Integer.parseInt(birthList[1]);
         Integer birthDay = Integer.parseInt(birthList[2]);

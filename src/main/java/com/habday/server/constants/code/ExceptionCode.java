@@ -57,7 +57,8 @@ public enum ExceptionCode {
     UPDATE_FUNDING_UNAVAILABLE(INTERNAL_SERVER_ERROR, "마감 당일 이후에 대해서는 펀딩 삭제가 불가합니다."),
     DELETE_PARTICIPATE_UNAVAILABLE(INTERNAL_SERVER_ERROR,"마감한 펀딩에 대해서는 참여 취소가 불가합니다."),
     PAYMENT_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "결제 수단이 사용자 정보와 일치하지 않습니다."),
-    FUNDING_MEMBER_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "펀딩 참여 내역이 사용자 정보와 일치하지 않습니다.");
+    FUNDING_MEMBER_VALIDATION_FAIL(INTERNAL_SERVER_ERROR, "펀딩 참여 내역이 사용자 정보와 일치하지 않습니다."),
+    NO_BIRTHDAY(BAD_REQUEST, "생일 정보가 입력되지 않은 사용자입니다.");
 
 
     private final HttpStatus status;
