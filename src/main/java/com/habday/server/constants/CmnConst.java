@@ -9,4 +9,6 @@ public class CmnConst {
     public static int confirmLimitDate = 14; //일 단위
     public static final String scheduleCron = "0 5 0 * * *"; //"0 5 0 * * *"
     public static final String memberStateCron = "0 0 0 * * *";
+
+    public static final String webAddress = "https://habday-web.vercel.app/landing/";
 }

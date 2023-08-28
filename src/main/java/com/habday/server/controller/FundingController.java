@@ -125,7 +125,7 @@ public class FundingController extends Common {
     public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
         System.out.println("updateFundingItem^^ memberId" + memberId);
-        fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
+        fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail, memberId);
         System.out.println("updateFundingItem^^ finish");
         return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
         //return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
@@ -135,7 +135,7 @@ public class FundingController extends Common {
     @DeleteMapping ("/delete/{fundingItemId}")
     public ResponseEntity<CommonResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
-        fundingService.deleteFundingItem(fundingItemId);
+        fundingService.deleteFundingItem(memberId, fundingItemId);
         return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS, null);
     }
 

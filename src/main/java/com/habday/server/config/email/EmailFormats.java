@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+import static com.habday.server.constants.CmnConst.webAddress;
+
 @RequiredArgsConstructor
 @Component
 public class EmailFormats {
@@ -17,7 +19,7 @@ public class EmailFormats {
                 .to(emailService.getParticipantEmail(fundingItem))
                 .subject("HABDAY" + "펀딩 인증 알림" )
                 .message("'" + fundingItem.getFundingName()+"'에 대한 선물하신 금액의 사용처가 생일자에 의해 인증되었습니다.  \n" +
-                        "펀딩 인증은 " + "주소 " + "에서 볼 수 있습니다.")
+                        "펀딩 인증은 " + webAddress + fundingItem.getId() + "에서 볼 수 있습니다.")
                 .build();
         emailService.sendEmail(email);
 
@@ -49,7 +51,7 @@ public class EmailFormats {
                 .subject("HABDAY" + "결제 성공 알림" )
                 .message("'" + fundingItem.getFundingName()+"' 결제가 성공했습니다. \n" +
                         "총 결제 금액은 : " + amount + "입니다.\n" +
-                        "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                        "참여한 펀딩 보기: " + webAddress + fundingItem.getId())
                 .build();
         emailService.sendEmail(email);
     }
@@ -61,7 +63,7 @@ public class EmailFormats {
                 .message("'" + fundingItem.getFundingName()+"' 결제가 실패했습니다. \n" +
                         "결제 실패 이유는 " + "입니다. \n" +
                         "다시 결제: " + " \n" +
-                        "참여한 펀딩 보기: " + CmnConst.server + "funding/showFundingContent?itemId=" + fundingItem.getId())
+                        "참여한 펀딩 보기: " + webAddress + fundingItem.getId())
                 .build();
         emailService.sendEmail(email);
     }

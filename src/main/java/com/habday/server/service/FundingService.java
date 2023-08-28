@@ -45,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static com.habday.server.constants.code.ExceptionCode.*;
@@ -112,7 +113,15 @@ public class FundingService extends Common {
         Confirmation confirmation = confirmationRepository.findByFundingItem(fundingItem);
         //log.info("id: " + confirmation.getId());
         return ShowFundingContentResponseDto.of(fundingItem, member, getParticipantList(fundingItem),
-                confirmation == null ? false : true, "https://habday-web.vercel.app/landing/"+fundingItem.getId());
+                confirmation == null ? false : true, CmnConst.webAddress+fundingItem.getId()
+        , calLeftFinishDate(fundingItem.getFinishDate()), getBirthdayLeft(member));
+    }
+
+    public Long calLeftFinishDate(LocalDate finishDate){
+        Long difference = ChronoUnit.DAYS.between(LocalDate.now(), finishDate);
+        log.info("calLeftFinishDate finish: " + finishDate + " now: " + LocalDate.now());
+        log.info("calLeftFinishDate difference: " + difference);
+        return difference;
     }
 
     public List<FundingParticipantList> getParticipantList(FundingItem fundingItem) {
@@ -172,6 +181,12 @@ public class FundingService extends Common {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId).orElseThrow(
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
+
+        /*if (fundingItem.getMember().getId() != memberId){
+            log.info("confirm(): 펀딩 작성자가 아님.");
+            throw new CustomException(VALIDATION_FAIL);
+        }*/
+
         if (fundingItem.getIsConfirm().equals(FundingConfirmState.TRUE)){
             throw new CustomException(FUNDING_ALREADY_CONFIRMED);
         }
@@ -220,10 +235,15 @@ public class FundingService extends Common {
     }
 
     @Transactional
-    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail) throws IOException {
+    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail, Long memberId) throws IOException {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
         System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
+
+        if (fundingItem.getMember().getId() != memberId){
+            log.info("updateFundingItem(): 펀딩 작성자가 아님.");
+            throw new CustomException(VALIDATION_FAIL);
+        }
 
         if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 수정 x
             throw new CustomException(UPDATE_FUNDING_UNAVAILABLE);
@@ -245,9 +265,14 @@ public class FundingService extends Common {
 
 
     @Transactional
-    public void deleteFundingItem(Long fundingItemId) {
+    public void deleteFundingItem(Long memberId, Long fundingItemId) {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
+        if (fundingItem.getMember().getId() != memberId){
+            log.info("deleteFundingItem(): 펀딩 작성자가 아님.");
+            throw new CustomException(VALIDATION_FAIL);
+        }
 
         if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 삭제 X
             throw new CustomException(DELETE_FUNDING_UNAVAILABLE);
@@ -278,7 +303,7 @@ public class FundingService extends Common {
     }
 
     public Long getBirthdayLeft(Member member) {
-        String[] birthList = member.getBirthday().split("-");
+        String[] birthList =Optional.ofNullable(member.getBirthday()).orElseThrow(() -> new CustomException(NO_BIRTHDAY)).split("-");
 
         Integer birthMonth = Integer.parseInt(birthList[1]);
         Integer birthDay = Integer.parseInt(birthList[2]);

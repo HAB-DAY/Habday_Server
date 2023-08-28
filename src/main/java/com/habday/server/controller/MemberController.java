@@ -2,6 +2,7 @@ package com.habday.server.controller;
 
 import com.habday.server.classes.Common;
 import com.habday.server.config.S3Uploader;
+import com.habday.server.constants.CmnConst;
 import com.habday.server.constants.code.ExceptionCode;
 import com.habday.server.constants.state.MemberState;
 import com.habday.server.domain.fundingItem.FundingItem;
@@ -60,7 +61,7 @@ public class MemberController extends Common {
         String fundingItemImgUrl = s3Uploader.upload(fundingItemImg, "images");
 
         FundingItem fundingItem = fundingItemRepository.save(request.toCreateFundingItem(fundingItemImgUrl, request.getFundingName(), request.getFundDetail(), request.getItemPrice(), request.getGoalPrice(), request.getStartDate(), request.getFinishDate(), member));
-        String responseDto = "https://habday-web.vercel.app/landing/" + fundingItem.getId();
+        String responseDto = CmnConst.webAddress + fundingItem.getId();
         return CommonResponse.toResponse(CREATE_FUNDING_ITEM_SUCCESS, responseDto);
     }
 }
