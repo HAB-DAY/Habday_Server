@@ -182,10 +182,10 @@ public class FundingService extends Common {
                 () -> new CustomException(NO_FUNDING_ITEM_ID)
         );
 
-        if (fundingItem.getMember().getId() != memberId){
+        /*if (fundingItem.getMember().getId() != memberId){
             log.info("confirm(): 펀딩 작성자가 아님.");
             throw new CustomException(VALIDATION_FAIL);
-        }
+        }*/
 
         if (fundingItem.getIsConfirm().equals(FundingConfirmState.TRUE)){
             throw new CustomException(FUNDING_ALREADY_CONFIRMED);
