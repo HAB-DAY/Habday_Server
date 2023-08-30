@@ -121,14 +121,11 @@ public class FundingController extends Common {
 //    }
 
     // 펀딩 수정
-    @PutMapping("/update/{fundingItemId}")
+    @PatchMapping("/update/{fundingItemId}")
     public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
-        System.out.println("updateFundingItem^^ memberId" + memberId);
         fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail, memberId);
-        System.out.println("updateFundingItem^^ finish");
         return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
-        //return CommonResponse.toResponse(UPDATE_FUNDING_ITEM_SUCCESS, null);
     }
 
     // 펀딩 삭제

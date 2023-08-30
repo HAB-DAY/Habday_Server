@@ -235,11 +235,10 @@ public class FundingService extends Common {
     }
 
     @Transactional
-    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail, Long memberId) throws IOException {
+    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImgReq, String fundingItemNameReq, String fundingItemDetailReq, Long memberId) throws IOException {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
-
+  
         if (fundingItem.getMember().getId() != memberId){
             log.info("updateFundingItem(): 펀딩 작성자가 아님.");
             throw new CustomException(VALIDATION_FAIL);
@@ -248,19 +247,17 @@ public class FundingService extends Common {
         if(calculation.isOverFinishDate(fundingItem.getFinishDate())){//마감 당일에는 수정 x
             throw new CustomException(UPDATE_FUNDING_UNAVAILABLE);
         }
-        //ObjectMapper mapper = new ObjectMapper();
-        //System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
-        System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
-
-
-        String updateFundingItemImgUrl = (fundingItemImg == null) ? fundingItem.getFundingItemImg() : s3Uploader.upload(fundingItemImg, "images");
-        System.out.println("updateFundingItem^^ updateFundingItemImgUrl" + updateFundingItemImgUrl);
-        String updateFundingName = (fundingItemName == null) ? fundingItem.getFundingName() : fundingItemName;
-        System.out.println("updateFundingItem^^ updateFundingName" + updateFundingName);
-        String updateFundDetail = (fundingItemDetail == null) ? fundingItem.getFundDetail() : fundingItemDetail;
-        System.out.println("updateFundingItem^^ updateFundDetail" + updateFundDetail);
-
-        fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
+  
+        if (fundingItemImgReq != null) {
+            fundingItem.updateFundingItemImg(s3Uploader.upload(fundingItemImgReq, "images"));
+        }
+        if (fundingItemNameReq != null) {
+            fundingItem.updateFundingItemName(fundingItemNameReq);
+        }
+        if (fundingItemDetailReq != null) {
+            fundingItem.updateFundDetail(fundingItemDetailReq);
+        }
+        fundingItemRepository.save(fundingItem);
     }
 
 
