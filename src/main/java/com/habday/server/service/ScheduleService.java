@@ -30,13 +30,16 @@ import static com.habday.server.constants.CmnConst.scheduleCron;
 @Service
 public class ScheduleService extends Common {
     private final FundingCloseService closeService;
+    private final Calculation calculation;
 
     @Transactional
     @Scheduled(cron = scheduleCron) // "0 5 0 * * *" 매일 밤 0시 5분에 실행
     public void checkFundingState() {
         log.info("schedule 시작");
-        List<FundingItem> successFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.SUCCESS, LocalDate.now());
-        List<FundingItem> failFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS, LocalDate.now());
+        List<FundingItem> successFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.SUCCESS,
+                calculation.calScheduleFinishDate());
+        List<FundingItem> failFunding =  fundingItemRepository.findByStatusAndFinishDate(FundingState.PROGRESS,
+                calculation.calScheduleFinishDate());
 
         successFunding.forEach(fundingItem -> {
             log.info("오늘 마감 성공 fundingItem: " + fundingItem.getId());
@@ -56,11 +59,11 @@ public class ScheduleService extends Common {
      * */
     @Transactional
     @Scheduled(cron = memberStateCron)//매일 밤 12시
-    public void checkMemberState(){
+    public void checkMemberState(){//finishDate 13일 -> 27일 //14 15 16 17 18 19 20 21 22 23 24 25 26 27 // 28일부터 걸러야
         log.info("member cron 돌아감");
         List<FundingItem> fundingItems = //now > finishDate + 14 == now - 14 > finishDate
                 fundingItemRepository.findByIsConfirmAndStatusAndFinishDateLessThan(FundingConfirmState.FALSE,
-                        FundingState.SUCCESS, LocalDate.now().minusDays(CmnConst.confirmLimitDate));//데이터 많아지면 검색 범위를 지정해도 되지 않을까 너무 옛날꺼는 검색하지 않는다던지
+                        FundingState.SUCCESS, calculation.calMemberStateFinishDate());//데이터 많아지면 검색 범위를 지정해도 되지 않을까 너무 옛날꺼는 검색하지 않는다던지
         //성공한 펀딩 and 인증 기간 지남(14일 지남) and 펀딩 인증 false
         fundingItems.forEach((item -> {//for문의 범위를 줄여야 해!!
             log.info("item: " + item.getId() + " memberId: " + item.getMember().getId());

@@ -124,18 +124,19 @@ public class FundingController extends Common {
     @PatchMapping("/update/{fundingItemId}")
     public ResponseEntity<UpdateFundingItemResponse> updateFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId, @RequestPart(value="fundingItemImg", required = false) MultipartFile fundingItemImg, @RequestPart(value="fundingItemName", required = false) String fundingItemName, @RequestPart(value = "fundingItemDetail", required = false) String fundingItemDetail) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
-        fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail);
+        fundingService.updateFundingItem(fundingItemId, fundingItemImg, fundingItemName, fundingItemDetail, memberId);
         return UpdateFundingItemResponse.newResponse(UPDATE_FUNDING_ITEM_SUCCESS);
     }
 
-    // 펀딩 식제
+    // 펀딩 삭제
     @DeleteMapping ("/delete/{fundingItemId}")
     public ResponseEntity<CommonResponse> deleteFundingItem(@RequestHeader("") String accessToken, @PathVariable("fundingItemId") Long fundingItemId) {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
-        fundingService.deleteFundingItem(fundingItemId);
+        fundingService.deleteFundingItem(memberId, fundingItemId);
         return CommonResponse.toResponse(DELETE_FUNDING_ITEM_SUCCESS, null);
     }
 
+    //펀딩 참여 취소
     @PostMapping("/cancel")
     public ResponseEntity<CommonResponse> cancel(@RequestHeader("") String accessToken, @Valid @RequestBody NoneAuthPayUnscheduleRequestDto request){
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);//혹시 이상한 사람이 memberId만 가져와서 결제 취소할까봐

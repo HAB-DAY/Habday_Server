@@ -28,6 +28,8 @@ public class ShowFundingContentResponseDto {
     private List<FundingParticipantList> fundingParticipantList;
     private Boolean isConfirmation;
     private String showDetailUrl;
+    private Long leftFinishDate;
+    private Long leftBirthday;
 
     //생성자에는 static을 사용할 수 없다.
     //of를 static으로 놓고 builder 패턴을 적용해 객체를 생성해서 반환하려 해도 결국은 생성자가 필요하다.
@@ -36,7 +38,7 @@ public class ShowFundingContentResponseDto {
     private ShowFundingContentResponseDto(String fundingItemImg, String fundingName, String fundDetail, BigDecimal itemPrice,
                BigDecimal totalPrice, BigDecimal goalPrice, LocalDate startDate, LocalDate finishDate, int percentage,
                FundingState status, String hostName, List<FundingParticipantList> fundingParticipantList,
-                                          Boolean isConfirmation, String showDetailUrl){
+                                          Boolean isConfirmation, String showDetailUrl, Long leftFinishDate, Long leftBirthday){
         this.fundingItemImg = fundingItemImg;
         this.fundingName = fundingName;
         this.fundDetail = fundDetail;
@@ -51,10 +53,15 @@ public class ShowFundingContentResponseDto {
         this.fundingParticipantList = fundingParticipantList;
         this.isConfirmation = isConfirmation;
         this.showDetailUrl = showDetailUrl;
+        this.leftFinishDate = leftFinishDate;
+        this.leftBirthday = leftBirthday;
+
     }
 
 
-    public static ShowFundingContentResponseDto of(FundingItem fundingItem, Member member, List<FundingParticipantList> fundingParticipantList, Boolean isConfirmation, String showDetailUrl){
+    public static ShowFundingContentResponseDto of(FundingItem fundingItem, Member member,
+                  List<FundingParticipantList> fundingParticipantList, Boolean isConfirmation, String showDetailUrl,
+                  Long leftFinishDate, Long leftBirthday){
         return ShowFundingContentResponseDto.builder()
                 .fundingItemImg(fundingItem.getFundingItemImg())
                 .fundingName(fundingItem.getFundingName())
@@ -70,6 +77,8 @@ public class ShowFundingContentResponseDto {
                 .fundingParticipantList(fundingParticipantList)
                 .isConfirmation(isConfirmation)
                 .showDetailUrl(showDetailUrl)
+                .leftFinishDate(leftFinishDate)
+                .leftBirthday(leftBirthday)
                 .build();
     }
 

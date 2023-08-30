@@ -47,15 +47,18 @@ public class Calculation {
         Date toDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(toDate);
-        calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 30분 후에 결제
+        calendar.add(Calendar.DATE, CmnConst.paymentDelayDate);//펀딩 마감일이 생일 전날 -> 결제일은 생일날
+        calendar.add(Calendar.MINUTE, CmnConst.paymentDelayMin);//펀딩 종료 다음날 30분 후에 결제
         return new Date(calendar.getTimeInMillis());
     }
 
+    //펀딩 인증 & (memberState 변경: 이 함수 적용 안함)
     public Boolean isAfterTwoWeek(FundingItem item){
-        LocalDate finishedDate = item.getFinishDate();
-        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);
-
-        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){
+        LocalDate finishedDate = item.getFinishDate();//14일(생일 15일)
+        //LocalDate payDate = finishedDate.plusDays(CmnConst.paymentDelayDate);//15일
+        LocalDate afterTwoWeek = finishedDate.plusDays(CmnConst.confirmLimitDate);//28일
+        //15 16 17 18 19 20 21 22 23 24 25 26 27 28
+        if (afterTwoWeek.compareTo(LocalDate.now()) < 0){//28 < 29일(오늘)
             log.info("isAfterTwoWeek(): 펀딩 인증 2주 지남" + finishedDate.compareTo(afterTwoWeek) + " " + afterTwoWeek + "," + finishedDate);
             return true;
         }else {
@@ -64,10 +67,33 @@ public class Calculation {
         }
     }
 
-//    public Date addDate(Date baseDate, int addedUnit, int addedTime){
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTime(baseDate);
-//        calendar.add(addedUnit, addedTime);
-//        return new Date(calendar.getTimeInMillis());
-//    }
+    //수정/삭제(finishDate 당일부터 불가하게)
+    public Boolean isOverFinishDate(LocalDate finishDate){
+        if(LocalDate.now().compareTo(finishDate)>=0){//finishDate 포함
+            log.info("isFinishDate: 오늘 >= 마감일 입니다.");
+            return true;
+        }else{
+            log.info("isFinishDate: 마감일 전입니다.");
+            return false;
+        }
+    }
+    //인증시(finishDate이 지나야 인증)
+    public Boolean isBeforeFinishDate(LocalDate finishDate){
+        if (finishDate.compareTo(LocalDate.now()) >= 0){
+            log.info("isBeforeFinishDate: 마감일 당일 혹은 마감일 전");
+            return true;
+        }
+        else {
+            log.info("isBeforeFinishDate: 마감일 이후");
+            return false;
+        }
+    }
+
+    public LocalDate calScheduleFinishDate(){
+        return LocalDate.now().minusDays(CmnConst.paymentDelayDate);
+    }
+
+    public LocalDate calMemberStateFinishDate(){
+        return LocalDate.now().minusDays(CmnConst.confirmLimitDate);
+    }
 }

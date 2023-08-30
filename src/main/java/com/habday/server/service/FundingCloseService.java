@@ -44,25 +44,26 @@ public class FundingCloseService extends Common {
      * 4. 퍼센트 달성 성공 시 fundingItem status success로 업데이트
      *   - 펀딩 성공 메일 보내기
      * */
-    @Transactional
-    public void checkFundingSuccess(FundingItem fundingItem) {//성공한 아이템이 들어오게
-        BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
-        BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
-
-        log.info("itemId: " + fundingItem.getId() + " goalPercent^^ " + goalPercent + " realPercent^^ " + realPercent);
-        log.info("itemId: " +fundingItem.getId() + " realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
-
-        if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
-            fundingItem.updateFundingSuccess();
-            log.info("최소 목표퍼센트 이상 달성함");
-            emailFormats.sendFundingSuccessEmail(fundingItem);
-        } else { // 펀딩 최소 목표 퍼센트에 달성 못함
-            log.info("최소 목표퍼센트 이상 달성 실패");
-            fundingItem.updateFundingFail();
-            payService.unscheduleAll(fundingItem);
-            emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
-        }
-    }
+    // 리팩토링으로 이 함수가 fundingSuccess/fundingFail, scheduleService로 분리됨
+//    @Transactional
+//    public void checkFundingSuccess(FundingItem fundingItem) {//성공한 아이템이 들어오게
+//        BigDecimal goalPercent = fundingItem.getGoalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); //최소목표퍼센트
+//        BigDecimal realPercent = fundingItem.getTotalPrice().divide(fundingItem.getItemPrice(), BigDecimal.ROUND_DOWN); // 실제달성퍼센트
+//
+//        log.info("itemId: " + fundingItem.getId() + " goalPercent^^ " + goalPercent + " realPercent^^ " + realPercent);
+//        log.info("itemId: " +fundingItem.getId() + " realPercent.compareTo(goalPercent)^^ : " + realPercent.compareTo(goalPercent));
+//
+//        if (realPercent.compareTo(goalPercent) == 0 ||  realPercent.compareTo(goalPercent) == 1) { // 펀딩 최소 목표 퍼센트에 달성함
+//            fundingItem.updateFundingSuccess();
+//            log.info("최소 목표퍼센트 이상 달성함");
+//            emailFormats.sendFundingSuccessEmail(fundingItem);
+//        } else { // 펀딩 최소 목표 퍼센트에 달성 못함
+//            log.info("최소 목표퍼센트 이상 달성 실패");
+//            fundingItem.updateFundingFail();
+//            payService.unscheduleAll(fundingItem);
+//            emailFormats.sendFundingFailEmail(fundingItem);//throw new CustomException(FAIL_FINISH_FUNDING);
+//        }
+//    }
 
     @Transactional
     public void fundingSuccess(FundingItem fundingItem){

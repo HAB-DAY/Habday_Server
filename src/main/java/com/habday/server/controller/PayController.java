@@ -65,15 +65,15 @@ public class PayController extends Common {
 
     //todo null체크
     /**예약 취소**/
-    @PostMapping("/noneauthpay/unschedule")
-    public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){//, @PathVariable Optional<Long> memberId
-//        memberId.orElseThrow(
-//                () -> new CustomException(NO_MEMBER_ID)
-//        );
-        log.info("예약 취소 시작");
-        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto);
-        return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
-    }
+//    @PostMapping("/noneauthpay/unschedule")
+//    public @ResponseBody ResponseEntity<CommonResponse> noneAuthPayUnschedule(@RequestBody NoneAuthPayUnscheduleRequestDto unscheduleRequestDto){//, @PathVariable Optional<Long> memberId
+////        memberId.orElseThrow(
+////                () -> new CustomException(NO_MEMBER_ID)
+////        );
+//        log.info("예약 취소 시작");
+//        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(unscheduleRequestDto);
+//        return CommonResponse.toResponse(PAY_UNSCHEDULING_SUCCESS, response);
+//    }
 
 
     /** 예약결제 확인 **/
