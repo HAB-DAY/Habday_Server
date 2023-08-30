@@ -103,10 +103,16 @@ public class FundingItem {
     public void updateIsConfirmDone() {
         this.isConfirm = FundingConfirmState.DONE;
     }
-    public FundingItem update(String fundingItemImg, String fundingName, String fundDetail) {
+
+    // 펀딩 수정
+    public void updateFundingItemImg(String fundingItemImg) {
         this.fundingItemImg = fundingItemImg;
-        this.fundingName = fundingName;
-        this.fundDetail = fundDetail;
-        return this;
     }
+    public void updateFundingItemName(String fundingName) {
+        this.fundingName = fundingName;
+    }
+    public void updateFundDetail(String fundDetail) {
+        this.fundDetail = fundDetail;
+    }
+
 }

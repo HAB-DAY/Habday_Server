@@ -220,23 +220,19 @@ public class FundingService extends Common {
     }
 
     @Transactional
-    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImg, String fundingItemName, String fundingItemDetail) throws IOException {
+    public void updateFundingItem(Long fundingItemId, MultipartFile fundingItemImgReq, String fundingItemNameReq, String fundingItemDetailReq) throws IOException {
         FundingItem fundingItem = fundingItemRepository.findById(fundingItemId)
                 .orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
-        System.out.println("updateFundingItem^^ fundingItem " + fundingItem);
-        //ObjectMapper mapper = new ObjectMapper();
-        //System.out.println("updateFundingItem^^ fundingItem" + mapper.writeValueAsString(fundingItem));
-        System.out.println("updateFundingItem^^ fundingItemImg" + fundingItemImg + " fundingItemName" + fundingItemName + " fundingItemDetail" + fundingItemDetail);
-
-
-        String updateFundingItemImgUrl = (fundingItemImg == null) ? fundingItem.getFundingItemImg() : s3Uploader.upload(fundingItemImg, "images");
-        System.out.println("updateFundingItem^^ updateFundingItemImgUrl" + updateFundingItemImgUrl);
-        String updateFundingName = (fundingItemName == null) ? fundingItem.getFundingName() : fundingItemName;
-        System.out.println("updateFundingItem^^ updateFundingName" + updateFundingName);
-        String updateFundDetail = (fundingItemDetail == null) ? fundingItem.getFundDetail() : fundingItemDetail;
-        System.out.println("updateFundingItem^^ updateFundDetail" + updateFundDetail);
-
-        fundingItem.update(updateFundingItemImgUrl, updateFundingName, updateFundDetail);
+        if (fundingItemImgReq != null) {
+            fundingItem.updateFundingItemImg(s3Uploader.upload(fundingItemImgReq, "images"));
+        }
+        if (fundingItemNameReq != null) {
+            fundingItem.updateFundingItemName(fundingItemNameReq);
+        }
+        if (fundingItemDetailReq != null) {
+            fundingItem.updateFundDetail(fundingItemDetailReq);
+        }
+        fundingItemRepository.save(fundingItem);
     }
 
 
