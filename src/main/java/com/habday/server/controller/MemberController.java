@@ -44,6 +44,18 @@ public class MemberController extends Common {
         return MemberProfileResponse.newResponse(VERIFY_MEMBER_PROFILE_SUCCESS);
     }
 
+    @GetMapping("/check/memberProfile")
+    public ResponseEntity<CommonResponse> saveMemberProfile(@RequestHeader("") String accessToken) {
+        Long memberId = jwtService.getMemberIdFromJwt(accessToken);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_ID));
+
+        if(member.getBirthday() == null || member.getBirthday().length() == 0) {
+            return CommonResponse.toResponse(ALREADY_MEMBER_EXIST, false);
+        }
+        return CommonResponse.toResponse(ALREADY_MEMBER_EXIST, true);
+    }
+
     @PostMapping("/create/fundingItem")
     public ResponseEntity<CommonResponse> createFundingItem(@RequestHeader("") String accessToken, @RequestPart(value="fundingItemImg") MultipartFile fundingItemImg, @RequestPart(value="dto") CreateFundingItemRequestDto request) throws IOException {
         Long memberId = jwtService.getMemberIdFromJwt(accessToken);
