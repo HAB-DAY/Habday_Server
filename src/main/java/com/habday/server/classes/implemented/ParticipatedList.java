@@ -32,6 +32,10 @@ public class ParticipatedList implements ListInterface {
         String getFundingItemImg(); //FundingItem
         FundingState getFundingStatus(); //FundingItem
         String getCreatorName(); //Member
+
+        String getFundDetail();
+        LocalDate getStartDate();
+        LocalDate getFinishDate();
     }
 
     @Override
