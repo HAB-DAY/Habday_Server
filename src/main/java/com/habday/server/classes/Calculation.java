@@ -42,6 +42,14 @@ public class Calculation {
         return totalPrice.divide(goalPrice, 2, BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(100)).intValue();
     }
 
+    public BigDecimal calCancelTotalPrice(BigDecimal amount, BigDecimal totalPrice){
+        if (totalPrice == null) {
+            log.info("fundingService: totalPrice null임" + totalPrice);
+            totalPrice = BigDecimal.ZERO;
+        }
+        return totalPrice.subtract(amount);
+    }
+
     //예약결제 시간 계산
     public Date calPayDate(LocalDate localDate){
         Date toDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());

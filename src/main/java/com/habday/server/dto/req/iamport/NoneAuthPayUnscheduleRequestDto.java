@@ -1,10 +1,12 @@
 package com.habday.server.dto.req.iamport;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
 @Getter
+@NoArgsConstructor
 public class NoneAuthPayUnscheduleRequestDto {
     /*@NotNull(message = "취소를 위해서는 결제 수단 id가 필요합니다.")
     private Long payment_id;*/

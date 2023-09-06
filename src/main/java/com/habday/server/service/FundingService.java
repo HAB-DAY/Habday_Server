@@ -291,11 +291,19 @@ public class FundingService extends Common {
             confirmation.updateFundingItemNull();
     }
 
+    @Transactional
     public UnscheduleResponseDto cancel(Long memberId, NoneAuthPayUnscheduleRequestDto request){
         FundingMember fundingMember = fundingMemberRepository.findById(request.getFundingMemberId()).orElseThrow(() -> new CustomException(NO_FUNDING_MEMBER_ID));
+        FundingItem fundingItem = fundingItemRepository.findById(fundingMember.getFundingItem().getId()).orElseThrow(() -> new CustomException(NO_FUNDING_ITEM_ID));
+
         if(memberId != fundingMember.getMember().getId())
             throw new CustomException(FUNDING_MEMBER_VALIDATION_FAIL);
-        return payService.noneAuthPayUnschedule(request);
+
+        UnscheduleResponseDto response = payService.noneAuthPayUnschedule(request);
+        BigDecimal totalBrice = calculation.calCancelTotalPrice(fundingMember.getAmount(), fundingItem.getTotalPrice());
+        int percentage = calculation.calFundingPercentage(totalBrice, fundingItem.getGoalPrice());
+        fundingItem.updateCancel(totalBrice, percentage);
+        return response;
 
     }
 
