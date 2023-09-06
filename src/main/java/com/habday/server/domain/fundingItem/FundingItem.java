@@ -115,4 +115,8 @@ public class FundingItem {
         this.fundDetail = fundDetail;
     }
 
+    public void updateCancel(BigDecimal totalPrice, int percentage){
+        this.totalPrice = totalPrice;
+        this.percentage = percentage;
+    }
 }
