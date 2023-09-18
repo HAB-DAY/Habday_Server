@@ -4,6 +4,8 @@
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat&logo=springboot&logoColor=white"/>  <img src="https://img.shields.io/badge/MySql-4479A1?style=flat&logo=mysql&logoColor=white"/>  <img src="https://img.shields.io/badge/Java-007396?style=flat&logo=Java&logoColor=white" />
 - 포트원 rest api를 통한 결제 연동 - 나이스페이
 - 소셜 로그인
+
+![구현 기술](https://github.com/abi-hong/chatbot/assets/68041042/9951a5e5-2702-4e73-9679-f8a8a2064063)
 ----
 ### 🎁 API 목록
 https://translucent-ulna-ff6.notion.site/Habday-API-6a7d9ed169f84da09ecfe3f91c3f55a6?pvs=4
