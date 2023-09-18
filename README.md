@@ -24,3 +24,11 @@ https://translucent-ulna-ff6.notion.site/Habday-API-6a7d9ed169f84da09ecfe3f91c3f
 4. 생일 당일 ~ 14일 이내에 펀딩 인증
    
    (인증 안할 시 추후 펀딩 생성 불가)
+
+
+----
+### ERD
+<img width="1238" src="https://github.com/abi-hong/algorithm2023/assets/68041042/7fd94bfd-7c20-40c3-b83d-424266cd8be1">
+
+
+----
